@@ -12,6 +12,7 @@ Added in this release :
 
 -You can bypass the auto length stuff with a simple tickbox.
 
+-Config is done for use separate input for Touch Probe (or Touchplate) and Tool setter and the status is checked a=before each move.
 
 ## History
 
