@@ -1,8 +1,13 @@
-# Probe Screen for LinuxCNC 2.8
+# Probe Screen for LinuxCNC 2.8/2.9
 
 ## Info
 
-Probe-Screen is currently being redesigned.
+Probe-Screen is currently being redesigned any help are welcome.
+
+Added in this release :
+-Possibility to swap from 3D touch probe to Touchplate with a simple tickbox.
+-Manual tool change with auto length use now built in python stglue remap.
+-You can bypass the auto length stuff with a simple tickbox.
 
 ## History
 
@@ -10,14 +15,18 @@ This repo was originally a fork of <https://github.com/verser-git/probe_screen_v
 
 ## Install
 
-1. See "psng/install_del_from_your.hal"
-   Delete (or comment out) from all .hal files lines of the form:
+1. See "psng/install_add_to_your.hal"# 
+    You need to add this in your .hal files :
 
    ```sh
-   #loadusr -W hal_manualtoolchange
-   #net tool-change iocontrol.0.tool-change => hal_manualtoolchange.change
-   #net tool-changed iocontrol.0.tool-changed <= hal_manualtoolchange.changed
-   #net tool-number iocontrol.0.tool-prep-number => hal_manualtoolchange.number
+#******************************************
+# MANUAL TOOLCHANGE with remap m6 probe using stdglue as standalone
+#******************************************
+net manual-tool-change-loop    iocontrol.0.tool-change      => iocontrol.0.tool-changed
+net manual-tool-prep-loop      iocontrol.0.tool-prepare     => iocontrol.0.tool-prepared
+net manual-tool-number         iocontrol.0.tool-number
+net manual-tool-diameter                                    <= halui.tool.diameter
+#******************************************
    ```
 
 2. See "psng/install_add_to_your.ini" Add to your .ini settings, substitute your own constants.
@@ -27,9 +36,8 @@ This repo was originally a fork of <https://github.com/verser-git/probe_screen_v
    ```sh
    /python
    /psng
+   /remap
    ```
-
-4. Copy .axisrc to your home ~/ folder. If you are already using .axisrc, then only add to your file contents of this .axisrc.
 
 ## Use
 
