@@ -12,7 +12,7 @@ Added in this release :
 
 -You can bypass the auto length stuff with a simple tickbox.
 
--Config is done for use separate input for Touch Probe (or Touchplate) and Tool setter and the status is checked a=before each move.
+-Config is done for use separate input for Touch Probe (or Touchplate) and Tool setter and the status is checked before each move.
 
 ## History
 
@@ -40,9 +40,9 @@ net manual-tool-diameter                                    <= halui.tool.diamet
 
    ```sh
    /python
-   /psng
-   /remap
    /nc_subroutines
+   /nc_subroutines/psng
+   /nc_subroutines/remap
    ```
 
 ## Use
