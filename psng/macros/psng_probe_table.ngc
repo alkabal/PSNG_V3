@@ -1,0 +1,27 @@
+o<psng_probe_table> sub
+
+
+  o<psng_load_var_hal_touch_probe> call
+
+(cancel all Z offsets)
+G92.1
+G49
+G10 L20 P0 Z[#<_hal[axis.z.pos-cmd]>]
+;G10 L2 P0 Z0 ; reset G54 offset for correct pieces measurement and replace by new value TODO TEST
+#<intialZ>=#<_z> (save current Z position)
+
+o<backup_coord_offset> call             ; new added 2021       ; backup G54 offset for correct calc tool measurement
+
+o<psng_start_z_probing> call
+o500 if [#5070 EQ 0]
+    (ABORT,PROBE FOR TABLE DISTANCE DOES NOT FOUND THE CONTACT POINT)
+o500 endif
+
+(print, probe Z=#<_psng_touch_result_Z>)
+
+(back to start point)
+G1 Z#<intialZ> F#<_psng_travel_vel>
+G43
+
+o<psng_probe_table> endsub
+M2

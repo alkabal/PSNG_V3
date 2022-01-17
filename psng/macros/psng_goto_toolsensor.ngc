@@ -1,0 +1,25 @@
+o<psng_goto_toolsensor> sub
+
+#<_from_manual_change> = #1        ; call 1 = call from manual change for reset tool if error with probing
+
+M160    ;o<clear-axis-info> call
+o10 if [#<_hal[motion.probe-input]> EQ 1 AND #<_from_manual_change> EQ 1] ; call 1 = call from manual change for reset tool if error with probing
+     M61Q0
+     (ABORT,TOOLSETTER Z ALREADY TRIGGERED BEFORE GOTO TOOLSENSOR)
+o10 elseif [#<_hal[motion.probe-input]> EQ 1 AND #<_from_manual_change> EQ 0]
+     (ABORT,3D PROBE OR SETTER Z ALREADY TRIGGERED BEFORE GOTO TOOLSENSOR)
+o10 endif
+
+;first go up
+G90
+o20 if [#<_ini[EMCIO]TOOL_CHANGE_QUILL_UP> EQ 1]
+    G53 G0 Z#<_ini[JOINT_2]HOME>                                    ; Respecting the traditional linuxcnc behavior
+o20 else
+    G53 G0 Z#<_ini[TOOL_CHANGE]Z_TRAVEL_POSITION>
+o20 endif
+
+G53 G0 X[#<_ini[TOOL_SETTER]X>] Y[#<_ini[TOOL_SETTER]Y>]
+G53 G0 Z[#<_ini[TOOL_SETTER]Z>]
+
+o<psng_goto_toolsensor> endsub
+M2
