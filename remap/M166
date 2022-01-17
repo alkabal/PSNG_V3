@@ -1,4 +1,0 @@
-#!/bin/bash
-# 3D-PROBE inhibition
-halcmd sets touch-probe-on-off 0
-exit 0
