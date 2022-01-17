@@ -1,0 +1,21 @@
+# Ensure all toolchange pins are free to use
+unlinkp halui.tool.diameter                      # you need to check if this pin is not used in your config file else you need to adapt
+unlinkp iocontrol.0.tool-number
+unlinkp iocontrol.0.tool-prep-number
+unlinkp iocontrol.0.tool-change
+unlinkp iocontrol.0.tool-changed
+unlinkp iocontrol.0.tool-prepare
+unlinkp iocontrol.0.tool-prepared
+
+net psng-tool-change            probe.toolchange-change      <=   iocontrol.0.tool-change
+net psng-tool-changed           probe.toolchange-changed     =>   iocontrol.0.tool-changed
+net psng-tool-prep-number       probe.toolchange-prep-number <=   iocontrol.0.tool-prep-number
+net psng-tool-prep-loop         iocontrol.0.tool-prepare     <=   iocontrol.0.tool-prepared
+net psng-tool-number            probe.toolchange-number      <=   iocontrol.0.tool-number
+net psng-tool-diameter          probe.toolchange-diameter    <=   halui.tool.diameter
+
+
+## For use clear axis notification You also need to add this or for general use add a POSTGUI_HALFILE file and move this inside
+#net clear-axis-message <= motion.digital-out-00
+#net clear-axis-message => axisui.notifications-clear-info
+
