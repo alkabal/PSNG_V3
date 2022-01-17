@@ -5,9 +5,13 @@
 Probe-Screen is currently being redesigned any help are welcome.
 
 Added in this release :
+
 -Possibility to swap from 3D touch probe to Touchplate with a simple tickbox.
+
 -Manual tool change with auto length use now built in python stglue remap.
+
 -You can bypass the auto length stuff with a simple tickbox.
+
 
 ## History
 
