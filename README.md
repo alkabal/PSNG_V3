@@ -22,7 +22,7 @@ This repo was originally a fork of <https://github.com/verser-git/probe_screen_v
 1. See "psng/install_add_to_your.hal"# 
     You need to add this in your .hal files :
 
-   ```sh
+```sh
 #******************************************
 # MANUAL TOOLCHANGE with remap m6 probe using stdglue as standalone
 #******************************************
@@ -31,7 +31,7 @@ net manual-tool-prep-loop      iocontrol.0.tool-prepare     => iocontrol.0.tool-
 net manual-tool-number         iocontrol.0.tool-number
 net manual-tool-diameter                                    <= halui.tool.diameter
 #******************************************
-   ```
+```
 
 2. See "psng/install_add_to_your.ini" Add to your .ini settings, substitute your own constants.
 
