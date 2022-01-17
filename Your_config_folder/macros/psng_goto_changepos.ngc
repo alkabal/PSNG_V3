@@ -1,0 +1,15 @@
+o<psng_goto_changepos> sub
+
+;first go up
+G90
+o20 if [#<_ini[EMCIO]TOOL_CHANGE_QUILL_UP> EQ 1]
+    G53 G0 Z#<_ini[JOINT_2]HOME>                                    ; Respecting the traditional linuxcnc behavior
+o20 else
+    G53 G0 Z#<_ini[TOOL_CHANGE]Z_TRAVEL_POSITION>
+o20 endif
+
+G53 G0 X[#<_ini[TOOL_CHANGE]X>] Y[#<_ini[TOOL_CHANGE]Y>]
+G53 G0 Z[#<_ini[TOOL_CHANGE]Z>]
+
+o<psng_goto_changepos> endsub
+M2

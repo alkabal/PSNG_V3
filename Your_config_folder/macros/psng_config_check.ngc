@@ -1,0 +1,51 @@
+o<psng_config_check> sub
+
+M160    ;o<clear-axis-info> call
+
+o10 if [#<_hal[probe.search_vel]> LE 0]
+    (ABORT,PROBE SEARCH VELOCITY NOT CONFIGURED)
+o10 endif
+
+o20 if [#<_hal[probe.probe_vel]> LE 0]
+    (ABORT,PROBE VELOCITY NOT CONFIGURED)
+o20 endif
+
+o30 if [#<_hal[probe.z_clearance]> LE 0]
+    (ABORT,PROBE Z CLEARANCE NOT CONFIGURED)
+o30 endif
+
+o40 if [#<_hal[probe.probe_max]> LE 0]
+    (ABORT,PROBE MAX NOT CONFIGURED)
+o40 endif
+
+o50 if [#<_hal[probe.probe_latch]> LE 0]
+    (ABORT,PROBE LATCH NOT CONFIGURED)
+o50 endif
+
+o60 if [#<_hal[probe.probe_diam]> LE 0]
+    (ABORT,PROBE DIAMETER NOT CONFIGURED)
+o60 endif
+
+o70 if [#<_hal[probe.xy_clearance]> LE 0]
+    (ABORT,PROBE XY CLEARANCE NOT CONFIGURED)
+o70 endif
+
+o80 if [#<_hal[probe.edge_length]> LE 0]
+    (ABORT,PROBE EDGE length NOT CONFIGURED)
+o80 endif
+
+
+#<_probe_number> = #<_ini[TOUCH_PROBE]PROBE_NUMBER>
+
+; If you use my exemple hook this test never fail because they are already checked in hook, it's only if you do not use my custom hook
+o100 if [#<_hal[probe.use_touch_plate]> EQ 0 AND #<_current_tool> EQ #<_probe_number>]
+     (ABORT,!!! PROBING IS NOT ALLOWED WITHOUT 3D PROBE AS TOOL #<_probe_number> !!!)
+o100 endif
+
+
+o300 if [#<_hal[motion.probe-input]> EQ 1]
+    (ABORT,!!! PROBE ALREADY TRIGGERED OR REMOVED AFTER CONFIG CHECK !!!)
+o300 endif
+
+o<psng_config_check> endsub
+M2

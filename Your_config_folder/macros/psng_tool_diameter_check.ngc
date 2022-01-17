@@ -1,0 +1,10 @@
+o<psng_tool_diameter_check> sub
+
+(DEBUG,PLEASE CHECK IF TOOL #<_current_tool> WITH DIAMETER #5410 IS OUTSIDE OF THE SETTER)
+(MSG,NEED TO UNPAUSE OR ABORT)
+M0
+M160    ;o<clear-axis-info> call
+
+o<psng_tool_diameter_check> endsub
+M2
+

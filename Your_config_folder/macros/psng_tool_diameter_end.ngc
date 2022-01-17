@@ -1,0 +1,12 @@
+o<psng_tool_diameter_end> sub
+
+ o500 if [#<_current_tool> GT 0 AND #<_current_tool> NE #<_probe_number> and #<_hal[probe.use_rotate_spindle]> EQ 1 AND #<_hal[and2.combined-probe.in0]> EQ 1]
+      M5 ; stop spindle if you use reverse spindle for tool diameter measurement
+ o500 endif
+
+G43                                  ; need think about add G41 or similar here
+
+o<psng_goto_changepos> call
+o<psng_tool_diameter_end> endsub
+M2
+

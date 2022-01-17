@@ -1,0 +1,23 @@
+o<psng_load_var_hal_touch_probe> sub
+
+; this file is call by all related move with 3D-PROBE
+
+#<_probe_number>        = #<_ini[TOUCH_PROBE]PROBE_NUMBER>
+#<_psng_tool_diam>      = #<_hal[halui.tool.diameter]>
+#<_psng_Z_maxprobe>     = #<_hal[probe.probe_max]>
+#<_psng_XY_maxprobe>    = #<_hal[probe.probe_max]>
+#<_psng_latch>          = #<_hal[probe.probe_latch]>
+#<_psng_reverse_latch>  = #<_ini[TOUCH_PROBE]REVERSE_LATCH>
+#<_psng_z_clearance>    = #<_hal[probe.z_clearance]>
+#<_psng_xy_clearance>   = #<_hal[probe.xy_clearance]>
+#<_psng_travel_vel>     = #<_ini[TOUCH_PROBE]TRAVEL_VEL>
+#<_psng_search_vel>     = #<_hal[probe.search_vel]>
+#<_psng_probe_vel>      = #<_hal[probe.probe_vel]>
+#<_psng_edge_length>    = #<_hal[probe.edge_length]>
+;#<_psng_ts_height>      = #<_hal[probe.ts_height]>    ; Using ts_height allow to use default ini value or altered value from PSNG GUI
+;#<_psng_diam>           = #<_hal[probe.probe_diam]>
+;#<_psng_ts_diam>        = #<_ini[TOOL_SETTER]DIAMETER>
+;#<_psng_ts_diam_offset> = #<_ini[TOOL_SETTER]DIAM_OFFSET>
+
+o<psng_load_var_hal_touch_probe> endsub
+M2

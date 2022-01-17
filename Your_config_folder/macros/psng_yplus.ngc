@@ -1,0 +1,12 @@
+o<psng_yplus> sub
+
+
+  o<psng_load_var_hal_touch_probe> call
+
+o<psng_start_yplus_probing> call
+o500 if [#5070 EQ 0]
+    (ABORT,PROBE Y-PLUS DOES NOT FOUND THE CONTACT POINT)
+o500 endif
+
+o<psng_yplus> endsub
+M2
