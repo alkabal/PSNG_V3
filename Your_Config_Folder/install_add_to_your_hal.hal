@@ -36,16 +36,7 @@ setp                            debounce.0.delay 4
 net touch-device-muxed       => debounce.0.0.in
 net probe-in-debounced       <= debounce.0.0.out
 net probe-in-debounced       => motion.probe-input
-
 #******************************************
-
-
-
-
-
-
-
-
 
 
 #******************************************
