@@ -1,0 +1,153 @@
+; manual toolchange with automatic tool length probe
+
+o<psng_manual_change> sub
+
+;(DEBUG,in change current_tool=#<current_tool> current_pocket=#<current_pocket>)
+;(DEBUG,selected_tool=#<selected_tool> selected_pocket=#<selected_pocket>)
+
+; we must execute this only in the milltask interpreter
+; or preview will break, so test for '#<_task>' which is 1 for
+; the milltask interpreter and 0 in the UI's
+o10 if [#<_task> EQ 0]
+        (DEBUG,Task ist Null)
+o10     return [999]
+o10 endif
+
+;  o<psng_load_var_tool_setter> call
+  o<backup_status> call
+
+o15 if [#<_psng_ts_height> LE 0]
+    (ABORT,TOOLSETTER HEIGHT NOT PROBED/CONFIGURED)
+o15 endif
+
+;     o20 if [#<_hal[halui.machine.units-per-mm]> EQ 1]
+;         #<_psng_metric_based> = 1
+;     o20 else
+;         #<_psng_metric_based> = 0
+;     o20 endif
+
+     o30 if [#<_hal[probe.ts_chk_use_tool_measurement]> EQ 1]
+         #<_psng_tool_measurement> = 1
+     o30 else
+         #<_psng_tool_measurement> = 0
+     o30 endif
+
+G49  ; cancel tool offset
+
+#<intial_X> = #<_X>
+#<intial_Y> = #<_Y>
+#<intial_Z> = #<_Z>
+
+    o40 if [#<_ini[EMCIO]TOOL_CHANGE_WITH_SPINDLE_ON> EQ 0]      ; used for surpass ini setting in case of wrong setting if you use manual
+        M5
+    o40 endif
+        M9                                                       ; Force to stop mist and flood
+
+o<psng_goto_changepos> call
+M160    ;o<clear-axis-info> call
+
+
+o100 if [#<_psng_tool_measurement> EQ 0 OR #<_selected_tool> EQ 0]
+  o110 if [#<_ini[TOOL_CHANGE]POPUP_STYLE> EQ 0]
+     o111 if [#<_selected_tool> EQ 0]
+         (MSG,PLEASE REMOVE TOOL)
+         (MSG,NEED TO UNPAUSE OR ABORT)
+         M0
+         M160    ;o<clear-axis-info> call
+     o111 elseif [#<_current_tool> EQ #<_selected_tool>]
+          (MSG,SAME TOOL AS ACTUAL ASKED AND VALIDATED AUTOMATICALLY)
+     o111 elseif [#<_selected_tool> EQ #<_ini[TOUCH_DEVICE]PROBE_NUMBER>]
+          (DEBUG,PLEASE MOUNT 3D PROBE #<_ini[TOUCH_DEVICE]PROBE_NUMBER>)
+          (MSG,NEED TO UNPAUSE OR ABORT)
+          M0
+          M160    ;o<clear-axis-info> call
+     o111 elseif [#<_selected_tool> GT 0]
+          (DEBUG,PLEASE CHANGE TO TOOL #<_selected_tool>)
+          (MSG,NEED TO UNPAUSE OR ABORT)
+          M0
+          M160    ;o<clear-axis-info> call
+     o111 else
+          (DEBUG,UNKNOW ERROR OCCURED FOR TOOLCHANGE WITHOUT AUTOLENGTH)
+     o111 return [-9]
+     o111 endif
+  o110 elseif [#<_current_tool> EQ #<_selected_tool> AND #<_current_tool> GT 0]
+       (MSG,SAME TOOL AS ACTUAL ASKED AND VALIDATED AUTOMATICALLY)
+  o110 endif
+     M6         ; used here for make possible to cancel the toolchange here for M6T0 or M6TX without autolenght : this line call the python code from PSNG
+     G43
+o100 return [3] ; indicate no tool measurement possible with tool 0 or no tool measurement configured
+
+o100 else
+     o120 if [#<_ini[TOOL_SETTER]TS_HEIGHT> LE 0]   ; AT THE END NEED TO CHOOSE #<_hal[probe.ts_height]> OR #<_ini[TOOL_SETTER]TS_HEIGHT>
+          (MSG,TOOLSETTER HEIGHT NOT CONFIGURED)
+          (MSG,TOOLCHANGE CANCELED)
+     o120 return [-3]
+     o120 endif
+
+     o<psng_hook> call [1]                                   ; User macro like pre safe test or probe and setter management etc
+
+     o130 if [#<_value> LT 0]
+          (DEBUG, PSNG hook indicated a failure: #<_value>)
+     o130 return [-4]
+     o130 endif
+
+  o140 if [#<_ini[TOOL_CHANGE]POPUP_STYLE> EQ 0]
+     o141 if [#<_current_tool> EQ #<_selected_tool>]
+          (MSG,SAME TOOL AS ACTUAL SO MEASUREMENT START AUTOMATICALLY)
+          (MSG,NEED TO UNPAUSE OR ABORT)
+          M0
+          M160    ;o<clear-axis-info> call
+     o141 elseif [#<_selected_tool> EQ #<_ini[TOUCH_DEVICE]PROBE_NUMBER>]
+          (DEBUG,PLEASE MOUNT 3D PROBE #<_ini[TOUCH_DEVICE]PROBE_NUMBER>)
+          (MSG,NEED TO UNPAUSE OR ABORT)
+          M0
+          M160    ;o<clear-axis-info> call
+     o141 elseif [#<_current_tool> NE #<_selected_tool>]
+          (DEBUG,PLEASE CHANGE TO TOOL #<_selected_tool>)
+          (MSG,NEED TO UNPAUSE OR ABORT)
+          M0
+          M160    ;o<clear-axis-info> call
+     o141 endif
+  o140 elseif [#<_current_tool> EQ #<_selected_tool> AND #<_current_tool> GT 0]
+       (MSG,SAME TOOL AS ACTUAL ASKED AND VALIDATED AUTOMATICALLY)
+       (MSG,NEED TO UNPAUSE OR ABORT)
+       M0                                                                 ; prevent starting move without any popup confirmation !!!!
+  o140 endif
+o100 endif
+
+
+M6   ; used here for make possible to cancel the toolchange here for M6TX with autolenght : this line call the python code from PSNG
+
+
+o<psng_goto_toolsensor> call [1]    ; call 1 = call from manual change for reset tool if error with probing
+o<backup_coord_offset> call
+
+o<psng_start_z_probing> call [1]    ; call 1 = call from manual change for reset tool if error with probing
+o500 if [#5070 EQ 0]
+     M61Q0                          ; not sure this is usefull and not sure that work or not work but i speak about whole sequence if [#5070 EQ 0]
+     o<backup_restore> call [888]
+o500 return [-6] ; indicate probe contact failure to epilog
+o500 endif
+
+#<_psng_touch_calculated_z> = [#<_psng_touch_result_Z> - #<_psng_ts_height> + #<_g5x_offset_Z>]
+(print, probe Z=#<_psng_touch_calculated_z> )
+
+G10 L1 P0 Z#<_psng_touch_calculated_z>
+
+G43
+
+(back to Z max position only)
+o600 if [#<_ini[EMCIO]TOOL_CHANGE_QUILL_UP> EQ 1]
+     G53 G0 Z0                                     ; Respecting the traditional linuxcnc behavior
+O600 else
+     G53 G0 Z#<intial_Z>
+o600 endif
+
+    G53 G0 X#<intial_X> Y#<intial_Y>
+
+  o<backup_restore> call [888]   ; restore g20/21, g90/g91, feedrate cuter-comp and other using now global _backup_var
+
+; signal success be returning a value > 0:
+o<psng_manual_change> endsub [1]
+M2
+

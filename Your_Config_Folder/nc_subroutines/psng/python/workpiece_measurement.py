@@ -2,6 +2,7 @@
 #
 # Copyright (c) 2015 Serguei Glavatski ( verser  from cnc-club.ru )
 # Copyright (c) 2020 Probe Screen NG Developers
+# Copyright (c) 2022 Alkabal free fr with different approach
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -18,6 +19,12 @@
 
 from .base import ProbeScreenBase
 
+import os
+import sys
+
+import hal
+import hal_glib
+
 from subprocess import Popen, PIPE
 
 class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
@@ -28,53 +35,43 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     #
     # --------------------------
     def __init__(self, halcomp, builder, useropts):
-        super(ProbeScreenWorkpieceMeasurement, self).__init__(
-            halcomp, builder, useropts
-        )
+        super(ProbeScreenWorkpieceMeasurement, self).__init__(halcomp, builder, useropts)
 
-        self.xpym = self.builder.get_object("xpym")
-        self.ym = self.builder.get_object("ym")
-        self.xmym = self.builder.get_object("xmym")
-        self.xp = self.builder.get_object("xp")
-        self.center = self.builder.get_object("center")
-        self.xm = self.builder.get_object("xm")
-        self.xpyp = self.builder.get_object("xpyp")
-        self.yp = self.builder.get_object("yp")
-        self.xmyp = self.builder.get_object("xmyp")
-        self.hole = self.builder.get_object("hole")
+    # --------------------------
+    #
+    #  Command buttons Measurement common
+    #
+    # --------------------------
 
-    # --------------  Command buttons -----------------
-    #               Measurement outside
-    # -------------------------------------------------
     # X+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xp_released(self, gtkbutton, data=None):
+    def on_btn_xp_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X - xy_clearance
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X - clearance_xy
         s = """G91
         G1 X-%f
         G90""" % (
-            self.halcomp["xy_clearance"]
+            self.halcomp["clearance_xy"]
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xplus.ngc
-        if self.ocode("o<psng_xplus> call") == -1:
+        if self.ocode("o<psng_start_xplus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        xres = float(a[0]) + (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            xres = float(a[0]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -83,46 +80,49 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             lx=self.length_x(xp=xres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f" % (xres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("X")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # Y+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_yp_released(self, gtkbutton, data=None):
+    def on_btn_yp_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move Y - xy_clearance
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move Y - clearance_xy
         s = """G91
         G1 Y-%f
         G90""" % (
-            self.halcomp["xy_clearance"]
+            self.halcomp["clearance_xy"]
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_yplus.ngc
-        if self.ocode("o<psng_yplus> call") == -1:
+        if self.ocode("o<psng_start_yplus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        yres = float(a[1]) + (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            yres = float(a[1]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -131,46 +131,49 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(yp=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 Y%f" % (yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("Y")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # X-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xm_released(self, gtkbutton, data=None):
+    def on_btn_xm_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X + xy_clearance
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X + clearance_xy
         s = """G91
         G1 X%f
         G90""" % (
-            self.halcomp["xy_clearance"]
+            self.halcomp["clearance_xy"]
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xminus.ngc
-        if self.ocode("o<psng_xminus> call") == -1:
+        if self.ocode("o<psng_start_xminus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        xres = float(a[0]) - (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            xres = float(a[0]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -179,46 +182,49 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             lx=self.length_x(xm=xres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f" % (xres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("X")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_ym_released(self, gtkbutton, data=None):
+    def on_btn_ym_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move Y + xy_clearance
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move Y + clearance_xy
         s = """G91
         G1 Y%f
         G90""" % (
-            self.halcomp["xy_clearance"]
+            self.halcomp["clearance_xy"]
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_yminus.ngc
-        if self.ocode("o<psng_yminus> call") == -1:
+        if self.ocode("o<psng_start_yminus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        yres = float(a[1]) - (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            yres = float(a[1]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -227,56 +233,65 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(ym=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 Y%f" % (yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("Y")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
+
+    # --------------------------
+    #
+    #  Command buttons Measurement outside
+    #
+    # --------------------------
 
     # Corners
     # Move Probe manual under corner 2-3 mm
     # X+Y+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xpyp_released(self, gtkbutton, data=None):
+    def on_btn_xpyp_out_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X - xy_clearance Y + edge_length
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X - clearance_xy Y + edge_length
         s = """G91
         G1 X-%f Y%f
         G90""" % (
-            self.halcomp["xy_clearance"],
+            self.halcomp["clearance_xy"],
             self.halcomp["edge_length"],
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xplus.ngc load var fromm hal
-        if self.ocode("o<psng_xplus> call") == -1:
+        if self.ocode("o<psng_start_xplus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        xres = float(a[0]) + (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            xres = float(a[0]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
 
-        # move X + edge_length +xy_clearance,  Y - edge_length - xy_clearance
-        tmpxy = self.halcomp["edge_length"] + self.halcomp["xy_clearance"]
+        # move X + edge_length +clearance_xy,  Y - edge_length - clearance_xy
+        tmpxy = self.halcomp["edge_length"] + self.halcomp["clearance_xy"]
         s = """G91
         G1 X%f Y-%f
         G90""" % (
@@ -285,18 +300,16 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_yplus.ngc load var fromm hal
-        if self.ocode("o<psng_yplus> call") == -1:
+        if self.ocode("o<psng_start_yplus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        yres = float(a[1]) + (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            yres = float(a[1]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -307,54 +320,57 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(yp=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # X+Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xpym_released(self, gtkbutton, data=None):
+    def on_btn_xpym_out_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X - xy_clearance Y + edge_length
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X - clearance_xy Y + edge_length
         s = """G91
         G1 X-%f Y-%f
         G90""" % (
-            self.halcomp["xy_clearance"],
+            self.halcomp["clearance_xy"],
             self.halcomp["edge_length"],
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xplus.ngc
-        if self.ocode("o<psng_xplus> call") == -1:
+        if self.ocode("o<psng_start_xplus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        xres = float(a[0]) + (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            xres = float(a[0]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
 
-        # move X + edge_length +xy_clearance,  Y + edge_length + xy_clearance
-        tmpxy = self.halcomp["edge_length"] + self.halcomp["xy_clearance"]
+        # move X + edge_length +clearance_xy,  Y + edge_length + clearance_xy
+        tmpxy = self.halcomp["edge_length"] + self.halcomp["clearance_xy"]
         s = """G91
         G1 X%f Y%f
         G90""" % (
@@ -363,18 +379,20 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
+
+        # move Z to probing position
+        if self.clearance_z_down() == -1:
             return
+
         # Start psng_yminus.ngc
-        if self.ocode("o<psng_yminus> call") == -1:
+        if self.ocode("o<psng_start_yminus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        yres = float(a[1]) - (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            yres = float(a[1]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -385,54 +403,57 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(ym=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # X-Y+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xmyp_released(self, gtkbutton, data=None):
+    def on_btn_xmyp_out_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X + xy_clearance Y + edge_length
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X + clearance_xy Y + edge_length
         s = """G91
         G1 X%f Y%f
         G90""" % (
-            self.halcomp["xy_clearance"],
+            self.halcomp["clearance_xy"],
             self.halcomp["edge_length"],
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xminus.ngc load var fromm hal
-        if self.ocode("o<psng_xminus> call") == -1:
+        if self.ocode("o<psng_start_xminus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        xres = float(a[0]) - (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            xres = float(a[0]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
 
-        # move X - edge_length - xy_clearance,  Y - edge_length - xy_clearance
-        tmpxy = self.halcomp["edge_length"] + self.halcomp["xy_clearance"]
+        # move X - edge_length - clearance_xy,  Y - edge_length - clearance_xy
+        tmpxy = self.halcomp["edge_length"] + self.halcomp["clearance_xy"]
         s = """G91
         G1 X-%f Y-%f
         G90""" % (
@@ -441,18 +462,20 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
+
+        # move Z to probing position
+        if self.clearance_z_down() == -1:
             return
+
         # Start psng_yplus.ngc load var fromm hal
-        if self.ocode("o<psng_yplus> call") == -1:
+        if self.ocode("o<psng_start_yplus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        yres = float(a[1]) + (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            yres = float(a[1]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -463,54 +486,57 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(yp=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # X-Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xmym_released(self, gtkbutton, data=None):
+    def on_btn_xmym_out_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X + xy_clearance Y - edge_length
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X + clearance_xy Y - edge_length
         s = """G91
         G1 X%f Y-%f
         G90""" % (
-            self.halcomp["xy_clearance"],
+            self.halcomp["clearance_xy"],
             self.halcomp["edge_length"],
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xminus.ngc
-        if self.ocode("o<psng_xminus> call") == -1:
+        if self.ocode("o<psng_start_xminus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        xres = float(a[0]) - (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            xres = float(a[0]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
 
-        # move X - edge_length - xy_clearance,  Y + edge_length + xy_clearance
-        tmpxy = self.halcomp["edge_length"] + self.halcomp["xy_clearance"]
+        # move X - edge_length - clearance_xy,  Y + edge_length + clearance_xy
+        tmpxy = self.halcomp["edge_length"] + self.halcomp["clearance_xy"]
         s = """G91
         G1 X-%f Y%f
         G90""" % (
@@ -519,18 +545,20 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
+
+        # move Z to probing position
+        if self.clearance_z_down() == -1:
             return
+
         # Start psng_yminus.ngc
-        if self.ocode("o<psng_yminus> call") == -1:
+        if self.ocode("o<psng_start_yminus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        yres = float(a[1]) - (0.5 * tooldiameter)
+        if self.halcomp["chk_touch_plate_selected"] == True:
+            yres = float(a[1]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -541,51 +569,71 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(ym=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # Center X+ X- Y+ Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xy_center_released(self, gtkbutton, data=None):
+    @ProbeScreenBase.ensure_is_not_touchplate
+    def on_btn_xy_center_out_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X - edge_length- xy_clearance
-        tmpx = self.halcomp["edge_length"] + self.halcomp["xy_clearance"]
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # before using some self value from linuxcnc we need to poll
+        self.stat.poll()
+        temp_x_position = self.stat.position[0]
+
+        # Start psng_start_z_probing_for_diam.ngc
+        if self.ocode("o<psng_start_z_probing_for_diam> call") == -1:
+            return
+
+        self.stat.poll()   # before using some self value from linuxcnc we need to poll
+        approximative_radius = temp_x_position - self.stat.position[0]
+
+        # move X - edge_length - clearance_xy + up Z1 for allow the probe to noot touch the pieces with travel move
         s = """G91
-        G1 X-%f
+        G1 X-%f Z%f
         G90""" % (
-            tmpx
+            tmpx,
+            self.halcomp["latch"]
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
+
+        # move Z to probing position
+        if self.clearance_z_down() == -1:
             return
+
         # Start psng_xplus.ngc
-        if self.ocode("o<psng_xplus> call") == -1:
+        if self.ocode("o<psng_start_xplus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xpres = float(a[0]) + 0.5 * self.halcomp["probe_diam"]
+        xpres = float(a[0]) + (0.5 * tooldiameter)
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
 
-        # move X + 2 edge_length + 2 xy_clearance
-        tmpx = 2 * (self.halcomp["edge_length"] + self.halcomp["xy_clearance"])
+        # move X + 2 edge_length + 2 clearance_xy
+        tmpx = 2 * (self.halcomp["clearance_xy"] + approximative_radius)
         s = """G91
         G1 X%f
         G90""" % (
@@ -593,27 +641,31 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
+
+        # move Z to probing position
+        if self.clearance_z_down() == -1:
             return
+
         # Start psng_xminus.ngc
-        if self.ocode("o<psng_xminus> call") == -1:
+        if self.ocode("o<psng_start_xminus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xmres = float(a[0]) - 0.5 * self.halcomp["probe_diam"]
+        xmres = float(a[0]) - (0.5 * tooldiameter)
         xcres = 0.5 * (xpres + xmres)
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move X to new center
         s = "G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
 
-        # move Y - edge_length- xy_clearance
-        tmpy = self.halcomp["edge_length"] + self.halcomp["xy_clearance"]
+        # move Y - edge_length- clearance_xy
+        tmpy = self.halcomp["clearance_xy"] + approximative_radius
         s = """G91
         G1 Y-%f
         G90""" % (
@@ -621,22 +673,25 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
+
+        # move Z to probing position
+        if self.clearance_z_down() == -1:
             return
+
         # Start psng_yplus.ngc
-        if self.ocode("o<psng_yplus> call") == -1:
+        if self.ocode("o<psng_start_yplus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        ypres = float(a[1]) + 0.5 * self.halcomp["probe_diam"]
+        ypres = float(a[1]) + (0.5 * tooldiameter)
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
 
-        # move Y + 2 edge_length + 2 xy_clearance
-        tmpy = 2 * (self.halcomp["edge_length"] + self.halcomp["xy_clearance"])
+        # move Y + 2 edge_length + 2 clearance_xy
+        tmpy = 2 * (self.halcomp["clearance_xy"] + approximative_radius)
         s = """G91
         G1 Y%f
         G90""" % (
@@ -644,16 +699,18 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
+
+        # move Z to probing position
+        if self.clearance_z_down() == -1:
             return
 
         # Start psng_yminus.ngc
-        if self.ocode("o<psng_yminus> call") == -1:
+        if self.ocode("o<psng_start_yminus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        ymres = float(a[1]) - 0.5 * self.halcomp["probe_diam"]
+        ymres = float(a[1]) - (0.5 * tooldiameter)
 
         # find, show and move to finded point
         ycres = 0.5 * (ypres + ymres)
@@ -672,56 +729,64 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(ym=ymres, yp=ypres),
             d=diam,
         )
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
-    # --------------  Command buttons -----------------
-    #               Measurement inside
-    # -------------------------------------------------
+
+
+
+    # --------------------------
+    #
+    #  Command buttons Measurement inside
+    #
+    # --------------------------
 
     # Corners
     # Move Probe manual under corner 2-3 mm
     # X+Y+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xpyp1_released(self, gtkbutton, data=None):
+    @ProbeScreenBase.ensure_is_not_touchplate
+    def on_btn_xpyp_in_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X - xy_clearance Y - edge_length
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X - clearance_xy Y - edge_length
         s = """G91
         G1 X-%f Y-%f
         G90""" % (
-            self.halcomp["xy_clearance"],
+            self.halcomp["clearance_xy"],
             self.halcomp["edge_length"],
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xplus.ngc load var fromm hal
-        if self.ocode("o<psng_xplus> call") == -1:
+        if self.ocode("o<psng_start_xplus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        xres = float(a[0]) + (0.5 * tooldiameter)
 
-        # move X - edge_length Y - xy_clearance
-        tmpxy = self.halcomp["edge_length"] - self.halcomp["xy_clearance"]
+        # move X - edge_length Y - clearance_xy
+        tmpxy = self.halcomp["edge_length"] - self.halcomp["clearance_xy"]
         s = """G91
         G1 X-%f Y%f
         G90""" % (
@@ -730,16 +795,14 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
+
         # Start psng_yplus.ngc load var fromm hal
-        if self.ocode("o<psng_yplus> call") == -1:
+        if self.ocode("o<psng_start_yplus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        yres = float(a[1]) + (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -750,50 +813,52 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(yp=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # X+Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xpym1_released(self, gtkbutton, data=None):
+    @ProbeScreenBase.ensure_is_not_touchplate
+    def on_btn_xpym_in_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X - xy_clearance Y + edge_length
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X - clearance_xy Y + edge_length
         s = """G91
         G1 X-%f Y%f
         G90""" % (
-            self.halcomp["xy_clearance"],
+            self.halcomp["clearance_xy"],
             self.halcomp["edge_length"],
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xplus.ngc load var fromm hal
-        if self.ocode("o<psng_xplus> call") == -1:
+        if self.ocode("o<psng_start_xplus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        xres = float(a[0]) + (0.5 * tooldiameter)
 
-        # move X - edge_length Y + xy_clearance
-        tmpxy = self.halcomp["edge_length"] - self.halcomp["xy_clearance"]
+        # move X - edge_length Y + clearance_xy
+        tmpxy = self.halcomp["edge_length"] - self.halcomp["clearance_xy"]
         s = """G91
         G1 X-%f Y-%f
         G90""" % (
@@ -802,16 +867,14 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
+
         # Start psng_yminus.ngc load var fromm hal
-        if self.ocode("o<psng_yminus> call") == -1:
+        if self.ocode("o<psng_start_yminus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        yres = float(a[1]) - (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -822,50 +885,52 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(ym=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # X-Y+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xmyp1_released(self, gtkbutton, data=None):
+    @ProbeScreenBase.ensure_is_not_touchplate
+    def on_btn_xmyp_in_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X + xy_clearance Y - edge_length
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X + clearance_xy Y - edge_length
         s = """G91
         G1 X%f Y-%f
         G90""" % (
-            self.halcomp["xy_clearance"],
+            self.halcomp["clearance_xy"],
             self.halcomp["edge_length"],
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xminus.ngc load var fromm hal
-        if self.ocode("o<psng_xminus> call") == -1:
+        if self.ocode("o<psng_start_xminus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        xres = float(a[0]) - (0.5 * tooldiameter)
 
-        # move X + edge_length Y - xy_clearance
-        tmpxy = self.halcomp["edge_length"] - self.halcomp["xy_clearance"]
+        # move X + edge_length Y - clearance_xy
+        tmpxy = self.halcomp["edge_length"] - self.halcomp["clearance_xy"]
         s = """G91
         G1 X%f Y%f
         G90""" % (
@@ -874,16 +939,14 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
+
         # Start psng_yplus.ngc load var fromm hal
-        if self.ocode("o<psng_yplus> call") == -1:
+        if self.ocode("o<psng_start_yplus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] + 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] + self.halcomp["tp_lenght"] + 0.5 * tooldiameter)
+        yres = float(a[1]) + (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -894,50 +957,52 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(yp=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # X-Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xmym1_released(self, gtkbutton, data=None):
+    @ProbeScreenBase.ensure_is_not_touchplate
+    def on_btn_xmym_in_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        # move X + xy_clearance Y + edge_length
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
+            return
+
+        # move X + clearance_xy Y + edge_length
         s = """G91
         G1 X%f Y%f
         G90""" % (
-            self.halcomp["xy_clearance"],
+            self.halcomp["clearance_xy"],
             self.halcomp["edge_length"],
         )
         if self.gcode(s) == -1:
             return
-        if self.z_clearance_down() == -1:
-            return
+
         # Start psng_xminus.ngc load var fromm hal
-        if self.ocode("o<psng_xminus> call") == -1:
+        if self.ocode("o<psng_start_xminus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xres = float(a[0] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            xres = float(a[0] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        xres = float(a[0]) - (0.5 * tooldiameter)
 
-        # move X + edge_length Y - xy_clearance
-        tmpxy = self.halcomp["edge_length"] - self.halcomp["xy_clearance"]
+        # move X + edge_length Y - clearance_xy
+        tmpxy = self.halcomp["edge_length"] - self.halcomp["clearance_xy"]
         s = """G91
         G1 X%f Y-%f
         G90""" % (
@@ -946,16 +1011,14 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
         if self.gcode(s) == -1:
             return
+
         # Start psng_yminus.ngc load var fromm hal
-        if self.ocode("o<psng_yminus> call") == -1:
+        if self.ocode("o<psng_start_yminus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        yres = float(a[1] - 0.5 * self.halcomp["probe_diam"])
-        if self.halcomp["use_touch_plate"] == True:
-            tooldiameter = Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read()
-            yres = float(a[1] - self.halcomp["tp_lenght"] - 0.5 * tooldiameter)
+        yres = float(a[1]) - (0.5 * tooldiameter)
 
         self.add_history(
             gtkbutton.get_tooltip_text(),
@@ -966,61 +1029,48 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             ly=self.length_y(ym=yres),
         )
 
-        # move Z to start point up
-        if self.z_clearance_up() == -1:
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
         # move to finded point
         s = "G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
 
     # Hole Xin- Xin+ Yin- Yin+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_xy_hole_released(self, gtkbutton, data=None):
+    def on_btn_xy_hole_in_released(self, gtkbutton, data=None):
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
-        if self.ocode("o<psng_config_check> call") == -1:
-            return                # CHECK HAL VALUE FROM GUI FOR CONSITANCY
-        if self.z_clearance_down() == -1:
+        if self.ocode("o<psng_load_var_touch_probe> call") == -1:
             return
-        # move X - edge_length Y + xy_clearance
-        tmpx = self.halcomp["edge_length"] - self.halcomp["xy_clearance"]
-        s = """G91
-        G1 X-%f
-        G90""" % (
-            tmpx
-        )
-        if self.gcode(s) == -1:
-            return
+
         # Start psng_xminus.ngc
-        if self.ocode("o<psng_xminus> call") == -1:
+        if self.ocode("o<psng_start_xminus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xmres = float(a[0]) - 0.5 * self.halcomp["probe_diam"]
+        xmres = float(a[0]) - (0.5 * tooldiameter)
 
-        # move X +2 edge_length - 2 xy_clearance
-        tmpx = 2 * (self.halcomp["edge_length"] - self.halcomp["xy_clearance"])
-        s = """G91
-        G1 X%f
-        G90""" % (
-            tmpx
-        )
-        if self.gcode(s) == -1:
-            return
         # Start psng_xplus.ngc
-        if self.ocode("o<psng_xplus> call") == -1:
+        if self.ocode("o<psng_start_xplus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        xpres = float(a[0]) + 0.5 * self.halcomp["probe_diam"]
+        xpres = float(a[0]) + (0.5 * tooldiameter)
+
+        # Calculate X center
         xcres = 0.5 * (xmres + xpres)
 
         # move X to new center
@@ -1028,39 +1078,21 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         if self.gcode(s) == -1:
             return
 
-        # move Y - edge_length + xy_clearance
-        tmpy = self.halcomp["edge_length"] - self.halcomp["xy_clearance"]
-        s = """G91
-        G1 Y-%f
-        G90""" % (
-            tmpy
-        )
-        if self.gcode(s) == -1:
-            return
         # Start psng_yminus.ngc
-        if self.ocode("o<psng_yminus> call") == -1:
+        if self.ocode("o<psng_start_yminus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        ymres = float(a[1]) - 0.5 * self.halcomp["probe_diam"]
+        ymres = float(a[1]) - (0.5 * tooldiameter)
 
-        # move Y +2 edge_length - 2 xy_clearance
-        tmpy = 2 * (self.halcomp["edge_length"] - self.halcomp["xy_clearance"])
-        s = """G91
-        G1 Y%f
-        G90""" % (
-            tmpy
-        )
-        if self.gcode(s) == -1:
-            return
         # Start psng_yplus.ngc
-        if self.ocode("o<psng_yplus> call") == -1:
+        if self.ocode("o<psng_start_yplus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        ypres = float(a[1]) + 0.5 * self.halcomp["probe_diam"]
+        ypres = float(a[1]) + (0.5 * tooldiameter)
 
         # find, show and move to finded point
         ycres = 0.5 * (ymres + ypres)
@@ -1084,9 +1116,12 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         s = "G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
-        # move Z to start point
-        if self.z_clearance_up() == -1:
+
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
             return
+
+        # Optional auto zerro selectable from gui
         self.set_zerro("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return

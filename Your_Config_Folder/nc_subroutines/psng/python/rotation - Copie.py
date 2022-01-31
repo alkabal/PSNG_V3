@@ -74,7 +74,24 @@ class ProbeScreenRotation(ProbeScreenBase):
 
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_set_angle_released(self, gtkbutton, data=None):
-        self.rotate_coord_system(self.spbtn_offs_angle.get_value())
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+
+        s = "G10 L2 P0"
+        if self.halcomp["set_zero"]:
+            s += " X%.4f" % (self.halcomp["offs_x"])
+            s += " Y%.4f" % (self.halcomp["offs_y"])
+        else:
+            self.stat.poll()   # before using some self value from linuxcnc we need to poll
+            x = self.stat.position[0]
+            y = self.stat.position[1]
+            s += " X%.4f" % (x)
+            s += " Y%.4f" % (y)
+        s += " R%.4f" % (self.spbtn_offs_angle.get_value())
+        if self.gcode(s) == -1:
+            return
+        self.add_history_text("btn_set_angle = %.4f" % (self.spbtn_offs_angle.get_value()))
+        #self.vcp_reload()
+        #time.sleep(1)
 
 
     # Y+Y+
@@ -146,7 +163,17 @@ class ProbeScreenRotation(ProbeScreenBase):
             a=alfa,
         )
 
-        self.helper_coord_system(alfa, xstart, ycres)
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
+            return
+
+        # move XY to adj start point
+        s = "G1 X%f Y%f" % (xstart, ycres)
+        if self.gcode(s) == -1:
+            return
+        self.rotate_coord_system(alfa, xstart, ycres)
+        if self.ocode("o<backup_restore> call [999]") == -1:
+            return
 
     # Y-Y-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -217,7 +244,17 @@ class ProbeScreenRotation(ProbeScreenBase):
             a=alfa,
         )
 
-        self.helper_coord_system(alfa, xstart, ycres)
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
+            return
+
+        # move XY to adj start point
+        s = "G1 X%f Y%f" % (xstart, ycres)
+        if self.gcode(s) == -1:
+            return
+        self.rotate_coord_system(alfa, xstart, ycres)
+        if self.ocode("o<backup_restore> call [999]") == -1:
+            return
 
     # X+X+
     @ProbeScreenBase.ensure_errors_dismissed
@@ -288,7 +325,17 @@ class ProbeScreenRotation(ProbeScreenBase):
             a=alfa,
         )
 
-        self.helper_coord_system(alfa, xstart, ycres)
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
+            return
+
+        # move XY to adj start point
+        s = "G1 X%f Y%f" % (xcres, ystart)
+        if self.gcode(s) == -1:
+            return
+        self.rotate_coord_system(alfa, xstart, ycres)
+        if self.ocode("o<backup_restore> call [999]") == -1:
+            return
 
     # X-X-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -359,14 +406,24 @@ class ProbeScreenRotation(ProbeScreenBase):
             a=alfa,
         )
 
-        self.helper_coord_system(alfa, xstart, ycres)
+        # move Z temporary away from probing position
+        if self.clearance_z_up() == -1:
+            return
+
+        # move XY to adj start point
+        s = "G1 X%f Y%f" % (xcres, ystart)
+        if self.gcode(s) == -1:
+            return
+        self.rotate_coord_system(alfa, xstart, ycres)
+        if self.ocode("o<backup_restore> call [999]") == -1:
+            return
 
     # --------------------------
     #
     # Helper Methods
     #
     # --------------------------
-    def helper_coord_system(self, a=0.0, xstart=0.0, ycres=0.0):
+    def rotate_coord_system(self, a=0.0, xstart=0.0, ycres=0.0):
 
         # move Z temporary away from probing position
         if self.clearance_z_up() == -1:
@@ -384,21 +441,9 @@ class ProbeScreenRotation(ProbeScreenBase):
             a=a,
         )
 
-        self.add_history_text("Probed_angle_offset = %.4f" % (a))
         if self.chk_auto_rott.get_active():
-            self.rotate_coord_system(a)
-
-        if self.ocode("o<backup_restore> call [999]") == -1:
-            return
-
-    # --------------------------
-    #
-    # Apply the rotation offset
-    #
-    # --------------------------
-    def rotate_coord_system(self, a=0.0):
             s = "G10 L2 P0"
-            if self.halcomp["chk_set_zero"]:
+            if self.halcomp["set_zero"]:
                 s += " X%s" % (self.halcomp["offs_x"])
                 s += " Y%s" % (self.halcomp["offs_y"])
             else:
@@ -410,6 +455,5 @@ class ProbeScreenRotation(ProbeScreenBase):
             s += " R%s" % (a)
             if self.gcode(s) == -1:
                 return
-            self.add_history_text("offset_angle_applyed = %.4f" % (a))
             #self.vcp_reload()
             #time.sleep(1)

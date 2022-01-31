@@ -3,7 +3,7 @@ o<psng_goto_toolsensor> sub
 #<_from_manual_change> = #1        ; call 1 = call from manual change for reset tool if error with probing
 
 M160    ;o<clear-axis-info> call
-o10 if [#<_hal[motion.probe-input]> EQ 1 AND #<_from_manual_change> EQ 1] ; call 1 = call from manual change for reset tool if error with probing
+o10 if [#<_hal[motion.probe-input]> EQ 1 AND #<_from_manual_change> EQ 1]
      M61Q0
      (ABORT,TOOLSETTER Z ALREADY TRIGGERED BEFORE GOTO TOOLSENSOR)
 o10 elseif [#<_hal[motion.probe-input]> EQ 1 AND #<_from_manual_change> EQ 0]
@@ -18,8 +18,8 @@ o20 else
     G53 G0 Z#<_ini[TOOL_CHANGE]Z_TRAVEL_POSITION>
 o20 endif
 
-G53 G0 X[#<_ini[TOOL_SETTER]X>] Y[#<_ini[TOOL_SETTER]Y>]
-G53 G0 Z[#<_ini[TOOL_SETTER]Z>]
+G53 G0 X[#<_psng_ts_pos_x>] Y[#<_psng_ts_pos_y>]
+G53 G0 Z[#<_psng_ts_pos_z>]
 
 o<psng_goto_toolsensor> endsub
 M2

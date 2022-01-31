@@ -1,0 +1,99 @@
+o<psng_load_var_touch_probe> sub
+
+; this file is call by all related move with 3D-PROBE or touchplate
+
+#<_psng_probe_number>         = #<_hal[probe.probe_number]>
+#<_psng_tool_diam>            = #<_hal[halui.tool.diameter]>
+
+#<_psng_vel_for_travel>       = #<_hal[probe.vel_for_travel]>
+#<_psng_vel_for_search>       = #<_hal[probe.vel_for_search]>
+#<_psng_vel_for_probe>        = #<_hal[probe.vel_for_probe]>
+#<_psng_maxprobe_z>           = #<_hal[probe.probe_max]>
+#<_psng_maxprobe_xy>          = #<_hal[probe.probe_max]>
+#<_psng_latch>                = #<_hal[probe.latch]>
+#<_psng_latch_maxprobe>       = #<_hal[probe.latch_maxprobe]>
+#<_psng_clearance_z>          = #<_hal[probe.clearance_z]>
+#<_psng_clearance_xy>         = #<_hal[probe.clearance_xy]>
+
+#<_psng_edge_length>          = #<_hal[probe.edge_length]>
+
+#<_psng_tp_z_full_thickness>  = #<_ini[TOUCH_DEVICE]PLATE_Z_FULL_THICKNESS>
+#<_psng_tp_z_thickness>       = #<_ini[TOUCH_DEVICE]PLATE_Z_THICKNESS>
+#<_psng_tp_xy_thickness>      = #<_ini[TOUCH_DEVICE]PLATE_XY_THICKNESS>
+
+M160    ;o<clear-axis-info> call
+
+
+o10 if [#<_psng_tool_diam> LE 0]
+    (ABORT,PROBE DIAMETER MISSING FROM TOOLTABLE)
+o10 endif
+
+o20 if [#<_psng_vel_for_travel> LE 0]
+    (ABORT,PROBE TRAVEL VELOCITY NOT CONFIGURED)
+o20 endif
+
+o30 if [#<_psng_vel_for_search> LE 0]
+    (ABORT,PROBE SEARCH VELOCITY NOT CONFIGURED)
+o30 endif
+o31 if [#<_psng_vel_for_probe> GE #<_psng_vel_for_travel>]
+    (ABORT,PROBE SEARCH VELOCITY iS MORE OR EQUAL TO PROBE TRAVEL VELOCITY)
+o31 endif
+
+o40 if [#<_psng_vel_for_probe> LE 0]
+    (ABORT,PROBE VELOCITY NOT CONFIGURED)
+o40 endif
+o41 if [#<_psng_vel_for_probe> GE #<_psng_vel_for_search>]
+    (ABORT,PROBE VELOCITY iS MORE OR EQUAL TO PROBE SEARCH VELOCITY)
+o41 endif
+
+o50 if [#<_psng_maxprobe_z> LE 0]
+    (ABORT,PROBE MAX NOT CONFIGURED)
+o50 endif
+
+o60 if [#<_psng_maxprobe_xy> LE 0]
+    (ABORT,PROBE MAX NOT CONFIGURED)
+o60 endif
+
+o70 if [#<_psng_latch>  LE 0]
+    (ABORT,PROBE LATCH NOT CONFIGURED)
+o70 endif
+
+o80 if [#<_psng_latch_maxprobe> LT 0]
+    (ABORT,PROBE LATCH NOT CONFIGURED)
+o80 endif
+
+o90 if [#<_psng_clearance_z> LE 0]
+    (ABORT,PROBE Z CLEARANCE NOT CONFIGURED)
+o90 endif
+o91 if [#<_psng_clearance_z> LE #<_psng_latch>]
+    (ABORT,PROBE CLEARANCE Z IS LESS THAN PROBE LATCH)
+o91 endif
+
+o100 if [#<_psng_clearance_xy> LE 0]
+    (ABORT,PROBE XY CLEARANCE NOT CONFIGURED)
+o100 endif
+o101 if [#<_psng_clearance_xy> LE #<_psng_latch>]
+    (ABORT,PROBE CLEARANCE XY IS LESS THAN PROBE LATCH)
+o101 endif
+
+
+
+o200 if [#<_psng_edge_length> LE 0]
+    (ABORT,PROBE EDGE LENGTH NOT CONFIGURED)
+o200 endif
+
+
+; If you use my exemple hook this test never fail because they are already checked in hook, it's only if you do not use my custom hook
+o300 if [#<_hal[probe.chk_touch_plate_selected]> EQ 0]
+     o110 if [#<_current_tool> NE #<_psng_probe_number>]
+          (ABORT,!!! PROBING IS NOT ALLOWED WITHOUT 3D PROBE AS TOOL #<_psng_probe_number> !!!)
+     o110 endif
+o300 endif
+
+
+o400 if [#<_hal[motion.probe-input]> EQ 1]
+    (ABORT,!!! PROBE ALREADY TRIGGERED OR REMOVED AT CONFIG CHECK !!!)
+o400 endif
+
+o<psng_load_var_touch_probe> endsub
+M2

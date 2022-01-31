@@ -1,29 +1,29 @@
 o<psng_probe_setter> sub
 
+;  o<psng_load_var_touch_probe> call
 
-  o<psng_load_var_hal_touch_probe> call
+  M160    ;o<clear-axis-info> call
+  o10 if [#<_hal[probe.probedtable]> EQ 0]
+      (ABORT,BEFORE MEASURE TOOL SETTER HEIGHT YOU NEED TO PROBE THE TABLE FIRSTLY)
+  o10 endif
 
-M160    ;o<clear-axis-info> call
-o10 if [#<_hal[probe.probedtable]> EQ 0]
-    (ABORT,BEFORE MEASURE TOOL SETTER HEIGHT YOU NEED TO PROBE THE TABLE WITH REAL 3D-PROBE IN SPINDLE)
-o10 endif
+  o<psng_goto_toolsensor> call
 
-o<psng_goto_toolsensor> call
+  (cancel all Z offsets)
+  G92.1
+  G49
 
-(cancel all Z offsets)
-G92.1
-G49
+  o<psng_start_z_probing> call
+  o500 if [#5070 EQ 0]
+       (ABORT,PROBE TOOL SETTER FOR HEIGTH DOES NOT FOUND THE CONTACT POINT)
+  o500 endif
 
-o<psng_start_z_probing> call
-o500 if [#5070 EQ 0]
-     (ABORT,PROBE TOOL SETTER FOR HEIGTH DOES NOT FOUND THE CONTACT POINT)
-o500 endif
+  (print, probe Z=#<_psng_touch_result_Z>)
 
-(print, probe Z=#<_psng_touch_result_Z>)
+  ; only internal ts_height value are changed inside python code
 
-; only internal ts_height value are changed inside python code
-G43
-
+  G43
   o<psng_goto_changepos> call
+
 o<psng_probe_setter> endsub
 M2

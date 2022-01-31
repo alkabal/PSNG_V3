@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #
 # Copyright (c) 2015 Serguei Glavatski ( verser  from cnc-club.ru )
+# Copyright (c) 2020 Probe Screen NG Developers
+# Copyright (c) 2022 Alkabal free fr with different approach
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -17,13 +19,13 @@
 
 import linuxcnc  # to get our own error system
 
-from .jog import ProbeScreenJog
-from .length_measurement import ProbeScreenLengthMeasurement
-from .rotation import ProbeScreenRotation
 from .settings import ProbeScreenSettings
+from .jog import ProbeScreenJog
+from .zero import ProbeScreenZero
+from .rotation import ProbeScreenRotation
 from .tool_measurement import ProbeScreenToolMeasurement
 from .workpiece_measurement import ProbeScreenWorkpieceMeasurement
-from .zero import ProbeScreenZero
+from .length_measurement import ProbeScreenLengthMeasurement
 
 
 def get_handlers(halcomp, builder, useropts):

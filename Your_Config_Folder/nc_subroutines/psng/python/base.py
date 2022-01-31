@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2015 Serguei Glavatski ( verser  from cnc-club.ru )
 # Copyright (c) 2020 Probe Screen NG Developers
-# Copyright (c) 2021 Alkabal free fr with different approach
+# Copyright (c) 2022 Alkabal free fr with different approach
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -50,25 +50,11 @@ class ProbeScreenBase(object):
         self.inifile = linuxcnc.ini(os.environ["INI_FILE_NAME"])
         if not self.inifile:
             message   = _("Error, no INI File given")
-            self.error_dialog(message)
+            self.warning_dialog(message)
             sys.exit(1)
 
         # Load Probe Screen Preferences
         self.prefs = ProbeScreenConfigParser(self.get_preference_file_path())
-
-        if self.inifile.find("TOUCH_PROBE", "POPUP_STYLE") == 0 or self.inifile.find("TOUCH_PROBE", "POPUP_STYLE") is None:
-            usepopup = 0
-        else:
-            usepopup = 1
-        self.usepopup = usepopup
-
-        # For future use if i try to add touchplate mode, this allow to inactivate panel
-        #self.frm_measure_outside = self.builder.get_object("frm_measure_outside")
-        #self.frm_measure_outside.set_sensitive(True)
-        #self.frm_measure_inside = self.builder.get_object("frm_measure_inside")
-        #self.frm_measure_inside.set_sensitive(True)
-        #self.frm_measure_angle = self.builder.get_object("frm_measure_angle")
-        #self.frm_measure_angle.set_sensitive(True)
 
         # Which display is in use? AXIS / gmoccapy / unknown
         self.display = self.get_display() or "unknown"
@@ -76,7 +62,7 @@ class ProbeScreenBase(object):
         # LinuxCNC Command / Stat / Error Interfaces
         self.command = linuxcnc.command()
         self.stat = linuxcnc.stat()
-        self.stat.poll()
+        self.stat.poll()   # before using some self value from linuxcnc we need to poll
 
         # History Area
         textarea = builder.get_object("textview1")
@@ -101,9 +87,8 @@ class ProbeScreenBase(object):
         self._lb_probe_yc = self.builder.get_object("lb_probe_yc")
         self._lb_probe_a  = self.builder.get_object("lb_probe_a")
 
-        self.frm_parents = self.builder.get_object("frm_parents")         
-                
-                
+        self.frm_parents = self.builder.get_object("frm_parents")
+
     # --------------------------
     #
     #  MDI Command Methods
@@ -117,7 +102,7 @@ class ProbeScreenBase(object):
         for l in s.split("\n"):
             # Search for G1 followed by a space, otherwise we'll catch G10 too.
             if "G1 " in l:
-                l += " F#<_ini[TOUCH_PROBE]TRAVEL_VEL>"
+                l += " F#<_ini[TOUCH_DEVICE]VEL_FOR_TRAVEL>"
             self.command.mdi(l)
             self.command.wait_complete()
             if self.error_poll() == -1:
@@ -130,7 +115,7 @@ class ProbeScreenBase(object):
         self.command.wait_complete()
 
         self.command.mdi(s)
-        self.stat.poll()
+        self.stat.poll()   # before using some self value from linuxcnc we need to poll
         while self.stat.interp_state != linuxcnc.INTERP_IDLE:
             if self.error_poll() == -1:
             #    print("interp_err_status = %s" % (self.stat.interp_state))
@@ -139,7 +124,7 @@ class ProbeScreenBase(object):
             #    print("interp_err_nml = %s" % (linuxcnc.NML_ERROR))
                 return -1
             self.command.wait_complete()
-            self.stat.poll()
+            self.stat.poll()   # before using some self value from linuxcnc we need to poll
         self.command.wait_complete()
         if self.error_poll() == -1:
         #    print("interp_err2_status = %s" % (self.stat.interp_state))
@@ -177,16 +162,20 @@ class ProbeScreenBase(object):
 
             # Something need to be done for add to gmoccapy a hal pin gmoccapy.abort
         else:
-            self.add_history_text("WARNING : Unable to poll %s GUI for errors" % (self.display))
+            #self.add_history_text("WARNING : Unable to poll %s GUI for errors" % (self.display))
+            message   = _("Unable to poll %s GUI for errors" % (self.display))
+            self.warning_dialog(message)
             return -1
 
         if "TRUE" in error_pin:
-            self.add_history_text("ERROR: See notification popup")
+            self.add_history_text("ABORT: See notification popup")
             self.command.mode(linuxcnc.MODE_MANUAL)
             self.command.wait_complete()
             return -1
         elif "TRUE" in abort_axisui or "TRUE" in abort_halui or "TRUE" in stop_halui:
-            self.add_history_text("WARNING: OPERATION STOPPED BY USER")
+            #self.add_history_text("WARNING: OPERATION STOPPED BY USER")
+            message   = _("OPERATION STOPPED BY USER")
+            self.warning_dialog(message)
             self.command.mode(linuxcnc.MODE_MANUAL)
             self.command.wait_complete()
             return -1
@@ -210,7 +199,7 @@ class ProbeScreenBase(object):
 
     def get_preference_file_path(self):
         # we get the preference file, if there is none given in the INI
-        # we use toolchange2.pref in the config dir
+        # we use probe_screen.pref in the config dir
         temp = self.inifile.find("DISPLAY", "PREFERENCE_FILE_PATH")
         if not temp:
             machinename = self.inifile.find("EMC", "MACHINE")
@@ -318,30 +307,31 @@ class ProbeScreenBase(object):
         dialog.destroy()
         return responce == gtk.RESPONSE_OK
 
-    def warning_dialog(self, message, secondary=None, title=_("Probe Screen NG")):
+    def warning_dialog(self, message, secondary=None, title=_("Warning Probe Screen NG")):
         """ displays a warning dialog """
-        if self.usepopup == 1:
+        if self.halcomp["chk_popup_style"] == True or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
             return self._dialog(gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message, secondary, title)
         else:
-            if self.ocode("o<clear-axis-info> call") == -1:
-                return
+#            if self.gcode("M160") == -1:         #o<clear-axis-info> call
+#                return
             if secondary:
                 self.add_history_text("WARNING: %s" % (message))
                 self.add_history_text("WARNING: %s" % (secondary))
-                self.gcode("(DEBUG,**** %s ****)" % (message))
-                self.gcode("(DEBUG,**** %s ****)" % (secondary))
+                #self.gcode("(DEBUG,**** %s ****)" % (message))
+                #self.gcode("(DEBUG,**** %s ****)" % (secondary))
             else:
                 self.add_history_text("WARNING: %s" % (message))
-                self.gcode("(DEBUG,**** %s ****)" % (message))
+                #self.gcode("(DEBUG,**** %s ****)" % (message))
 
 
-    def error_dialog(self, message, secondary=None, title=_("Probe Screen NG")):
+    def error_dialog(self, message, secondary=None, title=_("Error Probe Screen NG")):
         """ displays a error dialog and abort """
-        if self.usepopup == 1:
-            self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
+        if self.halcomp["chk_popup_style"] == True or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
+            #self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
+            return self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
         else:
-            if self.ocode("o<clear-axis-info> call") == -1:
-                return
+#            if self.gcode("M160") == -1:         #o<clear-axis-info> call
+#                return
             if secondary:
                 self.add_history_text("DEBUG: %s" % (message))
                 self.add_history_text("ABORT: %s" % (secondary))
@@ -367,14 +357,33 @@ class ProbeScreenBase(object):
             if Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
                 message   = _("Please turn machine on")
                 secondary = _("You can retry once done")
-                self.dialog(message, secondary=secondary)
+                self.warning_dialog(message, secondary)
                 return -1
 
 
             if self.error_poll() == -1:
                 message   = _("Please dismiss & act upon all errors")
                 secondary = _("You can retry once done")
-                self.warning_dialog(message, secondary=secondary)
+                self.warning_dialog(message, secondary)
+                return -1
+
+            # Execute wrapped function
+            return f(self, *args, **kwargs)
+
+        return wrapper
+
+
+
+    @classmethod
+    def ensure_is_not_touchplate(cls, f):
+        """ Ensures is not touchplate selected, otherwise, shows a warning dialog """
+
+        @wraps(f)
+        def wrapper(self, *args, **kwargs):
+
+            if self.halcomp["chk_touch_plate_selected"] == True:
+                message   = _("You can't use this function using touchplate")
+                self.warning_dialog(message)
                 return -1
 
             # Execute wrapped function
@@ -388,72 +397,42 @@ class ProbeScreenBase(object):
     #  Generic Probe Movement Methods
     #
     # --------------------------
-    def z_clearance_down(self, data=None):
-        # move Z - z_clearance
+    def clearance_z_down(self, data=None):
+        # move Z - clearance_z
         s = """G91
         G1 Z-%f
-        G90""" % (self.halcomp["z_clearance"])
+        G90""" % (self.halcomp["clearance_z"])
         if self.gcode(s) == -1:
             return -1
         return 0
 
-    def z_clearance_up(self, data=None):
-        # move Z + z_clearance
+    def clearance_z_up(self, data=None):
+        # move Z + clearance_z
         s = """G91
         G1 Z%f
-        G90""" % (self.halcomp["z_clearance"])
+        G90""" % (self.halcomp["clearance_z"])
         if self.gcode(s) == -1:
             return -1
         return 0
 
-    # --------------------------
-    #
-    #  Generic Position Calculations
-    #
-    # --------------------------
-    def set_zerro(self, s="XYZ", x=0.0, y=0.0, z=0.0):
-        if self.halcomp["set_zero"]:
-            #  Z current position
-            self.stat.poll()
-            tmpz = (
-                self.stat.position[2]
-                - self.stat.g5x_offset[2]
-                - self.stat.g92_offset[2]
-                - self.stat.tool_offset[2]
-            )
-            c = "G10 L20 P0"
-            s = s.upper()
-            if "X" in s:
-                x += self.halcomp["offs_x"]
-                c += " X%s" % (x)
-            if "Y" in s:
-                y += self.halcomp["offs_y"]
-                c += " Y%s" % (y)
-            if "Z" in s:
-                tmpz = tmpz - z + self.halcomp["offs_z"]
-                c += " Z%s" % (tmpz)
-            if self.gcode(c) == -1:                                                                                 # Need your review choosing this or only self.gcode(c) timesleep
-               return
 
     def probed_position_with_offsets(self):
-        self.stat.poll()
+        self.stat.poll()   # before using some self value from linuxcnc we need to poll
         probed_position = list(self.stat.probed_position)
         coord = list(self.stat.probed_position)
         g5x_offset = list(self.stat.g5x_offset)
         g92_offset = list(self.stat.g92_offset)
         tool_offset = list(self.stat.tool_offset)
-        #print "g5x_offset=",g5x_offset
-        #print "g92_offset=",g92_offset
-        #print "tool_offset=",tool_offset
-        #print "actual position=",self.stat.actual_position
-        #print "position=",self.stat.position
-        #print "joint_actual position=",self.stat.joint_actual_position
-        #print "joint_position=",self.stat.joint_position
-        #print "probed position=",self.stat.probed_position
+        #print "g5x_offset  = ",g5x_offset
+        #print "g92_offset  = ",g92_offset
+        #print "tool_offset  = ",tool_offset
+        #print "actual position  = ",self.stat.actual_position
+        #print "position  = ",self.stat.position
+        #print "joint_actual position  = ",self.stat.joint_actual_position
+        #print "joint_position  = ",self.stat.joint_position
+        #print "probed position  = ",self.stat.probed_position
         for i in range(0, len(probed_position) - 1):
-            coord[i] = (
-                probed_position[i] - g5x_offset[i] - g92_offset[i] - tool_offset[i]
-            )
+            coord[i] = (probed_position[i] - g5x_offset[i] - g92_offset[i] - tool_offset[i])
         angl = self.stat.rotation_xy
         res = self._rott00_point(coord[0], coord[1], -angl)
         coord[0] = res[0]
@@ -533,6 +512,36 @@ class ProbeScreenBase(object):
 
         return res
 
+
+    # --------------------------
+    #
+    #  Generic Position Calculations
+    #
+    # --------------------------
+    def set_zerro(self, s="XYZ", x=0.0, y=0.0, z=0.0):
+        if self.halcomp["chk_set_zero"]:
+            #  Z current position
+            self.stat.poll()   # before using some self value from linuxcnc we need to poll
+            tmpz = (
+                self.stat.position[2]
+                - self.stat.g5x_offset[2]
+                - self.stat.g92_offset[2]
+                - self.stat.tool_offset[2]
+            )
+            c = "G10 L20 P0"
+            s = s.upper()
+            if "X" in s:
+                x += self.halcomp["offs_x"]
+                c += " X%s" % (x)
+            if "Y" in s:
+                y += self.halcomp["offs_y"]
+                c += " Y%s" % (y)
+            if "Z" in s:
+                tmpz = tmpz - z + self.halcomp["offs_z"]
+                c += " Z%s" % (tmpz)
+            if self.gcode(c) == -1:                                                                                 # Need your review choosing this or only self.gcode(c) timesleep
+               return
+
     # --------------------------
     #
     #  Generic UI Methods
@@ -553,9 +562,7 @@ class ProbeScreenBase(object):
             # Set to Italics
             gtkspinbutton.modify_font(pango.FontDescription("italic"))
 
-    def on_common_spbtn_value_changed(
-        self, pin_name, gtkspinbutton, data=None, _type=float
-    ):
+    def on_common_spbtn_value_changed(self, pin_name, gtkspinbutton, data=None, _type=float):
         # Drop the Italics
         gtkspinbutton.modify_font(pango.FontDescription("normal"))
 
@@ -564,3 +571,6 @@ class ProbeScreenBase(object):
 
         # Update the preferences
         self.prefs.putpref(pin_name, gtkspinbutton.get_value(), _type)
+
+        # Update history display
+        self.add_history_text("%s = %.4f" % (pin_name, gtkspinbutton.get_value()))

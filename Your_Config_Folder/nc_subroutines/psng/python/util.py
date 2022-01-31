@@ -2,7 +2,7 @@
 #
 # Copyright (c) 2015 Serguei Glavatski ( verser  from cnc-club.ru )
 # Copyright (c) 2020 Probe Screen NG Developers
-# Copyright (c) 2021 Alkabal free fr with different approach
+# Copyright (c) 2022 Alkabal free fr with different approach
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

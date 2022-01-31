@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #
 # Copyright (c) 2015 Serguei Glavatski ( verser  from cnc-club.ru )
+# Copyright (c) 2020 Probe Screen NG Developers
+# Copyright (c) 2022 Alkabal free fr with different approach
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -53,7 +55,10 @@ class ProbeScreenJog(ProbeScreenBase):
             jog_increments.insert(0, 0)
         else:
             jog_increments = [0, "1,000", "0,100", "0,010", "0,001"]
-            self.add_history_text("WARNING : No default jog increments entry found in [DISPLAY] of INI file")
+            #self.add_history_text("WARNING : No default jog increments entry found in [DISPLAY] of INI file")
+            message   = _("No default jog increments entry found in [DISPLAY] of INI file")
+            secondary = _("Please check the DISPLAY INI configurations")
+            self.warning_dialog(message, secondary)
 
         self.jog_increments = jog_increments
         if len(self.jog_increments) > 6:
@@ -91,9 +96,12 @@ class ProbeScreenJog(ProbeScreenBase):
             self.incr_rbt_list.append(rbt)
         self.active_increment = "rbt0"
 
-    # -----------
+
+    # --------------------------
+    #
     # JOG BUTTONS
-    # -----------
+    #
+    # --------------------------
     def on_increment_changed(self, widget=None, data=None):
         if data == 0:
             self.distance = 0
@@ -133,13 +141,15 @@ class ProbeScreenJog(ProbeScreenBase):
         # only in manual mode we will allow jogging the axis at this development state
         self.command.mode(linuxcnc.MODE_MANUAL)
         self.command.wait_complete()
-        self.stat.poll()
+        self.stat.poll()   # before using some self value from linuxcnc we need to poll
         if not self.stat.task_mode == linuxcnc.MODE_MANUAL:
             return
 
         axisletter = widget.get_label()[0]
         if not axisletter.lower() in "xyzabcuvw":
-            self.add_history_text("unknown axis %s" % (axisletter))
+            #self.add_history_text("WARNING : unknown axis %s" % (axisletter))
+            message   = _("unknown axis %s" % (axisletter))
+            self.error_dialog(message)
             return
 
         # get the axisnumber
@@ -177,7 +187,9 @@ class ProbeScreenJog(ProbeScreenBase):
     def on_btn_jog_released(self, widget, data=None):
         axisletter = widget.get_label()[0]
         if not axisletter.lower() in "xyzabcuvw":
-            self.add_history_text("unknown axis %s" % (axisletter))
+            #self.add_history_text("WARNING : unknown axis %s" % (axisletter))
+            message   = _("unknown axis %s" % (axisletter))
+            self.error_dialog(message)
             return
 
         axis = "xyzabcuvw".index(axisletter.lower())
