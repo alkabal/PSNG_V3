@@ -550,20 +550,20 @@ def index_lathe_tool_with_wear(self,**words):
 ##******************************************
 #[TOOL_SETTER]
 ## Absolute XYZ G53 machine coordinates of the toolsetter pad
-### you need to keep TS_HEIGHT + Z_MAXPROBE value inside your machine limit range
+### you need to keep TS_HEIGHT + MAXPROBE_Z value inside your machine limit range
 #X = 0
 #Y = 0
 #Z = -35
 #
 ## Maximum probing search distance
-### you need to keep TS_HEIGHT + Z_MAXPROBE value inside your machine limit range
-#Z_MAXPROBE = -60
+### you need to keep TS_HEIGHT + MAXPROBE_Z value inside your machine limit range
+#MAXPROBE_Z = -60
 #
 ## Fast first probe tool velocity : spring mounted touchplate/toolsetter allow faster speed
-#SEARCH_VEL = 150
+#VEL_FOR_SEARCH = 150
 #
 ## Slow final probe velocity
-#PROBE_VEL = 10
+#VEL_FOR_PROBE = 10
 #
 ## ts_height is used only with "real toolsetter" or "touchplate" at fixed location
 #TS_HEIGHT = 1.5
@@ -571,9 +571,9 @@ def index_lathe_tool_with_wear(self,**words):
 ## Latched distance after probing use value like 1mm (more than the spring movement)
 #LATCH = 2
 #
-## You can use REVERSE_LATCH with G38.5 with value like 2mm (more than the distance needed for release the contact)
+## You can use latch_reverse_probing with G38.5 with value like 2mm (more than the distance needed for release the contact)
 ## or 0 if you want to inhibit G38.5)
-#REVERSE_LATCH = 2
+#latch_reverse_probing = 2
 ##******************************************
 
 ##******************************************
@@ -595,7 +595,7 @@ def index_lathe_tool_with_wear(self,**words):
 ##******************************************
 
 ##******************************************
-#[TOUCH_PROBE]
+#[TOUCH_DEVICE]
 ##******************************************
 ## Allow user to define the toolnumber used for securing the probe (need to be in the tooltable)
 ## If you do not have a 3D Probe you need to set PROBE_NUMBER = 0
@@ -638,26 +638,26 @@ def tool_probe_m6(self, **words):
             yield INTERP_ERROR
     	                           
     try:
-        self.params["probe_number"] = int(self.params["_ini[TOUCH_PROBE]PROBE_NUMBER"])
+        self.params["probe_number"] = int(self.params["_ini[TOUCH_DEVICE]PROBE_NUMBER"])
     except:
         print("!!!! PROBE_NUMBER CONFIG MISSING FROM INI, USE DEFAULT VALUE 0 !!!!")
         self.execute("(DEBUG,!!!! PROBE_NUMBER CONFIG MISSING FROM INI, USE DEFAULT VALUE 0 !!!!)")
         self.probe_number = 0
 
     try:
-        self.params["probe_on_mcode"] = self.params["_ini[TOUCH_PROBE]PROBE_ON_MCODE"]              # Custom Mcode do halcmd sets touch-probe-on-off 1    signal linked to and2.combined-probe.in1
+        self.params["probe_on_mcode"] = self.params["_ini[TOUCH_DEVICE]PROBE_ON_MCODE"]              # Custom Mcode do halcmd sets touch-probe-on-off 1    signal linked to and2.combined-probe.in1
     except:
         self.set_errormsg("tool_probe_m6 remap error: PROBE_ON_MCODE CONFIG MISSING FROM INI")
         yield INTERP_ERROR
 
     try:
-        self.params["probe_off_mcode"] = self.params["_ini[TOUCH_PROBE]PROBE_OFF_MCODE"]            # Custom Mcode do halcmd sets touch-probe-on-off 1    signal linked to and2.combined-probe.in1
+        self.params["probe_off_mcode"] = self.params["_ini[TOUCH_DEVICE]PROBE_OFF_MCODE"]            # Custom Mcode do halcmd sets touch-probe-on-off 1    signal linked to and2.combined-probe.in1
     except:
         self.set_errormsg("tool_probe_m6 remap error: PROBE_OFF_MCODE CONFIG MISSING FROM INI")
         yield INTERP_ERROR
 
     try:
-        self.params["tool_setter_on_mcode"] = self.params["_ini[TOUCH_PROBE]TOOL_SETTER_ON_MCODE"]  # Custom Mcode do halcmd sets touch-setter-on-off 1   signal linked to and2.combined-setter.in1
+        self.params["tool_setter_on_mcode"] = self.params["_ini[TOUCH_DEVICE]TOOL_SETTER_ON_MCODE"]  # Custom Mcode do halcmd sets touch-setter-on-off 1   signal linked to and2.combined-setter.in1
     except:
         self.set_errormsg("tool_probe_m6 remap error: TOOL_SETTER_ON_MCODE CONFIG MISSING FROM INI")
         yield INTERP_ERROR
@@ -689,9 +689,9 @@ def tool_probe_m6(self, **words):
     self.execute("M9")
 
     # record current position XYZ but Z
-    X = emccanon.GET_EXTERNAL_POSITION_X()
-    Y = emccanon.GET_EXTERNAL_POSITION_Y()
-    Z = emccanon.GET_EXTERNAL_POSITION_Z()
+    initial_X = emccanon.GET_EXTERNAL_POSITION_X()
+    initial_Y = emccanon.GET_EXTERNAL_POSITION_Y()
+    initial_Z = emccanon.GET_EXTERNAL_POSITION_Z()
 
     # turn off all spindles if required                        #(commented out usage possible for 2.9)
 #    if not self.tool_change_with_spindle_on:
@@ -861,15 +861,15 @@ def tool_probe_m6(self, **words):
             yield INTERP_EXECUTE_FINISH # without that the inhibit probe is not aknowledge before starting to move
 
             # Fast Search probe   # Take care about possible error message move on line 0 exceed the Z positive axis limit can appears if tool setter is already triggered
-            self.execute("G38.3 Z#<_ini[TOOL_SETTER]Z_MAXPROBE> F#<_ini[TOOL_SETTER]SEARCH_VEL>")
+            self.execute("G38.3 Z#<_ini[TOOL_SETTER]MAXPROBE_Z> F#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>")
             #print("Wait for probe ending")
             yield INTERP_EXECUTE_FINISH
             # Check if we have get contact or not
             tool_probe_result_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
             wait(self)
 
-            if self.params["_ini[TOOL_SETTER]REVERSE_LATCH"] > 0:
-                self.execute("G38.5 Z#<_ini[TOOL_SETTER]REVERSE_LATCH> F[#<_ini[TOOL_SETTER]SEARCH_VEL>*0.5]")
+            if self.params["_ini[TOOL_SETTER]LATCH_MAXPROBE"] > 0:
+                self.execute("G38.5 Z#<_ini[TOOL_SETTER]LATCH_MAXPROBE> F[#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>*0.5]")
                 # print("Latch probe wait end")
                 yield INTERP_EXECUTE_FINISH
                 # Check if we have get contact or not
@@ -877,7 +877,7 @@ def tool_probe_m6(self, **words):
                 wait(self)
 
             # Retract Latch
-            self.execute("G1 Z#<_ini[TOOL_SETTER]LATCH> F[#<_ini[TOOL_SETTER]SEARCH_VEL>]")
+            self.execute("G1 Z#<_ini[TOOL_SETTER]LATCH> F[#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>]")
             #This clear and yeld Mostly used for prevent correctly execution of call_number 4 before move is done
             clear_axis_all(self)
             yield INTERP_EXECUTE_FINISH
@@ -889,7 +889,7 @@ def tool_probe_m6(self, **words):
             yield INTERP_EXECUTE_FINISH # without that the inhibit probe is not aknowledge before starting to move
 
             # Final probe
-            self.execute("G38.3 Z-[#<_ini[TOOL_SETTER]LATCH>*1.3] F#<_ini[TOOL_SETTER]PROBE_VEL>")
+            self.execute("G38.3 Z-[#<_ini[TOOL_SETTER]LATCH>*1.3] F#<_ini[TOOL_SETTER]VEL_FOR_PROBE>")
             #print("Wait for final probe ending")
             yield INTERP_EXECUTE_FINISH
             # Check if we have get contact or not
@@ -899,8 +899,8 @@ def tool_probe_m6(self, **words):
             # Save the probe result now due to possible use of G38.5 for retract
             proberesult = self.params[5063]
 
-            if self.params["_ini[TOOL_SETTER]REVERSE_LATCH"] > 0:
-                self.execute("G38.5 Z#<_ini[TOOL_SETTER]REVERSE_LATCH> F[#<_ini[TOOL_SETTER]SEARCH_VEL>*0.5]")
+            if self.params["_ini[TOOL_SETTER]LATCH_MAXPROBE"] > 0:
+                self.execute("G38.5 Z#<_ini[TOOL_SETTER]LATCH_MAXPROBE> F[#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>*0.5]")
                 #print("Final latch probe wait end")
                 yield INTERP_EXECUTE_FINISH
                 # Check if we have get contact or not
@@ -908,7 +908,7 @@ def tool_probe_m6(self, **words):
                 wait(self)
 
             # Retract Latch
-            self.execute("G1 Z#<_ini[TOOL_SETTER]LATCH> F[#<_ini[TOOL_SETTER]SEARCH_VEL>]")
+            self.execute("G1 Z#<_ini[TOOL_SETTER]LATCH> F[#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>]")
             #This clear and yeld Mostly used for prevent correctly execution of call_number 4 before move is done
             clear_axis_all(self)
             yield INTERP_EXECUTE_FINISH
@@ -933,10 +933,10 @@ def tool_probe_m6(self, **words):
             self.execute("G53 G0 Z{:.5f}".format(self.params["_ini[TOOL_CHANGE]Z_TRAVEL_POSITION"]))
             wait(self)
             if self.params["_ini[TOOL_CHANGE]GO_BACK_LAST_POSITION"]:
-                self.execute("G53 G0 X{:.5f} Y{:.5f}".format(X,Y))
+                self.execute("G53 G0 X{:.5f} Y{:.5f}".format(initial_X,initial_Y))
                 wait(self)
                 ## imo better to not restore Z
-                #self.execute("G53 G0 Z{:.5f}".format(Z))
+                #self.execute("G53 G0 Z{:.5f}".format(initial_Z))
                 #wait(self)
             else:
                 self.execute("G53 G0 X{:.5f} Y{:.5f}".format(self.params["_ini[CHANGE_POSITION]X"],self.params["_ini[CHANGE_POSITION]Y"]))
