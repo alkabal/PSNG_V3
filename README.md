@@ -50,7 +50,8 @@ net manual-tool-diameter                                    <= halui.tool.diamet
 Set the probe in the spindle.
 
 Move manually probe for Z about 2-10 mm above the workpiece surface,
-and for XY about the position indicated by the colored dot on the appropriate button Probe Screen.
+
+Move manually probe fo XY to the position indicated by the colored dot on the appropriate button Probe Screen.
 
 Fill parameters. Meaning of the parameters should be clear from the names and pictures (the name pop up when approaching the mouse). If you change the parameters are automatically saved in .pref .
 
@@ -59,7 +60,7 @@ Hit **only** the button that corresponds to the position of the probe above the 
 You do not need to expose offsets for tool "Probe", the program desired zero offsets for the current tool makes herself, and G-code works off all in relative coordinates.
 In fact, you can use the application immediately after the Home.
 
-Any of the search ends at XY moving at the desired point (or edge, or corner, or center), Z remains in the original position.
+Any of the search ends at XY moving at the desired point (or edge, or corner, or center), Z finish up using clearance value.
 
 More info <https://vers.by/en/blog/useful-articles/probe-screen>
 Discussion on the forum linuxcnc.org: <https://forum.linuxcnc.org/49-basic-configuration/29187-work-with-probe>
