@@ -34,7 +34,7 @@ Added in this release :
 
 OR
 
--TODO : create some logic for set start Z heigth automatically for table, block, compensation using machine max Z length + know probe height
+-TODO : create some logic for set start Z heigth automatically for table, block, compensation using machine max Z length + know tool height + block or table offset 
 
 
 ## History
