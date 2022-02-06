@@ -29,8 +29,11 @@ Added in this release :
 
 -TODO : if you change two value putpref save only the last value
 
+
 -TODO : create some logic for set start Z heigth automatically for table, block, compensation using some calculated value from config
+
 OR
+
 -TODO : create some logic for set start Z heigth automatically for table, block, compensation using machine max Z length + know probe height
 
 
