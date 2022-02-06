@@ -1,5 +1,16 @@
 # Probe Screen for LinuxCNC 2.8/2.9
 
+## Important things needed :
+
+- This version require to have the machine table configured as G54 Z0 aftert M6 Tx G43
+
+- You also need to have correctly configured min max for each axis in your ini file
+
+- Probe need to be in the tool table with correct config in your ini file
+
+
+
+
 ## Info
 
 Probe-Screen is currently being redesigned any help are welcome.
@@ -14,12 +25,13 @@ Added in this release :
 
 -Config is done for use separate input for Touch Probe (or Touchplate) and Tool setter and the status is checked before each move.
 
-
 -TODO : when you une some function using self.ocode() the DRO is not updated
 
 -TODO : if you change two value putpref save only the last value
 
--TODO : create some logic for set start Z heigth automatically for table, block, compensation using some value from config
+-TODO : create some logic for set start Z heigth automatically for table, block, compensation using some calculated value from config
+OR
+-TODO : create some logic for set start Z heigth automatically for table, block, compensation using machine max Z length + know probe height
 
 
 ## History
