@@ -14,6 +14,12 @@ Added in this release :
 
 -Config is done for use separate input for Touch Probe (or Touchplate) and Tool setter and the status is checked before each move.
 
+
+-TODO : when you une some function using self.ocode() the DRO is not updated
+-TODO : if you change two value putpref save only the last value
+-TODO : create some logic for set start Z heigth automatically for table, block, compensation using some value from config
+
+
 ## History
 
 This repo was originally a fork of <https://github.com/verser-git/probe_screen_v2> by Serguei Glavatski / Vers.by. Hopefully, this will become a community maintained probe screen for LinuxCNC. Anyone with an interest in helping out, please submit PRs or ask to join the project via a GitHub issue.
