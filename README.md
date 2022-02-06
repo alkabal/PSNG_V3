@@ -16,7 +16,9 @@ Added in this release :
 
 
 -TODO : when you une some function using self.ocode() the DRO is not updated
+
 -TODO : if you change two value putpref save only the last value
+
 -TODO : create some logic for set start Z heigth automatically for table, block, compensation using some value from config
 
 
