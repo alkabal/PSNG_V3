@@ -16,10 +16,10 @@
 
 
 
-Exemple positioning your tool setter in a Y protected area
+
+## Exemple positioning your tool setter in a Y protected area
 
 [AXIS_Y]
-#******************************************
 # -13 for HOME_OFFSET distance from limit switch after homing 
 # 1 mm for limit switch clearence
 # 12 mm for protected area tool_setter
@@ -34,10 +34,11 @@ MIN_LIMIT = -332.11
 MAX_LIMIT = 12.11
 
 [TOOL_SETTER]
-#******************************************
 # Absolute XYZ G53 machine coordinates for start auto tool measurement
 TS_POS_X = 0
 TS_POS_Y = 12
+
+
 
 ## Info
 
