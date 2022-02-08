@@ -2,14 +2,42 @@
 
 ## Important things needed :
 
-- This version require to have the machine table configured as G54 Z0 aftert M6 Tx G43
+- This version require to have the machine table configured as G54 Z0 after M6 Tx G43 
 
-- You also need to have correctly configured min max for each axis in your ini file
+- You also need to have really correctly configured min max for each axis in your ini file
 
 - Probe need to be in the tool table with correct config in your ini file
 
+- All Z start probing position are automatically calculated using axis length, block_heigth, table_offset from machine table 0
+
+- The x_max y_max axis is changed automatically using your tool_setter y position for take it in a safe area
+
+- The z_min axis is changed automatically using tool length from tooltable for prevent colision
 
 
+
+Exemple positioning your tool setter in a Y protected area
+
+[AXIS_Y]
+#******************************************
+# -13 for HOME_OFFSET distance from limit switch after homing 
+# 1 mm for limit switch clearence
+# 12 mm for protected area tool_setter
+# USING A TOOL_SENSOR OUTSIDE OF MACHINE AXIS AREA NEED TO EXTEND THE LIMIT AT M6
+# user defeined Mcode M170/M171 REPLACE THE MACHINE Y LIMIT MAX  USING JOINT 1 VALUE
+MIN_LIMIT = -332.11
+MAX_LIMIT = 0.11
+
+[JOINT_1]
+AXIS = Y
+MIN_LIMIT = -332.11
+MAX_LIMIT = 12.11
+
+[TOOL_SETTER]
+#******************************************
+# Absolute XYZ G53 machine coordinates for start auto tool measurement
+TS_POS_X = 0
+TS_POS_Y = 12
 
 ## Info
 
