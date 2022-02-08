@@ -10,6 +10,8 @@
 
 - All Z start probing position are automatically calculated using axis length, block_heigth, table_offset from machine table 0
 
+- You need to place manually the Touch device on the good Z height for all XY probing
+
 - The x_max y_max axis is changed automatically using your tool_setter y position for take it in a safe area
 
 - The z_min axis is changed automatically using tool length from tooltable for prevent colision
