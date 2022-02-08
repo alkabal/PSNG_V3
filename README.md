@@ -20,11 +20,11 @@
 ## Exemple positioning your tool setter in a Y protected area
 
 [AXIS_Y]
-# -13 for HOME_OFFSET distance from limit switch after homing 
-# 1 mm for limit switch clearence
-# 12 mm for protected area tool_setter
-# USING A TOOL_SENSOR OUTSIDE OF MACHINE AXIS AREA NEED TO EXTEND THE LIMIT AT M6
-# user defeined Mcode M170/M171 REPLACE THE MACHINE Y LIMIT MAX  USING JOINT 1 VALUE
+; -13 for HOME_OFFSET distance from limit switch after homing 
+; 1 mm for limit switch clearence
+; 12 mm for protected area tool_setter
+; USING A TOOL_SENSOR OUTSIDE OF MACHINE AXIS AREA NEED TO EXTEND THE LIMIT AT M6
+; user defeined Mcode M170/M171 REPLACE THE MACHINE Y LIMIT MAX  USING JOINT 1 VALUE
 MIN_LIMIT = -332.11
 MAX_LIMIT = 0.11
 
@@ -34,7 +34,7 @@ MIN_LIMIT = -332.11
 MAX_LIMIT = 12.11
 
 [TOOL_SETTER]
-# Absolute XYZ G53 machine coordinates for start auto tool measurement
+; Absolute XYZ G53 machine coordinates for start auto tool measurement
 TS_POS_X = 0
 TS_POS_Y = 12
 
