@@ -1,0 +1,28 @@
+o<psng_probe_setter_height> sub
+
+  M160    ;o<clear-axis-info> call
+
+  (DEBUG,PROBE TOOL SETTER FOR HEIGHT NEED TO PROBE THE TABLE FIRSTLY)
+
+  o<psng_goto_toolsensor> call
+
+;  (cancel all Z offsets)
+;  G92.1
+;  G49
+
+  o<psng_start_z_probing> call
+
+  o500 if [#5070 EQ 0]
+       (ABORT,PROBE TOOL SETTER FOR HEIGHT DOES NOT FOUND THE CONTACT POINT)
+  o500 endif
+
+  (print,probed Z for ts height = #<_psng_touch_result_Z>)
+
+  ; only displayable ts_height value are changed inside python code
+
+;  G43
+
+  o<psng_goto_changepos> call
+
+o<psng_probe_setter_height> endsub
+M2

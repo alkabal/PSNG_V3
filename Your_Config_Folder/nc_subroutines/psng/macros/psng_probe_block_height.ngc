@@ -1,0 +1,26 @@
+o<psng_probe_block_height> sub
+
+  M160    ;o<clear-axis-info> call
+
+  G43          ; force tool offset for correct calc
+  G10 L2 P0 Z0 ; reset G54 offset for correct pieces measurement and replace by new value
+  #<intial_Z>=#<_z> (save current Z position)
+
+  ;o<backup_coord_offset> call             ; new added 2021 but removed here 2022       ; backup G54 offset for correct calc tool measurement
+
+#<_psng_probe_max_z> = #<_psng_probe_max_z_for_block>
+
+  o<psng_start_z_probing> call
+  o500 if [#5070 EQ 0]
+      (ABORT,PROBE FOR BLOCK HEIGHT DOES NOT FOUND THE CONTACT POINT)
+  o500 endif
+
+  (print, probe Z=#<_psng_touch_result_Z>)
+
+  ; only displayable block_height value are changed inside python code
+
+  (back to start point)
+  G1 Z#<intial_Z> F#<_psng_vel_for_travel>
+
+o<psng_probe_block_height> endsub
+M2

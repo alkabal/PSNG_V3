@@ -3,6 +3,10 @@ o<psng_goto_toolsensor> sub
 #<_from_manual_change> = #1        ; call 1 = call from manual change for reset tool if error with probing
 
 M160    ;o<clear-axis-info> call
+
+M170 P#<_hal[ini.0.max_limit]>   ; allow to extend the X axis length before goto tool sensor
+M171 P#<_hal[ini.1.max_limit]>   ; allow to extend the Y axis length before goto tool sensor
+
 o10 if [#<_hal[motion.probe-input]> EQ 1 AND #<_from_manual_change> EQ 1]
      M61Q0
      (ABORT,TOOLSETTER Z ALREADY TRIGGERED BEFORE GOTO TOOLSENSOR)
@@ -11,7 +15,7 @@ o10 elseif [#<_hal[motion.probe-input]> EQ 1 AND #<_from_manual_change> EQ 0]
 o10 endif
 
 ;first go up
-G90
+G90      ; force G90 for G53 G0 movement
 o20 if [#<_ini[EMCIO]TOOL_CHANGE_QUILL_UP> EQ 1]
     G53 G0 Z#<_ini[JOINT_2]HOME>                                    ; Respecting the traditional linuxcnc behavior
 o20 else
@@ -19,7 +23,8 @@ o20 else
 o20 endif
 
 G53 G0 X[#<_psng_ts_pos_x>] Y[#<_psng_ts_pos_y>]
-G53 G0 Z[#<_psng_ts_pos_z>]
+;G53 G1 Z[#<_psng_ts_pos_z>] F#<_psng_vel_for_travel>
+G53 G1 Z-[#<_psng_ts_start_z_from_mcs>] F#<_psng_vel_for_travel>
 
 o<psng_goto_toolsensor> endsub
 M2

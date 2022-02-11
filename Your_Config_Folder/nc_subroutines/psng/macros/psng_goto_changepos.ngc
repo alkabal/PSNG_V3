@@ -1,7 +1,7 @@
 o<psng_goto_changepos> sub
 
 ;first go up
-G90
+G90      ; force G90 for G53 G0 movement
 o20 if [#<_ini[EMCIO]TOOL_CHANGE_QUILL_UP> EQ 1]
     G53 G0 Z#<_ini[JOINT_2]HOME>                                    ; Respecting the traditional linuxcnc behavior
 o20 else
@@ -10,6 +10,9 @@ o20 endif
 
 G53 G0 X[#<_ini[TOOL_CHANGE]X>] Y[#<_ini[TOOL_CHANGE]Y>]
 G53 G0 Z[#<_ini[TOOL_CHANGE]Z>]
+
+  M170 P[#<_hal[ini.0.max_limit]> - #<_psng_ts_pos_x>] ; allow to restore the X axis length after goto tool_sensor
+  M171 P[#<_hal[ini.1.max_limit]> - #<_psng_ts_pos_y>] ; allow to restore the Y axis length after goto tool_sensor
 
 o<psng_goto_changepos> endsub
 M2

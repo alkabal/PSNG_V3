@@ -1,6 +1,6 @@
 o<psng_start_z_probing_for_diam> sub
 
-#<_from_manual_change> = #1        ; call 1 = call from manual change for reset tool if error with probing
+#<axis_and_dir> = #1
   M160    ;o<clear-axis-info> call
 
   M5 M9 ; stop spindle, mist+flood off
@@ -8,35 +8,44 @@ o<psng_start_z_probing_for_diam> sub
       (ABORT,!!! PROBE OR SETTER Z ALREADY TRIGGERED BEFORE PROBING !!!)
   o10 endif
 
-;  o<psng_load_var_touch_probe> call
-
 #<intial_X>=#<_x> (save start X position)
 
   G91
-  G38.3 Z-#<_psng_maxprobe_z> F#<_psng_vel_for_search>
+  G38.3 Z-#<_psng_probe_max_z> F#<_psng_vel_for_search>
   o500 call
 
-  o100 if [#<_psng_latch_maxprobe> GT 0]
-       G38.5 Z#<_psng_latch_maxprobe> F[#<_psng_vel_for_search>*0.5]     ; DO NOT WORK FINE WITHOUT SPRING MOUNTED SETTER
+  o50 if [#<_psng_probe_max_latch> GT 0]
+       G38.5 Z#<_psng_probe_max_latch> F[#<_psng_vel_for_search>*0.5]     ; DO NOT WORK FINE WITHOUT SPRING MOUNTED SETTER
        o500 call
-  o100 endif
+  o50 endif
 
   ; Move away
-  G1    Z#<_psng_latch> F#<_psng_vel_for_search>
+  G1    Z#<_psng_latch> F#<_psng_vel_for_travel>
 
-  ; Start final prove
-  G38.3 Z-[#<_psng_latch>*1.5] F#<_psng_vel_for_probe>                  ; *1.3 in cas of use reverse latch we need to move more than regular latch
+  ; Start final prove and stay here
+  G38.3 Z-[#<_psng_latch>*1.5] F#<_psng_vel_for_probe>       ; *1.3 after a latch move we need to probe a little more for be sure to found the contact point
   o500 call
 
   #<_psng_touch_result_Z> = #5063
 
-  G38.5 X-#<_psng_maxprobe_xy> F[#<_psng_vel_for_search>*0.5]     ; move X away from workpieces
-  o500 call
+  o100 if [#<axis_and_dir> EQ 1]
+       G38.5 X-#<_psng_probe_max_xy> F[#<_psng_vel_for_search>]
+       o500 call
+  o100 endif
+  o110 if [#<axis_and_dir> EQ 2]
+       G38.5 X#<_psng_probe_max_xy> F[#<_psng_vel_for_search>]
+       o500 call
+  o110 endif
+  o120 if [#<axis_and_dir> EQ 3]
+       G38.5 Y-#<_psng_probe_max_xy> F[#<_psng_vel_for_search>]
+       o500 call
+  o120 endif
+  o130 if [#<axis_and_dir> EQ 4]
+       G38.5 Y#<_psng_probe_max_xy> F[#<_psng_vel_for_search>]
+       o500 call
+  o130 endif
 
-  #<_psng_touch_result_approximative_radius> = [#<intial_X> - #5062]
-  (print, Probed approximative radius = #<_psng_touch_result_approximative_radius>)
-  
-  G90
+  G90       ; a remplacer par if backup
 
 o500 sub
      o510 if [#5070 EQ 0 AND #<_from_manual_change> EQ 1] ; call 1 = call from manual change for reset tool if error with probing

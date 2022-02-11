@@ -1,0 +1,26 @@
+o<psng_probe_tool_length> sub
+
+  M160    ;o<clear-axis-info> call
+
+  o<psng_goto_toolsensor> call                                               ; with G90 inside
+
+  o<psng_start_z_probing> call
+
+  o500 if [#5070 EQ 0]
+      (ABORT,TOOL SETTER FOR TOOL LENGTH DOES NOT FOUND THE CONTACT POINT)
+  o500 endif
+
+  #<_psng_touch_calculated_z> = [#<_psng_touch_result_Z> - #<_psng_ts_height>]
+
+  (print,probed pos ngc = #<_psng_touch_result_Z>)
+  (print,probed pos ngc calculated = Z#<_psng_touch_calculated_z>)
+
+  G10 L1 P#<_current_tool> Z#<_psng_touch_calculated_z>
+
+  G43
+
+
+  o<psng_goto_changepos> call
+
+o<psng_probe_tool_length> endsub [#<_psng_touch_result_Z>]
+M2

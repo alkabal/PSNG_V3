@@ -9,12 +9,12 @@
 ; Hooked Macro ID -> Name Table
 ;
 ; 1 = psng_manual_change
-; 2 = psng_tool_diameter
-; 3 = psng_probe_table
-; 4 = psng_probe_setter
-; 5 = psng_probe_workpiece
-; 6 = psng_tool_length
-; 7 = psng_xyplusminus
+; 2 = psng_probe_tool_diameter
+; 3 = psng_probe_table_offset
+; 4 = psng_probe_setter_height
+; 5 = psng_probe_block_height
+; 6 = psng_probe_tool_length
+; 7 = psng_start_xyplusminus
 
 o<psng_hook> sub
 ; The #1 variable will be set to the name of the macro being hooked. For
