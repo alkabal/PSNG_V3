@@ -31,7 +31,6 @@ o<psng_load_var> sub
 
 #<_psng_ts_pos_x>                   = #<_hal[probe.ts_pos_x]>
 #<_psng_ts_pos_y>                   = #<_hal[probe.ts_pos_y]>
-#<_psng_ts_pos_z>                   = #<_hal[probe.ts_pos_z]>
 #<_psng_ts_height>                  = #<_hal[probe.ts_height]>
 #<_psng_ts_clearance_z>             = #<_hal[probe.ts_clearance_z]>
 #<_psng_ts_clearance_xy>            = #<_hal[probe.ts_clearance_xy]>

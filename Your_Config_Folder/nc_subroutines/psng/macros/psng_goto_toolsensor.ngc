@@ -23,7 +23,6 @@ o20 else
 o20 endif
 
 G53 G0 X[#<_psng_ts_pos_x>] Y[#<_psng_ts_pos_y>]
-;G53 G1 Z[#<_psng_ts_pos_z>] F#<_psng_vel_for_travel>
 G53 G1 Z-[#<_psng_ts_start_z_from_mcs>] F#<_psng_vel_for_travel>
 
 o<psng_goto_toolsensor> endsub
