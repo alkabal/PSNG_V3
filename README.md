@@ -23,7 +23,7 @@
 
 -TODO : add 2 cycle for probing probe_rect_boss.ngc probe_rect_pocket.ngc like probe_basic
 
--TODO : updating stglue for suppress TS_POS
+-TODO : updating stglue for suppress TS_POS and convert function like popen to full python or emccanon
 
 -TODO : update compensation by creating a popup with 6 entry box (X_length Y_length X_start Y_start X_count Y_count)
 
