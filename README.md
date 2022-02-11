@@ -21,6 +21,17 @@
 
 -TODO : if you change two value putpref save only the last value
 
+-TODO : add 2 cycle for probing probe_rect_boss.ngc probe_rect_pocket.ngc like probe_basic
+
+-TODO : updating stglue for suppress TS_POS
+
+-TODO : update compensation by creating a popup with 6 entry box (X_length Y_length X_start Y_start X_count Y_count)
+
+-TODO : found a way for prevent multiple click on the gui when something is already started self.work_in_progress do not work for now
+
+-TOTHINK : create a popup asking a tool number for tool length measurement if we can create a new tool in the tooltable ?
+
+
 
 ## Exemple positioning your tool setter in a Y protected area
 
