@@ -12,11 +12,14 @@
 
 - You need to place manually the Touch device on the good Z height for all XY probing
 
-- The x_max y_max axis is changed automatically using your tool_setter y position for take it in a safe area
+- The x_max y_max axis is changed automatically using your tool_setter XY position for take it in a safe area
 
 - The z_min axis is changed automatically using tool length from tooltable for prevent colision
 
 
+-TODO : when you une some function using self.ocode() the DRO is not updated
+
+-TODO : if you change two value putpref save only the last value
 
 
 ## Exemple positioning your tool setter in a Y protected area
@@ -70,17 +73,6 @@ Added in this release :
 -You can bypass the auto length stuff with a simple tickbox.
 
 -Config is done for use separate input for Touch Probe (or Touchplate) and Tool setter and the status is checked before each move.
-
--TODO : when you une some function using self.ocode() the DRO is not updated
-
--TODO : if you change two value putpref save only the last value
-
-
--TODO : create some logic for set start Z heigth automatically for table, block, compensation using some calculated value from config
-
-OR
-
--TODO : create some logic for set start Z heigth automatically for table, block, compensation using machine max Z length + know tool height + block or table offset 
 
 
 ## History
