@@ -75,19 +75,23 @@ class ProbeScreenBase(object):
         self._vcp_action_reload = self.builder.get_object("vcp_action_reload")
 
         # Results Display
-        self._lb_probe_xp = self.builder.get_object("lb_probe_xp")
-        self._lb_probe_yp = self.builder.get_object("lb_probe_yp")
-        self._lb_probe_xm = self.builder.get_object("lb_probe_xm")
-        self._lb_probe_ym = self.builder.get_object("lb_probe_ym")
-        self._lb_probe_lx = self.builder.get_object("lb_probe_lx")
-        self._lb_probe_ly = self.builder.get_object("lb_probe_ly")
-        self._lb_probe_z  = self.builder.get_object("lb_probe_z")
-        self._lb_probe_d  = self.builder.get_object("lb_probe_d")
-        self._lb_probe_xc = self.builder.get_object("lb_probe_xc")
-        self._lb_probe_yc = self.builder.get_object("lb_probe_yc")
-        self._lb_probe_a  = self.builder.get_object("lb_probe_a")
+        self._result_box_xp = self.builder.get_object("result_box_xp")
+        self._result_box_yp = self.builder.get_object("result_box_yp")
+        self._result_box_xm = self.builder.get_object("result_box_xm")
+        self._result_box_ym = self.builder.get_object("result_box_ym")
+        self._result_box_lx = self.builder.get_object("result_box_lx")
+        self._result_box_ly = self.builder.get_object("result_box_ly")
+        self._result_box_z  = self.builder.get_object("result_box_z")
+        self._result_box_d  = self.builder.get_object("result_box_d")
+        self._result_box_xc = self.builder.get_object("result_box_xc")
+        self._result_box_yc = self.builder.get_object("result_box_yc")
+        self._result_box_a  = self.builder.get_object("result_box_a")
 
         self.frm_parents = self.builder.get_object("frm_parents")
+
+        self.work_in_progress = 0
+
+        #do not create hal pin here due to multiple call
 
     # --------------------------
     #
@@ -96,13 +100,13 @@ class ProbeScreenBase(object):
     # --------------------------
     @restore_task_mode
     def gcode(self, s, data=None):
-        self.command.mode(linuxcnc.MODE_MDI)
+        self.commandialog.mode(linuxcnc.MODE_MDI)
         self.command.wait_complete()
 
         for l in s.split("\n"):
             # Search for G1 followed by a space, otherwise we'll catch G10 too.
             if "G1 " in l:
-                l += " F#<_ini[TOUCH_DEVICE]VEL_FOR_TRAVEL>"
+                l += " F%f" % (self.halcomp["vel_for_travel"])
             self.command.mdi(l)
             self.command.wait_complete()
             if self.error_poll() == -1:
@@ -182,6 +186,7 @@ class ProbeScreenBase(object):
 
         return 0
 
+
     # --------------------------
     #
     #  Utility Methods
@@ -212,8 +217,9 @@ class ProbeScreenBase(object):
         return temp
 
     def vcp_reload(self):
-        """ Realods the VCP - e.g. after changing changing changing origin/zero points """
+        """ Realods the VCP - e.g. after changing origin/zero points """
         self._vcp_action_reload.emit("activate")
+
 
     # --------------------------
     #
@@ -236,42 +242,43 @@ class ProbeScreenBase(object):
         d=None,
         a=None,
     ):
-        c = "{0: <10}".format(tool_tip_text)
+        c = "{0: <10} ".format(tool_tip_text)
         if "Xm" in s:
             c += "X-=%.4f " % (xm)
-            self._lb_probe_xm.set_text("%.4f" % (xm))
+            self._result_box_xm.set_text("%.4f" % (xm))
         if "Xc" in s:
             c += "Xc=%.4f " % (xc)
-            self._lb_probe_xc.set_text("%.4f" % (xc))
+            self._result_box_xc.set_text("%.4f" % (xc))
         if "Xp" in s:
             c += "X+=%.4f " % (xp)
-            self._lb_probe_xp.set_text("%.4f" % (xp))
+            self._result_box_xp.set_text("%.4f" % (xp))
         if "Lx" in s:
             c += "Lx=%.4f " % (lx)
-            self._lb_probe_lx.set_text("%.4f" % (lx))
+            self._result_box_lx.set_text("%.4f" % (lx))
         if "Ym" in s:
             c += "Y-=%.4f " % (ym)
-            self._lb_probe_ym.set_text("%.4f" % (ym))
+            self._result_box_ym.set_text("%.4f" % (ym))
         if "Yc" in s:
             c += "Yc=%.4f " % (yc)
-            self._lb_probe_yc.set_text("%.4f" % (yc))
+            self._result_box_yc.set_text("%.4f" % (yc))
         if "Yp" in s:
             c += "Y+=%.4f " % (yp)
-            self._lb_probe_yp.set_text("%.4f" % (yp))
+            self._result_box_yp.set_text("%.4f" % (yp))
         if "Ly" in s:
             c += "Ly=%.4f " % (ly)
-            self._lb_probe_ly.set_text("%.4f" % (ly))
+            self._result_box_ly.set_text("%.4f" % (ly))
         if "Z" in s:
             c += "Z=%.4f " % (z)
-            self._lb_probe_z.set_text("%.4f" % (z))
+            self._result_box_z.set_text("%.4f" % (z))
         if "D" in s:
             c += "D=%.4f" % (d)
-            self._lb_probe_d.set_text("%.4f" % (d))
+            self._result_box_d.set_text("%.4f" % (d))
         if "A" in s:
             c += "Angle=%.3f" % (a)
-            self._lb_probe_a.set_text("%.3f" % (a))
+            self._result_box_a.set_text("%.3f" % (a))
 
         self.add_history_text(c)
+
 
     def add_history_text(self, text):
         # Prepend a timestamp to all History lines
@@ -287,6 +294,7 @@ class ProbeScreenBase(object):
         # Add the line of text to the top of the history
         i.set_line(0)
         self.buffer.insert(i, "%s \n" % (text))
+
 
     def _dialog(self, gtk_type, gtk_buttons, message, secondary=None, title=_("Probe Screen NG")):
         """ displays a dialog """
@@ -307,9 +315,10 @@ class ProbeScreenBase(object):
         dialog.destroy()
         return responce == gtk.RESPONSE_OK
 
-    def warning_dialog(self, message, secondary=None, title=_("Warning Probe Screen NG")):
+
+    def warning_dialog(self, message, secondary=None, title=_("Warning PSNG")):
         """ displays a warning dialog """
-        if self.halcomp["chk_popup_style"] == True or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
+        if self.halcomp["chk_use_popup_style"] == True or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
             return self._dialog(gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message, secondary, title)
         else:
 #            if self.gcode("M160") == -1:         #o<clear-axis-info> call
@@ -324,9 +333,9 @@ class ProbeScreenBase(object):
                 #self.gcode("(DEBUG,**** %s ****)" % (message))
 
 
-    def error_dialog(self, message, secondary=None, title=_("Error Probe Screen NG")):
+    def error_dialog(self, message, secondary=None, title=_("Error PSNG")):
         """ displays a error dialog and abort """
-        if self.halcomp["chk_popup_style"] == True or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
+        if self.halcomp["chk_use_popup_style"] == True or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
             #self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
             return self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
         else:
@@ -341,6 +350,68 @@ class ProbeScreenBase(object):
                 self.add_history_text("ABORT: %s" % (message))
                 self.gcode("(ABORT,**** %s ****)" % (message))
 
+
+    def spbtn_dialog_tool_length(self):
+        """
+        Display a dialog with a text entry.
+        Returns the text, or None if canceled.
+        """
+        dialog = gtk.MessageDialog(self.window,
+                              gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                              gtk.MESSAGE_QUESTION,
+                              gtk.BUTTONS_OK_CANCEL,
+                              )
+        entry = gtk.Entry()
+        entry2 = gtk.Entry()
+        entry.set_text("INPUT TOOL NUMBER")
+        entry2.set_text("INPUT TOOL DIAMETER")
+        entry.show()
+        entry2.show()
+        dialog.set_title(_("TOOLTABLE CREATOR"))
+        dialog.set_keep_above(True)
+        dialog.show_all()
+        #dialog.vbox.pack_end(entry)
+        #dialog.vbox.pack_end(entry2)
+        entry.connect('activate', lambda _: dialog.response(gtk.RESPONSE_OK))
+        dialog.set_default_response(gtk.RESPONSE_OK)
+
+        r = dialog.run()
+        resulttool = entry.get_text().decode('utf8')
+        resultdiam = entry2.get_text().decode('utf8')
+        dialog.destroy()
+        if r == gtk.RESPONSE_OK:
+            return resulttool, resultdiam
+        else:
+            return None
+
+
+#    def spbtn_dialog_tool_length(self):
+#        """
+#        Display a dialog with a text entry.
+#        Returns the text, or None if canceled.
+#        """
+#        dialog = gtk.MessageDialog(self.window,
+#                              gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+#                              gtk.MESSAGE_QUESTION,
+#                              gtk.BUTTONS_OK_CANCEL,
+#                              )
+#        entry = gtk.Entry()
+#        entry.set_text("INPUT TOOL NUMBER")
+#        entry.show()
+#        dialog.set_title(_("TOOLTABLE CREATOR"))
+#        dialog.set_keep_above(True)
+#        dialog.show_all()
+#        dialog.vbox.pack_end(entry)
+#        entry.connect('activate', lambda _: dialog.response(gtk.RESPONSE_OK))
+#        dialog.set_default_response(gtk.RESPONSE_OK)
+#
+#        r = dialog.run()
+#        text = entry.get_text().decode('utf8')
+#        dialog.destroy()
+#        if r == gtk.RESPONSE_OK:
+#            return text
+#        else:
+#            return None
 
     # --------------------------
     #
@@ -367,6 +438,14 @@ class ProbeScreenBase(object):
                 self.warning_dialog(message, secondary)
                 return -1
 
+            if self.work_in_progress == 1:
+                message   = _("Please try again after actual job is finished")
+                secondary = _("You can retry once done")
+                self.warning_dialog(message, secondary)
+                return -1
+            else:
+            	  self.work_in_progress = 1
+
             # Execute wrapped function
             return f(self, *args, **kwargs)
 
@@ -381,7 +460,7 @@ class ProbeScreenBase(object):
         @wraps(f)
         def wrapper(self, *args, **kwargs):
 
-            if self.halcomp["chk_touch_plate_selected"] == True:
+            if self.halcomp["chk_use_touch_plate"] == True:
                 message   = _("You can't use this function using touchplate")
                 self.warning_dialog(message)
                 return -1
@@ -397,20 +476,29 @@ class ProbeScreenBase(object):
     #  Generic Probe Movement Methods
     #
     # --------------------------
-    def clearance_z_down(self, data=None):
-        # move Z - clearance_z
+    def move_probe_z_down(self, data=None):
+        if self.halcomp["chk_use_touch_plate"] == True:
+            self.halcomp["safe_tool_z"] = self.halcomp["latch"] + self.halcomp["tp_z_full_thickness"]
+        else:
+            self.halcomp["safe_tool_z"] = self.halcomp["latch"] + float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        # move Z - safe_tool_z
         s = """G91
         G1 Z-%f
-        G90""" % (self.halcomp["clearance_z"])
+        G90""" % (self.halcomp["safe_tool_z"])
         if self.gcode(s) == -1:
             return -1
         return 0
 
-    def clearance_z_up(self, data=None):
-        # move Z + clearance_z
+
+    def move_probe_z_up(self, data=None):
+        if self.halcomp["chk_use_touch_plate"] == True:
+            self.halcomp["safe_tool_z"] = self.halcomp["latch"] + self.halcomp["tp_z_full_thickness"]
+        else:
+            self.halcomp["safe_tool_z"] = self.halcomp["latch"] + float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        # move Z + safe_tool_z
         s = """G91
         G1 Z%f
-        G90""" % (self.halcomp["clearance_z"])
+        G90""" % (self.halcomp["safe_tool_z"])
         if self.gcode(s) == -1:
             return -1
         return 0
@@ -439,6 +527,7 @@ class ProbeScreenBase(object):
         coord[1] = res[1]
         return coord
 
+
     def _rott00_point(self, x1=0.0, y1=0.0, a1=0.0):
         """ rotate around 0,0 point coordinates """
         coord = [x1, y1]
@@ -448,11 +537,12 @@ class ProbeScreenBase(object):
             coord[1] = x1 * math.sin(t) + y1 * math.cos(t)
         return coord
 
+
     def length_x(self, xm=None, xp=None):
         """ Calculates a length in the X direction """
         # Use previous value for xm if not supplied
         if xm is None:
-            xm = self._lb_probe_xm.get_text()
+            xm = self._result_box_xm.get_text()
             # Use None if no previous value exists
             if xm == "":
                 xm = None
@@ -461,7 +551,7 @@ class ProbeScreenBase(object):
 
         # Use previous value for xp if not supplied
         if xp is None:
-            xp = self._lb_probe_xp.get_text()
+            xp = self._result_box_xp.get_text()
             # Use None if no previous value exists
             if xp == "":
                 xp = None
@@ -480,11 +570,12 @@ class ProbeScreenBase(object):
 
         return res
 
+
     def length_y(self, ym=None, yp=None):
         """ Calculates a length in the Y direction """
         # Use previous value for ym if not supplied
         if ym is None:
-            ym = self._lb_probe_ym.get_text()
+            ym = self._result_box_ym.get_text()
             # Use None if no previous value exists
             if ym == "":
                 ym = None
@@ -493,7 +584,7 @@ class ProbeScreenBase(object):
 
         # Use previous value for yp if not supplied
         if yp is None:
-            yp = self._lb_probe_yp.get_text()
+            yp = self._result_box_yp.get_text()
             # Use None if no previous value exists
             if yp == "":
                 yp = None
@@ -518,29 +609,52 @@ class ProbeScreenBase(object):
     #  Generic Position Calculations
     #
     # --------------------------
-    def set_zerro(self, s="XYZ", x=0.0, y=0.0, z=0.0):
-        if self.halcomp["chk_set_zero"]:
-            #  Z current position
-            self.stat.poll()   # before using some self value from linuxcnc we need to poll
-            tmpz = (
-                self.stat.position[2]
-                - self.stat.g5x_offset[2]
-                - self.stat.g92_offset[2]
-                - self.stat.tool_offset[2]
-            )
-            c = "G10 L20 P0"
-            s = s.upper()
-            if "X" in s:
-                x += self.halcomp["offs_x"]
-                c += " X%s" % (x)
-            if "Y" in s:
-                y += self.halcomp["offs_y"]
-                c += " Y%s" % (y)
-            if "Z" in s:
-                tmpz = tmpz - z + self.halcomp["offs_z"]
-                c += " Z%s" % (tmpz)
-            if self.gcode(c) == -1:                                                                                 # Need your review choosing this or only self.gcode(c) timesleep
-               return
+    def set_zero_offset_box(self, s="XYZ", x=0.0, y=0.0, z=0.0):
+        self.stat.poll()   # before using some self value from linuxcnc we need to poll
+        tmpz = (
+            self.stat.position[2]
+            - self.stat.g5x_offset[2]
+            - self.stat.g92_offset[2]
+            - self.stat.tool_offset[2]
+        )
+        c = "G10 L20 P0"
+        s = s.upper()
+        if "X" in s:
+            x += self.halcomp["offs_x"]
+            c += " X%s" % (x)
+            self.add_history_text("set_zero_offset_box_x = %.4f" % (x))
+        if "Y" in s:
+            y += self.halcomp["offs_y"]
+            c += " Y%s" % (y)
+            self.add_history_text("set_zero_offset_box_y = %.4f" % (y))
+        if "Z" in s:
+            tmpz = tmpz - z + self.halcomp["offs_z"]
+            c += " Z%s" % (tmpz)
+            self.add_history_text("set_zero_offset_box_z = %.4f" % (z))
+        if self.gcode(c) == -1:
+           return
+
+
+    # --------------------------
+    #
+    #  Generic Position Calculations
+    #
+    # --------------------------
+    def set_zero(self, s="XYZ", x=0.0, y=0.0, z=0.0):
+        c = "G10 L20 P0"
+        s = s.upper()
+        if "X" in s:
+            c += " X%s" % (x)
+            self.add_history_text("set_zero_x = %.4f" % (x))
+        if "Y" in s:
+            c += " Y%s" % (y)
+            self.add_history_text("set_zero_y = %.4f" % (y))
+        if "Z" in s:
+            c += " Z%s" % (z)
+            self.add_history_text("set_zero_z = %.4f" % (z))
+        if self.gcode(c) == -1:
+           return
+
 
     # --------------------------
     #
@@ -573,4 +687,5 @@ class ProbeScreenBase(object):
         self.prefs.putpref(pin_name, gtkspinbutton.get_value(), _type)
 
         # Update history display
-        self.add_history_text("%s = %.4f" % (pin_name, gtkspinbutton.get_value()))
+        #self.add_history_text("%s = %.4f" % (pin_name, gtkspinbutton.get_value()))
+
