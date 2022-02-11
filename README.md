@@ -8,7 +8,7 @@
 
 - Probe need to be in the tool table with correct config in your ini file
 
-- All Z start probing position are automatically calculated using axis length, block_heigth, table_offset from machine table 0
+- All Z start probing position are automatically calculated using axis length, block_heigth, table_offset, tool_offset, from machine table 0
 
 - You need to place manually the Touch device on the good Z height for all XY probing
 
