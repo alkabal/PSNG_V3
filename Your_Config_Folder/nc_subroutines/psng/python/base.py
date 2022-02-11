@@ -351,7 +351,7 @@ class ProbeScreenBase(object):
                 self.gcode("(ABORT,**** %s ****)" % (message))
 
 
-    def spbtn_dialog_tool_length(self):
+    def spbtn_dialog_with_question(self):
         """
         Display a dialog with a text entry.
         Returns the text, or None if canceled.
@@ -362,22 +362,17 @@ class ProbeScreenBase(object):
                               gtk.BUTTONS_OK_CANCEL,
                               )
         entry = gtk.Entry()
-        entry2 = gtk.Entry()
         entry.set_text("INPUT TOOL NUMBER")
-        entry2.set_text("INPUT TOOL DIAMETER")
         entry.show()
-        entry2.show()
         dialog.set_title(_("TOOLTABLE CREATOR"))
         dialog.set_keep_above(True)
         dialog.show_all()
-        #dialog.vbox.pack_end(entry)
-        #dialog.vbox.pack_end(entry2)
+        dialog.vbox.pack_end(entry)
         entry.connect('activate', lambda _: dialog.response(gtk.RESPONSE_OK))
         dialog.set_default_response(gtk.RESPONSE_OK)
 
         r = dialog.run()
         resulttool = entry.get_text().decode('utf8')
-        resultdiam = entry2.get_text().decode('utf8')
         dialog.destroy()
         if r == gtk.RESPONSE_OK:
             return resulttool, resultdiam
@@ -442,7 +437,7 @@ class ProbeScreenBase(object):
                 message   = _("Please try again after actual job is finished")
                 secondary = _("You can retry once done")
                 self.warning_dialog(message, secondary)
-                return -1
+                #return -1
             else:
             	  self.work_in_progress = 1
 

@@ -58,7 +58,6 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
 
         self.halcomp.newpin("ts_pos_x", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_pos_y", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_pos_z", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_vel_for_travel", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_vel_for_search", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_vel_for_probe", hal.HAL_FLOAT, hal.HAL_OUT)
@@ -105,7 +104,6 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
     def _init_tool_setter_data(self):
         ts_pos_x = self.inifile.find("TOOL_SETTER", "TS_POS_X")
         ts_pos_y = self.inifile.find("TOOL_SETTER", "TS_POS_Y")
-        ts_pos_z = self.inifile.find("TOOL_SETTER", "TS_POS_Z")
         ts_height = self.inifile.find("TOOL_SETTER", "TS_HEIGHT")
         ts_vel_for_travel = self.inifile.find("TOOL_SETTER", "VEL_FOR_TRAVEL")
         ts_vel_for_search = self.inifile.find("TOOL_SETTER", "VEL_FOR_SEARCH")
@@ -124,7 +122,6 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         if (
             ts_pos_x is None
             or ts_pos_y is None
-            or ts_pos_z is None
             or ts_height is None
             or ts_vel_for_travel is None
             or ts_vel_for_search is None
@@ -151,7 +148,6 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
 
             self.halcomp["ts_pos_x"] = float(ts_pos_x)
             self.halcomp["ts_pos_y"] = float(ts_pos_y)
-            self.halcomp["ts_pos_z"] = float(ts_pos_z)
             self.halcomp["ts_height"] = float(ts_height)
             self.halcomp["ts_vel_for_travel"] = float(ts_vel_for_travel)
             self.halcomp["ts_vel_for_search"] = float(ts_vel_for_search)
@@ -239,11 +235,6 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             message   = _("Tool Measurement Error")
             secondary = _("Did not find a toolfile file in [EMCIO] TOOL_TABLE")
             self.error_dialog(message, secondary=secondary)
-            return
-
-        # ask toolnumber from popup
-        if self.spbtn_dialog_tool_length() == None:
-            self.add_history_text("Tool Measurement Canceled by user")
             return
 
         if self.ocode("o<backup_status> call") == -1:

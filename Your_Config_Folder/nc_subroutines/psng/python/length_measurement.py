@@ -143,6 +143,12 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     # Button pressed compensation probe to table for measuring it and use for calculate tool setter height and can set G10 L20 Z0 if you tick auto zero
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_probe_bed_compensation_released(self, gtkbutton, data=None):
+
+        # ask toolnumber from popup
+        if self.spbtn_dialog_with_question() == None:
+            self.add_history_text("Bed Compensation Canceled by user")
+            return
+
         if self.ocode("o<backup_status> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0]") == -1:
