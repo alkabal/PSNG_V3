@@ -1,0 +1,39 @@
+# Ensure all toolchange pins are free to use
+#unlinkp halui.tool.diameter                      # you need to check if this pin is not used in your config file else you need to adapt
+#unlinkp iocontrol.0.tool-number
+#unlinkp iocontrol.0.tool-prep-number
+#unlinkp iocontrol.0.tool-change
+#unlinkp iocontrol.0.tool-changed
+#unlinkp iocontrol.0.tool-prepare
+#unlinkp iocontrol.0.tool-prepared
+#
+#net psng-tool-change            probe.toolchange-change      <=   iocontrol.0.tool-change
+#net psng-tool-changed           probe.toolchange-changed     =>   iocontrol.0.tool-changed
+#net psng-tool-prep-number       probe.toolchange-prep-number <=   iocontrol.0.tool-prep-number
+#net psng-tool-prep-loop         iocontrol.0.tool-prepare     <=   iocontrol.0.tool-prepared
+#net psng-tool-number            probe.toolchange-number      <=   iocontrol.0.tool-number
+#net psng-tool-diameter          probe.toolchange-diameter    <=   halui.tool.diameter
+
+
+#net manual-tool-number         probe.toolchange-number
+#net manual-tool-diameter       probe.toolchange-diameter
+
+
+
+# added for Z compensation component you need sudo apt-get install python-scipy
+loadusr -Wn probe.compensation python ./nc_subroutines/psng/python/compensation.py
+
+net xpos-cmd 		          <= axis.x.pos-cmd			            => probe.compensation.x-pos
+net ypos-cmd 		          <= axis.y.pos-cmd			            => probe.compensation.y-pos
+net zpos-cmd 	            <= axis.z.pos-cmd		              => probe.compensation.z-pos
+net eoffset-enable	      <= probe.compensation.enable-out	=> axis.z.eoffset-enable
+net eoffset-scale	        <= probe.compensation.scale		    => axis.z.eoffset-scale
+net eoffset-counts	      <= probe.compensation.counts 		  => axis.z.eoffset-counts
+net eoffset-clear	        <= probe.compensation.clear 		  => axis.z.eoffset-clear
+
+net compensation-bed-on	  <= probe.chk_use_bed_compensation  => probe.compensation.enable-in
+
+#******************************************
+
+
+
