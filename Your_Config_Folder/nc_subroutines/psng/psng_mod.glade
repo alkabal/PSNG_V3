@@ -2425,8 +2425,8 @@
                             <property name="pick_color_off">#a0a0a0a0a0a0</property>
                           </object>
                           <packing>
-                            <property name="x">110</property>
-                            <property name="y">20</property>
+                            <property name="x">100</property>
+                            <property name="y">40</property>
                           </packing>
                         </child>
                         <child>
@@ -2441,29 +2441,29 @@
                             <signal name="toggled" handler="on_chk_use_bed_compensation_toggled" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="x">115</property>
+                            <property name="x">125</property>
                             <property name="y">40</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkLabel" id="use_bed_compensation">
                             <property name="width_request">180</property>
-                            <property name="height_request">30</property>
+                            <property name="height_request">25</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">&lt;b&gt;Compensation Bed&lt;/b&gt;</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Bed Compensation&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                             <property name="width_chars">10</property>
                           </object>
                           <packing>
-                            <property name="x">5</property>
-                            <property name="y">5</property>
+                            <property name="x">1</property>
+                            <property name="y">1</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkButton" id="btn_probe_bed_compensation">
                             <property name="width_request">90</property>
-                            <property name="height_request">42</property>
+                            <property name="height_request">50</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -2478,8 +2478,8 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">1</property>
-                            <property name="y">30</property>
+                            <property name="x">2</property>
+                            <property name="y">28</property>
                           </packing>
                         </child>
 
@@ -2501,13 +2501,13 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">185</property>
+                            <property name="x">245</property>
                             <property name="y">5</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkButton" id="btn_set_table_offset">
-                            <property name="width_request">100</property>
+                            <property name="width_request">90</property>
                             <property name="height_request">26</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2522,14 +2522,14 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">185</property>
-                            <property name="y">75</property>
+                            <property name="x">245</property>
+                            <property name="y">80</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkSpinButton" id="spbtn_probe_table_offset">
-                            <property name="width_request">100</property>
-                            <property name="height_request">30</property>
+                            <property name="width_request">90</property>
+                            <property name="height_request">32</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">●</property>
@@ -2546,8 +2546,8 @@
                             <signal name="value-changed" handler="on_spbtn_probe_table_offset_value_changed" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="x">185</property>
-                            <property name="y">105</property>
+                            <property name="x">245</property>
+                            <property name="y">110</property>
                           </packing>
                         </child>
 
@@ -2569,13 +2569,13 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">330</property>
+                            <property name="x">340</property>
                             <property name="y">5</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkButton" id="btn_set_block_height">
-                            <property name="width_request">100</property>
+                            <property name="width_request">90</property>
                             <property name="height_request">26</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2590,14 +2590,14 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">330</property>
-                            <property name="y">75</property>
+                            <property name="x">340</property>
+                            <property name="y">80</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkSpinButton" id="spbtn_probe_block_height">
-                            <property name="width_request">100</property>
-                            <property name="height_request">30</property>
+                            <property name="width_request">90</property>
+                            <property name="height_request">32</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="invisible_char">?</property>
@@ -2614,8 +2614,8 @@
                             <signal name="value-changed" handler="on_spbtn_probe_block_height_value_changed" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="x">330</property>
-                            <property name="y">105</property>
+                            <property name="x">340</property>
+                            <property name="y">110</property>
                           </packing>
                         </child>
 
