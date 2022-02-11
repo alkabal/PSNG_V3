@@ -273,17 +273,14 @@ def set_tool_number(self, **words):
         if status != INTERP_OK:
             self.set_errormsg("M61 failed: requested tool %d not in table" % (toolno))
             return status
-        if words['q'] > -TOLERANCE_EQUAL: # 'greater equal 0 within interp's precision'
-            self.current_pocket = pocket
-            self.current_tool = toolno
-            emccanon.CHANGE_TOOL_NUMBER(pocket)
-            # cause a sync()
-            self.tool_change_flag = True
-            self.set_tool_parameters()
-            return INTERP_OK
-        else:
-            self.set_errormsg("M61 failed: Q=%4" % (toolno))
-            return INTERP_ERROR
+        self.current_pocket = pocket
+        self.current_tool = toolno
+        emccanon.CHANGE_TOOL_NUMBER(pocket)
+        # cause a sync()
+        self.tool_change_flag = True
+        self.set_tool_parameters()
+        self.execute("g43 h%d"% toolno)                      # added autolength correction
+        return INTERP_OK
     except Exception as e:
         self.set_errormsg("M61/set_tool_number: %s" % (e))
         return INTERP_ERROR
@@ -550,14 +547,14 @@ def index_lathe_tool_with_wear(self,**words):
 ##******************************************
 #[TOOL_SETTER]
 ## Absolute XYZ G53 machine coordinates of the toolsetter pad
-### you need to keep TS_HEIGHT + MAXPROBE_Z value inside your machine limit range
-#X = 0
-#Y = 0
-#Z = -35
+### you need to keep TS_HEIGHT + PROBE_MAX_Z value inside your machine limit range
+#TS_POS_X = 0
+#TS_POS_Y = 0
+#TS_POS_Z = -35
 #
 ## Maximum probing search distance
-### you need to keep TS_HEIGHT + MAXPROBE_Z value inside your machine limit range
-#MAXPROBE_Z = -60
+### you need to keep TS_HEIGHT + PROBE_MAX_Z value inside your machine limit range
+#PROBE_MAX_Z = 60
 #
 ## Fast first probe tool velocity : spring mounted touchplate/toolsetter allow faster speed
 #VEL_FOR_SEARCH = 150
@@ -627,22 +624,46 @@ def tool_probe_m6(self, **words):
 
     try:
     # Safety check if ts_height is configured
-        if self.params["_ini[TOOL_SETTER]TS_HEIGHT"] <= 0:
-            clear_axis_all(self)
+        self.params["ts_height"] = float(self.params["_ini[TOOL_SETTER]TS_HEIGHT"])
+        if self.params["ts_height"] <= 0:
             self.execute("(DEBUG,stglue tool_probe_m6 remap error : TOOLSETTER HEIGHT NOT CORRECTLY CONFIGURED)")
             self.set_errormsg("stglue tool_probe_m6 remap error : TOOLSETTER HEIGHT NOT CORRECTLY CONFIGURED")
             yield INTERP_ERROR
     except:
-            self.execute("(DEBUG,stglue tool_probe_m6 remap error : TOOLSETTER HEIGHT NOT CONFIGURED)")
-            self.set_errormsg("stglue tool_probe_m6 remap error : TOOLSETTER HEIGHT NOT CONFIGURED")
+            self.execute("(DEBUG,stglue tool_probe_m6 remap error : TOOLSETTER MISSING FROM INI)")
+            self.set_errormsg("stglue tool_probe_m6 remap error : TOOLSETTER MISSING FROM INI")
             yield INTERP_ERROR
-    	                           
+
+
+
+
+
+## todo add all self.params["_ini
+#self.params["_ini[EMCIO]TOOL_CHANGE_QUILL_UP"]
+#self.params["_ini[EMCIO]TOOL_CHANGE_WITH_SPINDLE_ON"]
+#self.params["_ini[EMCMOT]NUM_SPINDLES"]
+#self.params["_ini[JOINT_2]HOME"]
+#self.params["_ini[TOOL_CHANGE]Z_TRAVEL_POSITION"]
+#self.params["_ini[TOOL_CHANGE]X"]
+#self.params["_ini[TOOL_CHANGE]Z"]
+#self.params["_ini[TOOL_CHANGE]POPUP_STYLE"]
+#self.params["_ini[JOINT_0]MAX_LIMIT"]
+#self.params["_ini[JOINT_1]MAX_LIMIT"]
+#self.params["_ini[AXIS_Z]MIN_LIMIT"]
+#self.params["_ini[TOOL_SETTER]TS_POS_X"]
+#self.params["_ini[TOOL_SETTER]TS_POS_Y"]
+#self.params["_ini[TOOL_SETTER]TS_POS_Z"]
+#self.params["_ini[TOOL_SETTER]TS_MAX_TOOL_LGT"]
+#self.params["_ini[TOOL_SETTER]CLEARANCE_Z"]
+#self.params["_ini[TOOL_SETTER]PROBE_MAX_LATCH"]
+
+
     try:
         self.params["probe_number"] = int(self.params["_ini[TOUCH_DEVICE]PROBE_NUMBER"])
     except:
-        print("!!!! PROBE_NUMBER CONFIG MISSING FROM INI, USE DEFAULT VALUE 0 !!!!")
-        self.execute("(DEBUG,!!!! PROBE_NUMBER CONFIG MISSING FROM INI, USE DEFAULT VALUE 0 !!!!)")
-        self.probe_number = 0
+        print("!!!! PROBE_NUMBER CONFIG MISSING FROM INI, USE DEFAULT VALUE 999 !!!!")
+        self.execute("(DEBUG,!!!! PROBE_NUMBER CONFIG MISSING FROM INI, USE DEFAULT VALUE 999 !!!!)")
+        self.probe_number = 999
 
     try:
         self.params["probe_on_mcode"] = self.params["_ini[TOUCH_DEVICE]PROBE_ON_MCODE"]              # Custom Mcode do halcmd sets touch-probe-on-off 1    signal linked to and2.combined-probe.in1
@@ -667,6 +688,19 @@ def tool_probe_m6(self, **words):
     except:
         self.set_errormsg("tool_probe_m6 remap error: CLEAR_GUI_NOTIF_MCODE CONFIG MISSING FROM INI")
         yield INTERP_ERROR
+
+    try:
+        self.params["change_x_limit_mcode"] = self.params["_ini[TOOL_SETTER]CHANGE_X_LIMIT_MCODE"]  # Custom Mcode do halcmd halcmd setp ini.y.max_limit $jointlength
+    except:
+        self.set_errormsg("tool_probe_m6 remap error: CHANGE_X_LIMIT_MCODE CONFIG MISSING FROM INI")
+        yield INTERP_ERROR
+
+    try:
+        self.params["change_y_limit_mcode"] = self.params["_ini[TOOL_SETTER]CHANGE_Y_LIMIT_MCODE"]  # Custom Mcode do halcmd halcmd setp ini.y.max_limit $jointlength
+    except:
+        self.set_errormsg("tool_probe_m6 remap error: CHANGE_Y_LIMIT_MCODE CONFIG MISSING FROM INI")
+        yield INTERP_ERROR
+
 
     # create a connection to the linuxcnc status and command channel
     self.cmd  = linuxcnc.command()
@@ -703,13 +737,13 @@ def tool_probe_m6(self, **words):
             emccanon.STOP_SPINDLE_TURNING(s)
             wait(self)
 
-    # Bypass measure can be used if you create the tool table with PSNG so for some repetable tool you can bypass autolenght
+    # Bypass measure can be used if you create the tool table with PSNG so for some repetable tool you can bypass autolength
     # You can use PSNG for control this pin or you can create your own with pyvcp or similar
-    if Popen('halcmd getp probe.use_tool_measurement',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
+    if Popen('halcmd getp probe.ts_chk_use_tool_measurement',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
         BYPASS_MEASURE = 1
     else:
         BYPASS_MEASURE = 0
-        print("If you get message (<commandline>:0: pin or parameter 'probe.use_tool_measurement' not found) do not take care without PSNG you can't bypass auto tool lengt")
+        print("If you get message (<commandline>:0: pin or parameter 'probe.ts_chk_use_tool_measurement' not found) do not take care without PSNG you can't bypass auto tool lengt")
 
 
     try:
@@ -813,16 +847,28 @@ def tool_probe_m6(self, **words):
 
         # bypass option for restoring simple manual mode without autolength
         if BYPASS_MEASURE:
-            # re-apply tool offset
             clear_axis_all(self)
             self.execute("(MSG,BYPASSED AUTO TOOL MEASUREMENT)")
             wait(self)
+
+            # apply tool offset after succesfull toolchange without measure
             self.execute("G43")
+            wait(self)                        #added 2022
+
+            # RESTORE THE MACHINE XY LIMIT MAX USING JOINT 1 - TS_POS VALUE FOR ALLOW GOTO TOOLSENSOR
+            self.execute("M%s P%s" % (self.params["change_x_limit_mcode"], (self.params["_ini[JOINT_0]MAX_LIMIT"] - self.params["_ini[TOOL_SETTER]TS_POS_X"])))
+            self.execute("M%s P%s" % (self.params["change_y_limit_mcode"], (self.params["_ini[JOINT_1]MAX_LIMIT"] - self.params["_ini[TOOL_SETTER]TS_POS_Y"])))
+
+            # unfortunatly i can't do here the REPLACE THE MACHINE Z LIMIT MIN ACCORDING TO TOOL LENGTH FOR PREVENT TABLE COLISION
+
+            # Using act tool change as a sub allow user to cancel tool change correctly
             tool_probe_restore_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
             tool_probe_changed_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
             yield INTERP_EXECUTE_FINISH
             yield INTERP_OK
 
+
+        # Using act tool change as a sub allow user to cancel tool change correctly
         tool_probe_changed_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
         yield INTERP_EXECUTE_FINISH
 
@@ -837,6 +883,10 @@ def tool_probe_m6(self, **words):
             # move to tool setter position (from INI)
             self.execute("G90")
 
+            # REPLACE THE MACHINE XY LIMIT MAX  USING JOINT 1 VALUE FOR ALLOW GOTO TOOLSENSOR
+            self.execute("M%s P%s" % (self.params["change_x_limit_mcode"], self.params["_ini[JOINT_0]MAX_LIMIT"]))
+            self.execute("M%s P%s" % (self.params["change_y_limit_mcode"], self.params["_ini[JOINT_1]MAX_LIMIT"]))
+
             # Z up first
 #            if self.tool_change_quill_up:
             if self.params["_ini[EMCIO]TOOL_CHANGE_QUILL_UP"]:
@@ -845,12 +895,21 @@ def tool_probe_m6(self, **words):
             else:
                 self.execute("G53 G0 Z{:.5f}".format(self.params["_ini[TOOL_CHANGE]Z_TRAVEL_POSITION"]))
             wait(self)
-            self.execute("G53 G0 X#<_ini[TOOL_SETTER]X> Y#<_ini[TOOL_SETTER]Y>")
+            self.execute("G53 G0 X#<_ini[TOOL_SETTER]TS_POS_X> Y#<_ini[TOOL_SETTER]TS_POS_Y>")
             wait(self)
-            self.execute("G53 G0 Z#<_ini[TOOL_SETTER]Z>")
+
+
+
+            #self.execute("G53 G0 Z#<_ini[TOOL_SETTER]TS_POS_Z>")
+            self.execute("G53 G0 Z{:.5f}".format(self.params["_ini[TOOL_SETTER]TS_POS_Z"]))
+# TODO
+            #TS_POS_Z = [#<_psng_z_axis_length_abs>  - [[#<_psng_ts_height> + #<_psng_probe_max_z>] - #<_psng_latch>]]
+
+
+
             #wait(self)
             yield INTERP_EXECUTE_FINISH
-            
+
             # set incremental mode
             self.execute("G91")
 
@@ -861,15 +920,16 @@ def tool_probe_m6(self, **words):
             yield INTERP_EXECUTE_FINISH # without that the inhibit probe is not aknowledge before starting to move
 
             # Fast Search probe   # Take care about possible error message move on line 0 exceed the Z positive axis limit can appears if tool setter is already triggered
-            self.execute("G38.3 Z#<_ini[TOOL_SETTER]MAXPROBE_Z> F#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>")
+            #self.execute("G38.3 Z-#<_ini[TOOL_SETTER]PROBE_MAX_Z> F#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>")
+            self.execute("G38.3 Z-{:.5f} F#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>".format(self.params["_ini[TOOL_SETTER]TS_MAX_TOOL_LGT"] + self.params["_ini[TOOL_SETTER]CLEARANCE_Z"]))
             #print("Wait for probe ending")
             yield INTERP_EXECUTE_FINISH
             # Check if we have get contact or not
             tool_probe_result_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
             wait(self)
 
-            if self.params["_ini[TOOL_SETTER]LATCH_MAXPROBE"] > 0:
-                self.execute("G38.5 Z#<_ini[TOOL_SETTER]LATCH_MAXPROBE> F[#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>*0.5]")
+            if self.params["_ini[TOOL_SETTER]PROBE_MAX_LATCH"] > 0:
+                self.execute("G38.5 Z#<_ini[TOOL_SETTER]PROBE_MAX_LATCH> F[#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>*0.5]")
                 # print("Latch probe wait end")
                 yield INTERP_EXECUTE_FINISH
                 # Check if we have get contact or not
@@ -899,8 +959,8 @@ def tool_probe_m6(self, **words):
             # Save the probe result now due to possible use of G38.5 for retract
             proberesult = self.params[5063]
 
-            if self.params["_ini[TOOL_SETTER]LATCH_MAXPROBE"] > 0:
-                self.execute("G38.5 Z#<_ini[TOOL_SETTER]LATCH_MAXPROBE> F[#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>*0.5]")
+            if self.params["_ini[TOOL_SETTER]PROBE_MAX_LATCH"] > 0:
+                self.execute("G38.5 Z#<_ini[TOOL_SETTER]PROBE_MAX_LATCH> F[#<_ini[TOOL_SETTER]VEL_FOR_SEARCH>*0.5]")
                 #print("Final latch probe wait end")
                 yield INTERP_EXECUTE_FINISH
                 # Check if we have get contact or not
@@ -923,8 +983,8 @@ def tool_probe_m6(self, **words):
             yield INTERP_EXECUTE_FINISH # without that the inhibit probe is not aknowledge before starting to move
 
             # calculations for tool offset saved in the tooltable
-            adj = proberesult - self.params["_ini[TOOL_SETTER]TS_HEIGHT"] + self.stat.g5x_offset[2]     # TODO Your welcome for other solution !    # TODO what about self.stat.g92_offset[2]
-            self.execute("G10 L1 P#<selected_tool> Z{}".format(adj))                                    # REGISTER NEW TOOL LENGTH in the tooltable
+            tool_offset_calculated = proberesult - self.params["ts_height"] + self.stat.g5x_offset[2]     # TODO Your welcome for other solution !    # TODO what about self.stat.g92_offset[2]
+            self.execute("G10 L1 P#<selected_tool> Z{}".format(tool_offset_calculated))                   # REGISTER NEW TOOL LENGTH in the tooltable
 
             # apply tool offset after succesfull probing
             self.execute("G43")
@@ -952,6 +1012,11 @@ def tool_probe_m6(self, **words):
             tool_probe_restore_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
             yield INTERP_OK
 
+            # RESTORE THE MACHINE XY LIMIT MAX USING JOINT 1 - TS_POS VALUE FOR ALLOW GOTO TOOLSENSOR
+            self.execute("M%s P%s" % (self.params["change_x_limit_mcode"], (self.params["_ini[JOINT_0]MAX_LIMIT"] - self.params["_ini[TOOL_SETTER]TS_POS_X"])))
+            self.execute("M%s P%s" % (self.params["change_y_limit_mcode"], (self.params["_ini[JOINT_1]MAX_LIMIT"] - self.params["_ini[TOOL_SETTER]TS_POS_Y"])))
+
+
         except InterpreterException as e:
             clear_axis_all(self)
             tool_probe_restore_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
@@ -968,7 +1033,7 @@ def tool_probe_m6(self, **words):
         yield INTERP_ERROR
 
 
-# Using act tool change as a sub allow user to cancel tool change corrctly
+# Using act tool change as a sub allow user to cancel tool change correctly
 def tool_probe_changed_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG):
         #print("Acting tool change is ok")
         self.selected_pocket =  int(self.params["selected_pocket"])
@@ -1009,9 +1074,15 @@ def tool_probe_restore_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
 
             self.params["feed"] = FEED_BACKUP
 
+
+            # RESTORE THE MACHINE XY LIMIT MAX USING JOINT 1 - TS_POS VALUE FOR ALLOW GOTO TOOLSENSOR
+            self.execute("M%s P%f" % (self.params["change_x_limit_mcode"], (self.params["_ini[JOINT_0]MAX_LIMIT"] - self.params["_ini[TOOL_SETTER]TS_POS_X"])))
+            self.execute("M%s P%f" % (self.params["change_y_limit_mcode"], (self.params["_ini[JOINT_1]MAX_LIMIT"] - self.params["_ini[TOOL_SETTER]TS_POS_Y"])))
+
             # allow to restore the 3D-PROBE and TOOL-SETTER input to motionprobe-input
             # TODO most wanted is allow this sub to call a external file for easy user customisation
             tool_probe_manager_restore_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
+            print("tool length at restore ", self.stat.tool_offset)
 
 def tool_probe_manager_restore_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG):
             if self.params["probe_number"] > 0:
