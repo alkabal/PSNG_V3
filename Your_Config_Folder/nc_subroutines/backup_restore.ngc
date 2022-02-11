@@ -10,7 +10,6 @@ o1 if [#1 EQ 999 OR #1 EQ 888]
    M160    ;o<clear-axis-info> call
 o1 endif
 
-
 o2 if [EXISTS [#<_backup_metric>]]
 
 
@@ -48,51 +47,51 @@ o2 if [EXISTS [#<_backup_metric>]]
 
 
      o40 if [#<_backup_ccomp> NE #<_ccomp>]
-      o41  if [#<_backup_ccomp> EQ 400]
+      o41 if [#<_backup_ccomp> EQ 400]
             G40
-      o41  elseif [#<_backup_ccomp> EQ 410]
+      o41 elseif [#<_backup_ccomp> EQ 410]
             G41
-      o41  elseif [#<_backup_ccomp> EQ 411]
+      o41 elseif [#<_backup_ccomp> EQ 411]
             G41.1
-      o41  elseif [#<_backup_ccomp> EQ 420]
+      o41 elseif [#<_backup_ccomp> EQ 420]
             G42
-      o41  elseif [#<_backup_ccomp> EQ 421]
+      o41 elseif [#<_backup_ccomp> EQ 421]
             G42.1
       o41  endif
      o40 endif
 
 
      o50 if [#<_backup_tool_offset> NE #<_tool_offset>]
-      o51  if [#<_backup_tool_offset> EQ 490]
+      o51 if [#<_backup_tool_offset> EQ 490]
             G49
-      o51  elseif [#<_backup_tool_offset> EQ 430]
+      o51 elseif [#<_backup_tool_offset> EQ 430]
             G43
-      o51  elseif [#<_backup_tool_offset> EQ 431]
+      o51 elseif [#<_backup_tool_offset> EQ 431]
             G43.1
-      o51  elseif [#<_backup_tool_offset> EQ 432]
+      o51 elseif [#<_backup_tool_offset> EQ 432]
             G43.2
       o51  endif
      o50 endif
 
 
      o60 if [#<_backup_coord_system> NE #<_coord_system>]
-      o61  if [#<_backup_coord_system> EQ 540]
+      o61 if [#<_backup_coord_system> EQ 540]
             G54
-      o61  elseif [#<_backup_coord_system> EQ 550]
+      o61 elseif [#<_backup_coord_system> EQ 550]
             G55
-      o61  elseif [#<_backup_coord_system> EQ 560]
+      o61 elseif [#<_backup_coord_system> EQ 560]
             G56
-      o61  elseif [#<_backup_coord_system> EQ 570]
+      o61 elseif [#<_backup_coord_system> EQ 570]
             G57
-      o61  elseif [#<_backup_coord_system> EQ 580]
+      o61 elseif [#<_backup_coord_system> EQ 580]
             G58
-      o61  elseif [#<_backup_coord_system> EQ 590]
+      o61 elseif [#<_backup_coord_system> EQ 590]
             G59
-      o61  elseif [#<_backup_coord_system> EQ 591]
+      o61 elseif [#<_backup_coord_system> EQ 591]
             G59.1
-      o61  elseif [#<_backup_coord_system> EQ 592]
+      o61 elseif [#<_backup_coord_system> EQ 592]
             G59.2
-      o61  elseif [#<_backup_coord_system> EQ 593]
+      o61 elseif [#<_backup_coord_system> EQ 593]
             G59.3
       o61  endif
      o60 endif
@@ -109,7 +108,7 @@ o2 if [EXISTS [#<_backup_metric>]]
 
      o80 if [EXISTS[#<_ini[DISPLAY]LATHE>]]
           o81 if [#<_backup_lathe_diam_mode> NE #<_lathe_diameter_mode>]
-               o82    if [#<_backup_lathe_diam_mode>]
+               o82   if [#<_backup_lathe_diam_mode>]
                       G7
                o82    else
                       G8     ;#<_lathe_radius_mode>
@@ -119,17 +118,17 @@ o2 if [EXISTS [#<_backup_metric>]]
 
 
      o90 if [#<_backup_plane> NE #<_plane>]
-      o91  if [#<_backup_plane> EQ 170]
+      o91 if [#<_backup_plane> EQ 170]
             G17
-      o91  elseif [#<_backup_plane> EQ 180]
+      o91 elseif [#<_backup_plane> EQ 180]
             G18
-      o91  elseif [#<_backup_plane> EQ 190]
+      o91 elseif [#<_backup_plane> EQ 190]
             G19
-      o91  elseif [#<_backup_plane> EQ 171]
+      o91 elseif [#<_backup_plane> EQ 171]
             G17.1
-      o91  elseif [#<_backup_plane> EQ 181]
+      o91 elseif [#<_backup_plane> EQ 181]
             G18.1
-      o91  else if [#<_backup_plane> EQ 191]
+      o91 elseif [#<_backup_plane> EQ 191]
             G19.1
       o91  endif
      o90 endif
@@ -145,13 +144,13 @@ o2 if [EXISTS [#<_backup_metric>]]
 
 
      o140 if [#<_backup_inverse_time> NE #<_inverse_time>]
-      o141  if [#<_backup__inverse_time> EQ 1]
+      o141 if [#<_backup__inverse_time> EQ 1]
             G93
       o141  endif
      o140 endif
 
      o150 if [#<_backup_units_per_rev> NE #<_units_per_rev>]
-      o151  if [#<_backup_units_per_rev> EQ 1]
+      o151 if [#<_backup_units_per_rev> EQ 1]
             G95
       o151  else
             G94      ;#<_units_per_minute>
@@ -159,7 +158,7 @@ o2 if [EXISTS [#<_backup_metric>]]
      o150 endif
 
      o160 if [#<_backup_spindle_rpm_mode> NE #<_spindle_rpm_mode>]
-      o161  if [#<_backup_spindle_rpm_mode> EQ 1]
+      o161 if [#<_backup_spindle_rpm_mode> EQ 1]
             G97
       o161  else
             G96      ;#<_spindle_css_mode>
@@ -167,7 +166,7 @@ o2 if [EXISTS [#<_backup_metric>]]
      o160 endif
 
      o170 if [#<_backup_retract_old_z> NE #<_retract_old_z>]
-      o171  if [#<_backup_retract_old_z> EQ 1]
+      o171 if [#<_backup_retract_old_z> EQ 1]
             G99
       o171  else
             G98      ;#<_retract_r_plane>
@@ -176,8 +175,9 @@ o2 if [EXISTS [#<_backup_metric>]]
 
 
 o2 else
+     ;M160    ;o<clear-axis-info> call    do not clear display here for keep error message
 
-     (DEBUG,RESTORE MODAL STATUS USING FIXED VALUE LIKE STARTUP)
+     (DEBUG,SOMETHING WAS KILLED WITH UNKNOW STATUS : RESTORE MODAL STATUS USING FIXED VALUE LIKE STARTUP)
 
     ; FULL STATRUP LIST FROM CONFIG
     ;G17 G40 G49 G54 G64 P0.001 G80 G90 G90.1 G92.1 G94 or G95 G97 G99 M5 M9 M53
@@ -206,8 +206,12 @@ o2 else
     G99 (canned cycle return mode)
     M48 (set feed and speed overrides)
     M53 (feed Stop Control)
+
     M165  ; activate probe output to motion.probe-inpute (logic inverted)
     M167  ; activate setter output to motion.probe-inpute (logic inverted)
+
+    M170 P#<_ini[JOINT_0]MAX_LIMIT>   ; allow to extend the Z axis length before goto tool sensor
+    M171 P#<_ini[JOINT_1]MAX_LIMIT>   ; allow to extend the Y axis length before goto tool sensor
 
 
 o2 endif
