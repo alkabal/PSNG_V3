@@ -223,7 +223,7 @@ class Compensation :
               self.halcomp["scale"] = self.scale
             else :
               self.halcomp["counts"] = 0
-            time.sleep(UPDATE_INTERVAL * 2)
+            time.sleep(1)
             currentState = States.RESET
 
         elif currentState == States.RESET :

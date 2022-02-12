@@ -1500,8 +1500,6 @@
                                         </child>
                                         <child>
                                           <object class="HAL_LED" id="hal_led_use_auto_rott">
-                                            <property name="height_request">18</property>
-                                            <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="blink_color">#a0a0a0a0a0a0</property>
                                             <property name="led_blink_rate">500</property>
@@ -1630,8 +1628,6 @@
                                     </child>
                                     <child>
                                       <object class="HAL_LED" id="hal_led_use_auto_zero_offset_box">
-                                        <property name="width_request">28</property>
-                                        <property name="height_request">28</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="blink_color">#a0a0a0a0a0a0</property>
@@ -2319,8 +2315,54 @@
                         </child>
 
                         <child>
+                          <object class="GtkButton" id="btn_rect_out">
+                            <property name="width_request">90</property>
+                            <property name="height_request">62</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Rect out pos.</property>
+                            <signal name="released" handler="on_btn_rect_out_released" swapped="no"/>
+                            <child>
+                              <object class="GtkImage" id="rect_out.png">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="pixbuf">icons/rect_out.png</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="x">360</property>
+                            <property name="y">8</property>
+                          </packing>
+                        </child>
+
+                        <child>
+                          <object class="GtkButton" id="btn_rect_in">
+                            <property name="width_request">90</property>
+                            <property name="height_request">62</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="tooltip_text" translatable="yes">Rect in pos.</property>
+                            <signal name="released" handler="on_btn_rect_in_released" swapped="no"/>
+                            <child>
+                              <object class="GtkImage" id="rect_in.png">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="pixbuf">icons/rect_in.png</property>
+                              </object>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="x">360</property>
+                            <property name="y">75</property>
+                          </packing>
+                        </child>
+
+                        <child>
                           <object class="GtkButton" id="btn_lx_out">
-                            <property name="width_request">104</property>
+                            <property name="width_request">97</property>
                             <property name="height_request">62</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2336,14 +2378,14 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">440</property>
+                            <property name="x">457</property>
                             <property name="y">8</property>
                           </packing>
                         </child>
 
                         <child>
                           <object class="GtkButton" id="btn_ly_out">
-                            <property name="width_request">104</property>
+                            <property name="width_request">97</property>
                             <property name="height_request">62</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2359,14 +2401,14 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">440</property>
+                            <property name="x">457</property>
                             <property name="y">75</property>
                           </packing>
                         </child>
 
                         <child>
                           <object class="GtkButton" id="btn_lx_in">
-                            <property name="width_request">104</property>
+                            <property name="width_request">97</property>
                             <property name="height_request">62</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2382,14 +2424,14 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">550</property>
+                            <property name="x">560</property>
                             <property name="y">8</property>
                           </packing>
                         </child>
 
                         <child>
                           <object class="GtkButton" id="btn_ly_in">
-                            <property name="width_request">104</property>
+                            <property name="width_request">97</property>
                             <property name="height_request">62</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2405,15 +2447,13 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">550</property>
+                            <property name="x">560</property>
                             <property name="y">75</property>
                           </packing>
                         </child>
 
                         <child>
                           <object class="HAL_LED" id="hal_led_use_bed_compensation">
-                            <property name="width_request">100</property>
-                            <property name="height_request">80</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="blink_color">#a0a0a0a0a0a0</property>
@@ -2485,7 +2525,7 @@
 
                         <child>
                           <object class="GtkButton" id="btn_probe_table_offset">
-                            <property name="width_request">90</property>
+                            <property name="width_request">85</property>
                             <property name="height_request">72</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2501,13 +2541,13 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">245</property>
+                            <property name="x">175</property>
                             <property name="y">5</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkButton" id="btn_set_table_offset">
-                            <property name="width_request">90</property>
+                            <property name="width_request">55</property>
                             <property name="height_request">26</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2522,13 +2562,30 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">245</property>
+                            <property name="x">175</property>
+                            <property name="y">80</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="HAL_LED" id="hal_led_use_table_offset">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="blink_color">#0dbfef8050f4</property>
+                            <property name="led_blink_rate">0</property>
+                            <property name="led_shiny">True</property>
+                            <property name="off_color">#a0a0a0a0a0a0</property>
+                            <property name="on_color">#0dbfef8050f4</property>
+                            <property name="pick_color_blink">#0dbfef8050f4</property>
+                            <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                          </object>
+                          <packing>
+                            <property name="x">235</property>
                             <property name="y">80</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkSpinButton" id="spbtn_probe_table_offset">
-                            <property name="width_request">90</property>
+                            <property name="width_request">75</property>
                             <property name="height_request">32</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2546,14 +2603,14 @@
                             <signal name="value-changed" handler="on_spbtn_probe_table_offset_value_changed" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="x">245</property>
+                            <property name="x">175</property>
                             <property name="y">110</property>
                           </packing>
                         </child>
 
                         <child>
                           <object class="GtkButton" id="btn_probe_block_height">
-                            <property name="width_request">90</property>
+                            <property name="width_request">85</property>
                             <property name="height_request">72</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2569,13 +2626,13 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">340</property>
+                            <property name="x">265</property>
                             <property name="y">5</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkButton" id="btn_set_block_height">
-                            <property name="width_request">90</property>
+                            <property name="width_request">55</property>
                             <property name="height_request">26</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2590,13 +2647,30 @@
                             </child>
                           </object>
                           <packing>
-                            <property name="x">340</property>
+                            <property name="x">265</property>
+                            <property name="y">80</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="HAL_LED" id="hal_led_use_block_height">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="blink_color">#0dbfef8050f4</property>
+                            <property name="led_blink_rate">0</property>
+                            <property name="led_shiny">True</property>
+                            <property name="off_color">#a0a0a0a0a0a0</property>
+                            <property name="on_color">#0dbfef8050f4</property>
+                            <property name="pick_color_blink">#0dbfef8050f4</property>
+                            <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                          </object>
+                          <packing>
+                            <property name="x">325</property>
                             <property name="y">80</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkSpinButton" id="spbtn_probe_block_height">
-                            <property name="width_request">90</property>
+                            <property name="width_request">75</property>
                             <property name="height_request">32</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2614,30 +2688,11 @@
                             <signal name="value-changed" handler="on_spbtn_probe_block_height_value_changed" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="x">340</property>
+                            <property name="x">265</property>
                             <property name="y">110</property>
                           </packing>
                         </child>
 
-                        <child>
-                          <object class="HAL_LED" id="hal_led_use_touch_plate">
-                            <property name="width_request">100</property>
-                            <property name="height_request">80</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="blink_color">#a0a0a0a0a0a0</property>
-                            <property name="led_blink_rate">500</property>
-                            <property name="led_shiny">True</property>
-                            <property name="off_color">#a0a0a0a0a0a0</property>
-                            <property name="on_color">#a0a0a0a0a0a0</property>
-                            <property name="pick_color_blink">#54215656aaaa</property>
-                            <property name="pick_color_off">#a0a0a0a0a0a0</property>
-                          </object>
-                          <packing>
-                            <property name="x">180</property>
-                            <property name="y">135</property>
-                          </packing>
-                        </child>
                         <child>
                           <object class="GtkCheckButton" id="chk_use_touch_plate">
                             <property name="width_request">25</property>
@@ -2650,8 +2705,8 @@
                             <signal name="toggled" handler="on_chk_use_touch_plate_toggled" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="x">205</property>
-                            <property name="y">135</property>
+                            <property name="x">190</property>
+                            <property name="y">140</property>
                           </packing>
                         </child>
                         <child>
@@ -2664,15 +2719,30 @@
                             <property name="use_markup">True</property>
                           </object>
                           <packing>
-                            <property name="x">235</property>
-                            <property name="y">135</property>
+                            <property name="x">215</property>
+                            <property name="y">140</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="HAL_LED" id="hal_led_use_touch_plate">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="blink_color">#a0a0a0a0a0a0</property>
+                            <property name="led_blink_rate">500</property>
+                            <property name="led_shiny">True</property>
+                            <property name="off_color">#a0a0a0a0a0a0</property>
+                            <property name="on_color">#a0a0a0a0a0a0</property>
+                            <property name="pick_color_blink">#54215656aaaa</property>
+                            <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                          </object>
+                          <packing>
+                            <property name="x">320</property>
+                            <property name="y">145</property>
                           </packing>
                         </child>
 
                         <child>
                           <object class="HAL_LED" id="hal_led_use_tool_measurement">
-                            <property name="width_request">100</property>
-                            <property name="height_request">80</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="blink_color">#0dbfef8050f4</property>
@@ -2807,8 +2877,6 @@
 
                                     <child>
                                       <object class="HAL_LED" id="hal_led_use_rot_spindle_reverse">
-                                        <property name="width_request">100</property>
-                                        <property name="height_request">80</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="blink_color">#a0a0a0a0a0a0</property>

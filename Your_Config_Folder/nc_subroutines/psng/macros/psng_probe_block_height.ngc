@@ -2,13 +2,12 @@ o<psng_probe_block_height> sub
 
   M160    ;o<clear-axis-info> call
 
+  ;o<backup_coord_offset> call             ; new added 2021 but removed here 2022       ; backup G54 offset for correct calc tool measurement
+
   G43          ; force tool offset for correct calc
   G10 L2 P0 Z0 ; reset G54 offset for correct pieces measurement and replace by new value
   #<intial_Z>=#<_z> (save current Z position)
 
-  ;o<backup_coord_offset> call             ; new added 2021 but removed here 2022       ; backup G54 offset for correct calc tool measurement
-
-#<_psng_probe_max_z> = #<_psng_probe_max_z_for_block>
 
   o<psng_start_z_probing> call
   o500 if [#5070 EQ 0]
@@ -20,6 +19,7 @@ o<psng_probe_block_height> sub
   ; only displayable block_height value are changed inside python code
 
   (back to start point)
+  G90 ; force G90 for G54 initial move
   G1 Z#<intial_Z> F#<_psng_vel_for_travel>
 
 o<psng_probe_block_height> endsub

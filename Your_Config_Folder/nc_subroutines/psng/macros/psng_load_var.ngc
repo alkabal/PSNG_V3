@@ -19,8 +19,8 @@ o<psng_load_var> sub
 #<_psng_edge_length>                = #<_hal[probe.edge_length]>
 
 
-#<_psng_table_offset>               = #<_hal[probe.table_offset]>
-#<_psng_block_height>               = #<_hal[probe.block_height]>
+#<_psng_table_offset>               = #<_hal[probe.offs_table_offset]>
+#<_psng_block_height>               = #<_hal[probe.offs_block_height]>
 
 #<_psng_tp_z_full_thickness>        = #<_ini[TOUCH_DEVICE]PLATE_Z_FULL_THICKNESS>
 #<_psng_tp_z_thickness>             = #<_ini[TOUCH_DEVICE]PLATE_Z_THICKNESS>
@@ -43,14 +43,14 @@ o<psng_load_var> sub
 #<_psng_ts_max_tool_lgt>            = #<_hal[probe.ts_max_tool_lgt]>
 
 
+#<_psng_table_clearence>           = #<_ini[TOUCH_DEVICE]TABLE_CLEARENCE>
 
 M160    ;o<clear-axis-info> call
 
 
-
 o1 if [#<_probing_or_setter> EQ 0] ; is touch device related
 
-   #<_psng_probe_max_z>                = #<_hal[probe.probe_max_z]>
+   #<_psng_probe_max_z>                = [#<_z> - #<_psng_table_clearence>]
 
    #<_psng_vel_for_travel>             = #<_hal[probe.vel_for_travel]>
    #<_psng_vel_for_search>             = #<_hal[probe.vel_for_search]>
@@ -61,54 +61,52 @@ o1 if [#<_probing_or_setter> EQ 0] ; is touch device related
    #<_psng_latch>                      = #<_hal[probe.latch]>
 
 
-         ;;;;;;; A REFLECHIR D'ETENDRE UN PEU L'AXE Z POUR POUVOIR PROBER CORRECTEMENT et utiliser FUP
+         ;;;;;;; A REFLECHIR D'ETENDRE UN PEU L'AXE Z POUR POUVOIR PROBER CORRECTEMENT et utiliser FUP au lieu de FIX
 
+;   o10 if [#<_psng_use_touch_plate> EQ 0]
+;      ; used for measure table_offset
+;      ;#<_psng_probe_max_z>                = FIX[#<_z>] ;#<_hal[probe.probe_max_z]>
+;      ;#<_psng_start_z_from_wcs>      = [#<_psng_table_offset> + #<_psng_probe_max_z> - #<_psng_latch>] ; what about G92 ?
+;
+;      ; used for measure block_heigth : start from where we are
+;      ;#<_psng_probe_max_z>                = FIX[#<_z>] ;#<_hal[probe.probe_max_z]>
+;      ;#<_psng_probe_max_z_for_block> = #<_psng_probe_max_z>  ; using round down is not a problem only for bloch_heigth
+;
+;      ; used for measure compensation : using round down is a problem because this is used for tiny compensation
+;      #<_psng_probe_max_z>          = #<_hal[probe.probe_max_z]>
+;      #<_psng_start_z_from_wcs>     = [#<_psng_table_offset> + #<_psng_block_height> + #<_psng_probe_max_z> - #<_psng_latch>] ; what about G92 ?
+;
+;      ; used for coherence check only
+;      #<_psng_z_all_offset_calc>     = [abs[#<_psng_tool_length_from_tooltable>] + #<_psng_start_z_from_wcs> - #<_psng_table_offset> - #<_psng_block_height> + [#<_psng_latch>*1.5]]
+;   o10 else
+;      ; used for measure table_offset
+;      #<_psng_start_z_from_wcs>      = [#<_psng_table_offset> + #<_psng_probe_max_z> + #<_psng_tp_z_full_thickness> - #<_psng_latch>] ; what about G92 ?
+;
+;      ; used for measure block_heigth : start from where we are
+;      #<_psng_probe_max_z_for_block> = [#<_z> - #<_psng_tp_z_thickness>]
+;
+;      ; used for measure compensation
+;      #<_psng_start_z_from_wcs>      = [#<_psng_table_offset> + #<_psng_block_height> + #<_psng_probe_max_z> + #<_psng_tp_z_full_thickness> - #<_psng_latch>] ; what about G92 ?
+;
+;      ; used for coherence check only
+;      #<_psng_z_all_offset_calc>     = [abs[#<_psng_tool_length_from_tooltable>] + #<_psng_start_z_from_wcs> - #<_psng_table_offset> - #<_psng_block_height> - #<_psng_tp_z_full_thickness> + [#<_psng_latch>*1.5]]
+;   o10 endif
 
-   o10 if [#<_psng_use_touch_plate> EQ 0]
-      ;o101 if [measure table_offset]
-          ;#<_psng_probe_max_z>                = FIX[#<_z>] ;#<_hal[probe.probe_max_z]>
-          ;#<_psng_start_z_from_wcs>      = [#<_psng_table_offset> + #<_psng_probe_max_z> - #<_psng_latch>] ; what about G92 ?
-      ;o101 elseif  [measure block_heigth]
-           ; start from where we are
-          ;#<_psng_probe_max_z>                = FIX[#<_z>] ;#<_hal[probe.probe_max_z]>
-          ;#<_psng_probe_max_z_for_block> = #<_psng_probe_max_z>  ; using round down is not a problem only for bloch_heigth
-      ;o101 elseif   [measure compensation]
-           ; using round down is a problem because this is used for tiny compensation
-           #<_psng_probe_max_z>          = #<_hal[probe.probe_max_z]>
-           #<_psng_start_z_from_wcs>     = [#<_psng_table_offset> + #<_psng_block_height> + #<_psng_probe_max_z> - #<_psng_latch>] ; what about G92 ?
-      ;o101 else
-
-      ;o101 endif
-      #<_psng_z_all_offset_calc>     = [abs[#<_psng_tool_length_from_tooltable>] + #<_psng_start_z_from_wcs> - #<_psng_table_offset> - #<_psng_block_height> + [#<_psng_latch>*1.5]]
-   o10 else
-      ;o102 if [measure table_offset]
-           #<_psng_start_z_from_wcs>      = [#<_psng_table_offset> + #<_psng_probe_max_z> + #<_psng_tp_z_full_thickness> - #<_psng_latch>] ; what about G92 ?
-      ;o102 elseif  [measure block_heigth]
-           ; start from where we are
-           #<_psng_probe_max_z_for_block> = [#<_z> - #<_psng_tp_z_full_thickness>]
-      ;o102 elseif   [measure compensation]
-           #<_psng_start_z_from_wcs>      = [#<_psng_table_offset> + #<_psng_block_height> + #<_psng_probe_max_z> + #<_psng_tp_z_full_thickness> - #<_psng_latch>] ; what about G92 ?
-      ;o102 else
-
-      ;o102 endif
-      #<_psng_z_all_offset_calc>     = [abs[#<_psng_tool_length_from_tooltable>] + #<_psng_start_z_from_wcs> - #<_psng_table_offset> - #<_psng_block_height> - #<_psng_tp_z_full_thickness> + [#<_psng_latch>*1.5]]
-   o10 endif
-
-   o11 if [#<_psng_z_axis_length_abs> LT #<_psng_z_all_offset_calc>]
-        M160
-        (DEBUG,!!! Z START POSITION DO NOT MATCH THE Z AXIS LENGTH #<_psng_z_axis_length_abs>)
-        (DEBUG,!!! VS START FROM TABLE  #<_psng_start_z_from_wcs> + TOOL_OFFSET [abs[#<_psng_tool_length_from_tooltable>] + BLOCK HEIGHT #<_psng_block_height> + TABLE OFFSET #<_psng_table_offset> - LATCH #<_psng_latch> !!!)
-        (DEBUG,!!! Z START POSITION RESULT = #<_psng_z_all_offset_calc> !!!)
-        M0
-        M160    ;o<clear-axis-info> call
-   o11 else
-        M160
-        (DEBUG,!!! Z START POSITION MATCH THE Z AXIS LENGTH #<_psng_z_axis_length_abs>)
-        (DEBUG,!!! VS START FROM TABLE  #<_psng_start_z_from_wcs> + TOOL_OFFSET [abs[#<_psng_tool_length_from_tooltable>] + BLOCK HEIGHT #<_psng_block_height> + TABLE OFFSET #<_psng_table_offset> - LATCH #<_psng_latch> !!!)
-        (DEBUG,!!! Z START POSITION RESULT = #<_psng_z_all_offset_calc> !!!)
-        M0
-        M160    ;o<clear-axis-info> call
-   o11 endif
+;   o11 if [#<_psng_z_axis_length_abs> LT #<_psng_z_all_offset_calc>]
+;        M160
+;        (DEBUG,!!! Z START POSITION DO NOT MATCH THE Z AXIS LENGTH #<_psng_z_axis_length_abs>)
+;        (DEBUG,!!! VS START FROM TABLE  #<_psng_start_z_from_wcs> + TOOL_OFFSET [abs[#<_psng_tool_length_from_tooltable>] + BLOCK HEIGHT #<_psng_block_height> + TABLE OFFSET #<_psng_table_offset> - LATCH #<_psng_latch> !!!)
+;        (DEBUG,!!! Z START POSITION RESULT = #<_psng_z_all_offset_calc> !!!)
+;        M0
+;        M160    ;o<clear-axis-info> call
+;   o11 else
+;        M160
+;        (DEBUG,!!! Z START POSITION MATCH THE Z AXIS LENGTH #<_psng_z_axis_length_abs>)
+;        (DEBUG,!!! VS START FROM TABLE  #<_psng_start_z_from_wcs> + TOOL_OFFSET [abs[#<_psng_tool_length_from_tooltable>] + BLOCK HEIGHT #<_psng_block_height> + TABLE OFFSET #<_psng_table_offset> - LATCH #<_psng_latch> !!!)
+;        (DEBUG,!!! Z START POSITION RESULT = #<_psng_z_all_offset_calc> !!!)
+;        M0
+;        M160    ;o<clear-axis-info> call
+;   o11 endif
 
    o12 if [#<_psng_tool_length_from_tooltable> EQ 0]
         (ABORT,!!! PSNG TOOL LENGTH IS UNKNOW FROM TOOLTABLE!!!)
@@ -131,7 +129,7 @@ o1 if [#<_probing_or_setter> EQ 0] ; is touch device related
 
 o1 elseif [#<_probing_or_setter> EQ 1]         ; is tool setter related
 
-   #<_psng_probe_max_z>                = [#<_psng_ts_max_tool_lgt> + #<_psng_ts_clearance_z>]   ; #<_hal[probe.ts_probe_max_z]>
+   #<_psng_probe_max_z>                = [#<_psng_ts_max_tool_lgt> + #<_psng_ts_clearance_z>]
 
    #<_psng_vel_for_travel>             = #<_hal[probe.ts_vel_for_travel]>
    #<_psng_vel_for_search>             = #<_hal[probe.ts_vel_for_search]>

@@ -8,7 +8,9 @@ o<psng_start_z_probing> sub
   o10 if [#<_hal[motion.probe-input]> EQ 1]
       (ABORT,!!! PROBE OR SETTER Z ALREADY TRIGGERED BEFORE PROBING !!!)
   o10 endif
-                         (DEBUG,probe max #<_psng_probe_max_z>)
+
+  (DEBUG,probe max #<_psng_probe_max_z>)
+
   G91
   G38.3 Z-#<_psng_probe_max_z> F#<_psng_vel_for_search>
   o500 call

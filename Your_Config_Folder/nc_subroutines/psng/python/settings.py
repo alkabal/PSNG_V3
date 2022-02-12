@@ -103,7 +103,7 @@ class ProbeScreenSettings(ProbeScreenBase):
 
 
         # create the pins for touchplate/touchprobe
-        self.halcomp.newpin("safe_tool_z", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("clearence_auto", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("chk_use_popup_style", hal.HAL_BIT, hal.HAL_OUT)
         self.halcomp.newpin("probe_number", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("tp_z_full_thickness", hal.HAL_FLOAT, hal.HAL_OUT)

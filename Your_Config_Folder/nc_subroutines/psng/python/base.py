@@ -100,7 +100,7 @@ class ProbeScreenBase(object):
     # --------------------------
     @restore_task_mode
     def gcode(self, s, data=None):
-        self.commandialog.mode(linuxcnc.MODE_MDI)
+        self.command.mode(linuxcnc.MODE_MDI)
         self.command.wait_complete()
 
         for l in s.split("\n"):
@@ -375,9 +375,9 @@ class ProbeScreenBase(object):
         resulttool = entry.get_text().decode('utf8')
         dialog.destroy()
         if r == gtk.RESPONSE_OK:
-            return resulttool, resultdiam
+            return resulttool
         else:
-            return None
+            return -1
 
 
 #    def spbtn_dialog_tool_length(self):
@@ -433,13 +433,13 @@ class ProbeScreenBase(object):
                 self.warning_dialog(message, secondary)
                 return -1
 
-            if self.work_in_progress == 1:
-                message   = _("Please try again after actual job is finished")
-                secondary = _("You can retry once done")
-                self.warning_dialog(message, secondary)
-                #return -1
-            else:
-            	  self.work_in_progress = 1
+#            if self.work_in_progress == 1:
+#                message   = _("Please try again after actual job is finished")
+#                secondary = _("You can retry once done")
+#                self.warning_dialog(message, secondary)
+#                #return -1
+#            else:
+#            	  self.work_in_progress = 1
 
             # Execute wrapped function
             return f(self, *args, **kwargs)
@@ -473,13 +473,13 @@ class ProbeScreenBase(object):
     # --------------------------
     def move_probe_z_down(self, data=None):
         if self.halcomp["chk_use_touch_plate"] == True:
-            self.halcomp["safe_tool_z"] = self.halcomp["latch"] + self.halcomp["tp_z_full_thickness"]
+            self.halcomp["clearence_auto"] = self.halcomp["latch"] + self.halcomp["tp_z_full_thickness"]
         else:
-            self.halcomp["safe_tool_z"] = self.halcomp["latch"] + float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        # move Z - safe_tool_z
+            self.halcomp["clearence_auto"] = self.halcomp["latch"] + float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        # move Z - clearence_auto
         s = """G91
         G1 Z-%f
-        G90""" % (self.halcomp["safe_tool_z"])
+        G90""" % (self.halcomp["clearence_auto"])
         if self.gcode(s) == -1:
             return -1
         return 0
@@ -487,13 +487,13 @@ class ProbeScreenBase(object):
 
     def move_probe_z_up(self, data=None):
         if self.halcomp["chk_use_touch_plate"] == True:
-            self.halcomp["safe_tool_z"] = self.halcomp["latch"] + self.halcomp["tp_z_full_thickness"]
+            self.halcomp["clearence_auto"] = self.halcomp["latch"] + self.halcomp["tp_z_full_thickness"]
         else:
-            self.halcomp["safe_tool_z"] = self.halcomp["latch"] + float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        # move Z + safe_tool_z
+            self.halcomp["clearence_auto"] = self.halcomp["latch"] + float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        # move Z + clearence_auto
         s = """G91
         G1 Z%f
-        G90""" % (self.halcomp["safe_tool_z"])
+        G90""" % (self.halcomp["clearence_auto"])
         if self.gcode(s) == -1:
             return -1
         return 0
