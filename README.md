@@ -25,11 +25,9 @@
 
 -TODO : updating stglue for suppress TS_POS and convert function like popen to full python or emccanon
 
--TODO : update compensation by creating a popup with 6 entry box (X_length Y_length X_start Y_start X_count Y_count)
+-TODO : prevent multiple click on the gui when something is already started self.work_in_progress do not work for now (something like that is done for compensation)
 
--TODO : found a way for prevent multiple click on the gui when something is already started self.work_in_progress do not work for now
-
--TOTHINK : create a popup asking a tool number for tool length measurement if we can create a new tool in the tooltable ?
+-TOTHINK : create a popup asking a tool number for tool length measurement but how to to create a new tool in the tooltable ?
 
 
 
