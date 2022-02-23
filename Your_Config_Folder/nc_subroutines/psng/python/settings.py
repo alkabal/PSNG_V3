@@ -36,85 +36,69 @@ class ProbeScreenSettings(ProbeScreenBase):
     def __init__(self, halcomp, builder, useropts):
         super(ProbeScreenSettings, self).__init__(halcomp, builder, useropts)
 
-        self.spbtn_vel_for_travel = self.builder.get_object("spbtn_vel_for_travel")
-        self.spbtn_vel_for_search = self.builder.get_object("spbtn_vel_for_search")
-        self.spbtn_vel_for_probe = self.builder.get_object("spbtn_vel_for_probe")
-        self.spbtn_probe_max_z = self.builder.get_object("spbtn_probe_max_z")
-        self.spbtn_probe_max_xy = self.builder.get_object("spbtn_probe_max_xy")
-        self.spbtn_probe_max_latch = self.builder.get_object("spbtn_probe_max_latch")
-        self.spbtn_latch = self.builder.get_object("spbtn_latch")
-        self.spbtn_edge_length = self.builder.get_object("spbtn_edge_length")
-
-        self.chk_use_touch_plate = self.builder.get_object("chk_use_touch_plate")
-        self.hal_led_use_touch_plate = self.builder.get_object("hal_led_use_touch_plate")
-
         if self.inifile.find("TRAJ", "LINEAR_UNITS") not in ["metric", "mm"]:
             # default values for inches
             tup = (20.0, 2.0, 0.5, 1.0, 0.1, 0.125, 1.0, 1.25)
         else:
             tup = (300.0, 10.0, 3.0, 1.0, 0.5, 2.0, 5.0, 5.0)
 
-        self.spbtn_vel_for_travel.set_value(
-            self.prefs.getpref("vel_for_travel", tup[2], float)
-        )
-        self.spbtn_vel_for_search.set_value(
-            self.prefs.getpref("vel_for_search", tup[0], float)
-        )
-        self.spbtn_vel_for_probe.set_value(
-            self.prefs.getpref("vel_for_probe", tup[1], float)
-        )
-        self.spbtn_probe_max_z.set_value(
-            self.prefs.getpref("probe_max_z", tup[3], float)
-        )
-        self.spbtn_probe_max_xy.set_value(
-            self.prefs.getpref("probe_max_xy", tup[6], float)
-        )
-        self.spbtn_probe_max_latch.set_value(
-            self.prefs.getpref("probe_max_latch", tup[5], float)
-        )
-        self.spbtn_latch.set_value(
-            self.prefs.getpref("latch", tup[4], float)
-        )
-        self.spbtn_edge_length.set_value(
-            self.prefs.getpref("edge_length", tup[7], float)
-        )
-        self.chk_use_touch_plate.set_active(
-            self.prefs.getpref("chk_use_touch_plate", False, bool)
-        )
+        # make the spinbox button
+        self.spbtn_vel_for_travel = self.builder.get_object("spbtn_vel_for_travel")
+        self.spbtn_vel_for_search = self.builder.get_object("spbtn_vel_for_search")
+        self.spbtn_vel_for_probe = self.builder.get_object("spbtn_vel_for_probe")
+        self.spbtn_probe_max_xy = self.builder.get_object("spbtn_probe_max_xy")
+        self.spbtn_probe_max_latch = self.builder.get_object("spbtn_probe_max_latch")
+        self.spbtn_latch = self.builder.get_object("spbtn_latch")
+        self.spbtn_edge_length = self.builder.get_object("spbtn_edge_length")
 
-        # create the pins for GUI settings
+        # make the Tickbox
+        self.chk_use_touch_plate = self.builder.get_object("chk_use_touch_plate")
+
+        # make the LED
+        self.hal_led_use_touch_plate = self.builder.get_object("hal_led_use_touch_plate")
+
+        # make the pins hal
+        self.halcomp.newpin("chk_use_popup_style", hal.HAL_BIT, hal.HAL_OUT)
         self.halcomp.newpin("vel_for_travel", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("vel_for_search", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("vel_for_probe", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("probe_max_z", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("probe_max_xy", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("probe_max_latch", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("latch", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("edge_length", hal.HAL_FLOAT, hal.HAL_OUT)
 
+        # make the pins hal for touchplate/touchprobe
+        self.halcomp.newpin("chk_use_touch_plate", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("clearence_auto", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("probe_number", hal.HAL_S32, hal.HAL_OUT)
+        self.halcomp.newpin("tp_z_full_thickness", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("tp_z_thickness", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("tp_XY_thickness", hal.HAL_FLOAT, hal.HAL_OUT)
+
+
+        # load value regarding to the pref saved
+        self.spbtn_vel_for_travel.set_value(self.prefs.getpref("vel_for_travel", tup[2], float))
+        self.spbtn_vel_for_search.set_value(self.prefs.getpref("vel_for_search", tup[0], float))
+        self.spbtn_vel_for_probe.set_value(self.prefs.getpref("vel_for_probe", tup[1], float))
+        self.spbtn_probe_max_xy.set_value(self.prefs.getpref("probe_max_xy", tup[6], float))
+        self.spbtn_probe_max_latch.set_value(self.prefs.getpref("probe_max_latch", tup[5], float))
+        self.spbtn_latch.set_value(self.prefs.getpref("latch", tup[4], float))
+        self.spbtn_edge_length.set_value(self.prefs.getpref("edge_length", tup[7], float))
+
         self.halcomp["vel_for_travel"] = self.spbtn_vel_for_travel.get_value()
         self.halcomp["vel_for_search"] = self.spbtn_vel_for_search.get_value()
         self.halcomp["vel_for_probe"] = self.spbtn_vel_for_probe.get_value()
-        self.halcomp["probe_max_z"] = self.spbtn_probe_max_z.get_value()
         self.halcomp["probe_max_xy"] = self.spbtn_probe_max_xy.get_value()
         self.halcomp["probe_max_latch"] = self.spbtn_probe_max_latch.get_value()
         self.halcomp["latch"] = self.spbtn_latch.get_value()
         self.halcomp["edge_length"] = self.spbtn_edge_length.get_value()
 
-
-        # create the pins for touchplate/touchprobe
-        self.halcomp.newpin("clearence_auto", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("chk_use_popup_style", hal.HAL_BIT, hal.HAL_OUT)
-        self.halcomp.newpin("probe_number", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("tp_z_full_thickness", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("tp_z_thickness", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("tp_XY_thickness", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("chk_use_touch_plate", hal.HAL_BIT, hal.HAL_OUT)
-
-
+        self.chk_use_touch_plate.set_active(self.prefs.getpref("chk_use_touch_plate", False, bool))
         self.halcomp["chk_use_touch_plate"] = self.chk_use_touch_plate.get_active()
-        self.hal_led_use_touch_plate.hal_pin.set(self.chk_use_touch_plate.get_active())
+        self.hal_led_use_touch_plate.hal_pin.set(self.halcomp["chk_use_touch_plate"])
 
+
+        # load value regarding to ini file
         self._init_touchplate_and_probe_data()
 
 
@@ -158,8 +142,12 @@ class ProbeScreenSettings(ProbeScreenBase):
     # Manage usage touchplate or 3D-PROBE
     def on_chk_use_touch_plate_toggled(self, gtkcheckbutton, data=None):
         self.halcomp["chk_use_touch_plate"] = gtkcheckbutton.get_active()
-        self.hal_led_use_touch_plate.hal_pin.set(gtkcheckbutton.get_active())
-        self.prefs.putpref("chk_use_touch_plate", gtkcheckbutton.get_active(), bool)
+        self.hal_led_use_touch_plate.hal_pin.set(self.halcomp["chk_use_touch_plate"])
+        self.prefs.putpref("chk_use_touch_plate", self.halcomp["chk_use_touch_plate"], bool)
+        if self.halcomp["chk_use_touch_plate"]:
+            self.add_history_text("Probing using Touchplate is activated")
+        else:
+            self.add_history_text("Probing using Touchplate is not activated")
 
 
     # --------------------------
@@ -186,12 +174,6 @@ class ProbeScreenSettings(ProbeScreenBase):
     def on_spbtn_vel_for_probe_value_changed(self, gtkspinbutton, data=None):
         self.on_common_spbtn_value_changed("vel_for_probe", gtkspinbutton, data)
 
-    def on_spbtn_probe_max_z_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("probe_max_z", gtkspinbutton, data)
-
-    def on_spbtn_probe_max_z_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("probe_max_z", gtkspinbutton, data)
-
     def on_spbtn_probe_max_xy_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("probe_max_xy", gtkspinbutton, data)
 
@@ -215,3 +197,5 @@ class ProbeScreenSettings(ProbeScreenBase):
 
     def on_spbtn_edge_length_value_changed(self, gtkspinbutton, data=None):
         self.on_common_spbtn_value_changed("edge_length", gtkspinbutton, data)
+
+

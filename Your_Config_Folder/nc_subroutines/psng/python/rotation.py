@@ -39,20 +39,35 @@ class ProbeScreenRotation(ProbeScreenBase):
     def __init__(self, halcomp, builder, useropts):
         super(ProbeScreenRotation, self).__init__(halcomp, builder, useropts)
 
+        # connect the frame for allow to inhibit
+        self.frm_measure_angle = self.builder.get_object("frm_measure_angle")
+
+        # make the spinbox button
         self.spbtn_offs_angle = self.builder.get_object("spbtn_offs_angle")
+
+        # make the Tickbox
         self.chk_use_auto_rott = self.builder.get_object("chk_use_auto_rott")
 
-        self.spbtn_offs_angle.set_value(self.prefs.getpref("offs_angle", 0.0, float))
-        self.chk_use_auto_rott.set_active(self.prefs.getpref("chk_use_auto_rott", False, bool))
+        # make the LED
+        self.hal_led_use_auto_rott = self.builder.get_object("hal_led_use_auto_rott")
 
+        # make the pins hal
         self.halcomp.newpin("offs_angle", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("offs_angle_active", hal.HAL_BIT, hal.HAL_OUT)
         self.halcomp.newpin("chk_use_auto_rott", hal.HAL_BIT, hal.HAL_OUT)
 
-        self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
-        self.halcomp["chk_use_auto_rott"] = self.chk_use_auto_rott.get_active()
 
-        self.hal_led_use_auto_rott = self.builder.get_object("hal_led_use_auto_rott")
-        self.hal_led_use_auto_rott.hal_pin.set(self.chk_use_auto_rott.get_active())
+        # load value regarding to the pref saved
+        if self.prefs.getpref("chk_use_auto_rott", False, bool) == 1 :
+            self.spbtn_offs_angle.set_value(self.prefs.getpref("offs_angle", 0.0, float))
+            self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
+            self.chk_use_auto_rott.set_active(1)
+            self.halcomp["chk_use_auto_rott"] = 1
+            self.hal_led_use_auto_rott.set_property("on_color","blue")
+            self.hal_led_use_auto_rott.hal_pin.set(self.halcomp["chk_use_auto_rott"])
+            self.frm_measure_angle.set_sensitive(False)
+        else:
+            self.frm_measure_angle.set_sensitive(True)
 
     # --------------------------
     #
@@ -61,8 +76,33 @@ class ProbeScreenRotation(ProbeScreenBase):
     # --------------------------
     def on_chk_use_auto_rott_toggled(self, gtkcheckbutton, data=None):
         self.halcomp["chk_use_auto_rott"] = gtkcheckbutton.get_active()
-        self.hal_led_use_auto_rott.hal_pin.set(gtkcheckbutton.get_active())
-        self.prefs.putpref("chk_use_auto_rott", gtkcheckbutton.get_active(), bool)
+        self.prefs.putpref("chk_use_auto_rott", self.halcomp["chk_use_auto_rott"], bool)
+
+        if gtkcheckbutton.get_active():
+            self.frm_measure_angle.set_sensitive(False)
+            self.add_history_text("Auto rotation is activated")
+            self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
+            self.prefs.putpref("offs_angle", self.halcomp["offs_angle"], float)
+            if self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+               self.hal_led_use_auto_rott.set_property("on_color","blue")
+               self.hal_led_use_auto_rott.hal_pin.set(1)
+            else:
+                self.hal_led_use_auto_rott.set_property("on_color","orange")
+                self.hal_led_use_auto_rott.hal_pin.set(1)
+        else:
+            self.frm_measure_angle.set_sensitive(True)
+            self.add_history_text("Auto rotation is not activated")
+            if self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+                self.hal_led_use_auto_rott.set_property("on_color","green")
+                self.hal_led_use_auto_rott.hal_pin.set(1)
+            elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
+                self.hal_led_use_auto_rott.set_property("on_color","red")
+                self.hal_led_use_auto_rott.hal_pin.set(1)
+            else:
+                self.halcomp["offs_angle"] = 0
+                self.prefs.putpref("offs_angle", 0, float)
+                #self.halcomp["offs_angle_active"] = 0
+                self.hal_led_use_auto_rott.hal_pin.set(0)
 
 
     # --------------------------
@@ -72,31 +112,104 @@ class ProbeScreenRotation(ProbeScreenBase):
     # --------------------------
     def on_spbtn_offs_angle_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("offs_angle", gtkspinbutton, data)
+        if self.halcomp["chk_use_auto_rott"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+            self.hal_led_use_auto_rott.set_property("on_color","blue")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+        elif self.halcomp["chk_use_auto_rott"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
+            self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
+            self.hal_led_use_auto_rott.set_property("on_color","pink")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+        elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+            self.hal_led_use_auto_rott.set_property("on_color","green")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+        #elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
+        elif self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
+            self.hal_led_use_auto_rott.set_property("on_color","red")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+        elif self.halcomp["offs_angle_active"] == 0 and self.halcomp["chk_use_auto_rott"] == 0 and self.halcomp["offs_angle"] == 0:
+            self.hal_led_use_auto_rott.hal_pin.set(0)
+        else:
+            self.hal_led_use_auto_rott.set_property("on_color","yellow")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
 
     def on_spbtn_offs_angle_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("offs_angle", gtkspinbutton, data)
+        if self.halcomp["chk_use_auto_rott"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+            self.hal_led_use_auto_rott.set_property("on_color","blue")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+        elif self.halcomp["chk_use_auto_rott"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
+            self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
+            self.hal_led_use_auto_rott.set_property("on_color","pink")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+        elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+            self.hal_led_use_auto_rott.set_property("on_color","green")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+        #elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
+        elif self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
+            self.hal_led_use_auto_rott.set_property("on_color","red")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+        elif self.halcomp["offs_angle_active"] == 0 and self.halcomp["chk_use_auto_rott"] == 0 and self.halcomp["offs_angle"] == 0:
+            self.hal_led_use_auto_rott.hal_pin.set(0)
+        else:
+            self.hal_led_use_auto_rott.set_property("on_color","yellow")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
 
 
     # --------------------------
     #
-    # Rotate Buttons
-    #
-    # --------------------------
-
     # button pressed set angle manually
+    #
+    # --------------------------
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_set_angle_released(self, gtkbutton, data=None):
-        self.rotate_coord_system(self.spbtn_offs_angle.get_value())
-        self.work_in_progress = 0
+        self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
+        self.prefs.putpref("offs_angle", self.halcomp["offs_angle"],  float)
+
+        if self.halcomp["offs_angle"] == 0:
+            if self.halcomp["chk_use_auto_rott"] == 1:
+                if self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+                   self.hal_led_use_auto_rott.set_property("on_color","blue")
+                   self.hal_led_use_auto_rott.hal_pin.set(1)
+                else:
+                    self.hal_led_use_auto_rott.set_property("on_color","orange")
+                    self.hal_led_use_auto_rott.hal_pin.set(1)
+            else:
+                self.hal_led_use_auto_rott.hal_pin.set(0)
+                self.halcomp["offs_angle_active"] = 0
+                self.add_history_text("ANGLE_OFFSET G10 L2 P0 Rx VALUE RESETED TO 0")
+
+        else:
+            if self.halcomp["chk_use_auto_rott"] == 1:
+                if self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+                   self.hal_led_use_auto_rott.set_property("on_color","blue")
+                else:
+                    self.hal_led_use_auto_rott.set_property("on_color","orange")
+            else:
+                if self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+                   self.hal_led_use_auto_rott.set_property("on_color","green")
+                else:
+                    self.hal_led_use_auto_rott.set_property("on_color","orange")
+            self.hal_led_use_auto_rott.hal_pin.set(1)
+            self.halcomp["offs_angle_active"] = 1
+            self.add_history_text("ANGLE_OFFSET SET G10 L2 P0 R%.4f" % (self.halcomp["offs_angle"]))
+
+        # now we can apply the offset correctly
+        s = "G10 L2 P0 R%s" % (self.halcomp["offs_angle"])
+        if self.gcode(s) == -1:
+            return
 
 
+    # --------------------------
+    #
+    # Button probe rotation
+    #
+    # --------------------------
     # button pressed angle_xp
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_angle_xp_released(self, gtkbutton, data=None):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -153,11 +266,11 @@ class ProbeScreenRotation(ProbeScreenBase):
 
         # Optional auto zero selectable from gui
         if self.chk_use_auto_rott.get_active():
-            self.rotate_coord_system(alfa)
+            self.on_btn_set_angle_released()
 
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
 
     # button pressed angle_ym
@@ -166,7 +279,7 @@ class ProbeScreenRotation(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -223,11 +336,11 @@ class ProbeScreenRotation(ProbeScreenBase):
 
         # Optional auto zero selectable from gui
         if self.chk_use_auto_rott.get_active():
-            self.rotate_coord_system(alfa)
+            self.on_btn_set_angle_released()
 
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
 
     # button pressed angle_yp
@@ -236,7 +349,7 @@ class ProbeScreenRotation(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -293,11 +406,11 @@ class ProbeScreenRotation(ProbeScreenBase):
 
         # Optional auto zero selectable from gui
         if self.chk_use_auto_rott.get_active():
-            self.rotate_coord_system(alfa)
+            self.on_btn_set_angle_released()
 
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
 
     # button pressed angle_xm
@@ -306,7 +419,7 @@ class ProbeScreenRotation(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -363,31 +476,8 @@ class ProbeScreenRotation(ProbeScreenBase):
 
         # Optional auto zero selectable from gui
         if self.chk_use_auto_rott.get_active():
-            self.rotate_coord_system(alfa)
+            self.on_btn_set_angle_released()
 
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
-
-    # --------------------------
-    #
-    # Apply the rotation offset
-    #
-    # --------------------------
-    def rotate_coord_system(self, alfa=0.0):
-            s = "G10 L2 P0"
-            if self.halcomp["chk_use_auto_zero_offset_box"]:
-                s += " X%s" % (self.halcomp["offs_x"])
-                s += " Y%s" % (self.halcomp["offs_y"])
-            else:
-                self.stat.poll()   # before using some self value from linuxcnc we need to poll
-                x = self.stat.position[0]
-                y = self.stat.position[1]
-                s += " X%s" % (x)
-                s += " Y%s" % (y)
-            s += " R%s" % (alfa)
-            if self.gcode(s) == -1:
-                return
-            self.add_history_text("offset_angle_applyed = %.4f" % (a))
-            #self.vcp_reload()
-            #time.sleep(1)
+        self._work_in_progress = 0

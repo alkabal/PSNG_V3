@@ -49,7 +49,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -86,7 +86,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("X")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed Y+
     @ProbeScreenBase.ensure_errors_dismissed
@@ -94,7 +94,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -131,7 +131,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("Y")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed X-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -139,7 +139,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -176,7 +176,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("X")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed Y-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -184,7 +184,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -221,7 +221,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("Y")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # --------------------------
     #
@@ -237,7 +237,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -316,7 +316,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed X+Y-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -324,7 +324,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -403,7 +403,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed X-Y+
     @ProbeScreenBase.ensure_errors_dismissed
@@ -411,7 +411,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -490,7 +490,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed X-Y-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -498,7 +498,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -577,7 +577,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed Center X+ X- Y+ Y-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -586,7 +586,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -770,7 +770,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
 
 
@@ -790,7 +790,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -849,7 +849,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed X+Y-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -858,7 +858,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -917,7 +917,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed X-Y+
     @ProbeScreenBase.ensure_errors_dismissed
@@ -926,7 +926,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -985,7 +985,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed X-Y-
     @ProbeScreenBase.ensure_errors_dismissed
@@ -994,7 +994,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -1044,7 +1044,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
     # Button pressed Hole Xin- Xin+ Yin- Yin+
     @ProbeScreenBase.ensure_errors_dismissed
@@ -1052,7 +1052,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
@@ -1130,4 +1130,4 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             self.set_zero_offset_box("XY")
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0

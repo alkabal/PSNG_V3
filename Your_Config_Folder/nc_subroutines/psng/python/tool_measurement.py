@@ -38,11 +38,8 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
 
         self.tooledit1 = self.builder.get_object("tooledit1")
 
+        # connect the frame for allow to inhibit
         self.frm_tool_measurement = self.builder.get_object("frm_tool_measurement")
-
-        self.hal_led_use_tool_measurement = self.builder.get_object("hal_led_use_tool_measurement")
-        self.hal_led_use_rot_spindle_reverse = self.builder.get_object("hal_led_use_rot_spindle_reverse")
-
 
         # for manual tool change dialog
         #self.halcomp.newpin("toolchange-number", hal.HAL_S32, hal.HAL_OUT)
@@ -51,8 +48,16 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         #pin = self.halcomp.newpin("toolchange-change", hal.HAL_BIT, hal.HAL_OUT)
         #hal_glib.GPin(pin).connect("value_changed", self.on_tool_change)
 
+        # make the Tickbox
+        self.chk_use_tool_measurement = self.builder.get_object("chk_use_tool_measurement")
+        self.chk_use_rot_spindle_reverse = self.builder.get_object("chk_use_rot_spindle_reverse")
 
-        # make the pins for tool measurement
+        # make the LED
+        self.hal_led_use_tool_measurement = self.builder.get_object("hal_led_use_tool_measurement")
+        self.hal_led_use_rot_spindle_reverse = self.builder.get_object("hal_led_use_rot_spindle_reverse")
+
+        # make the pins hal
+        self.halcomp.newpin("set_tool_number", hal.HAL_S32, hal.HAL_OUT)
         self.halcomp.newpin("ts_probed_tool_z", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_probed_tool_diam", hal.HAL_FLOAT, hal.HAL_OUT)
 
@@ -73,26 +78,22 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self.halcomp.newpin("ts_diam_offset", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_tool_rot_speed", hal.HAL_FLOAT, hal.HAL_OUT)
 
-        # init Tickbox from gui for enable disable remap (with saving pref)
         self.halcomp.newpin("ts_chk_use_tool_measurement", hal.HAL_BIT, hal.HAL_OUT)
-        self.chk_use_tool_measurement = self.builder.get_object("chk_use_tool_measurement")
+        self.halcomp.newpin("ts_chk_use_rot_spindle_reverse", hal.HAL_BIT, hal.HAL_OUT)
+
+
+        # load value regarding to the pref saved
         self.chk_use_tool_measurement.set_active(self.prefs.getpref("ts_chk_use_tool_measurement", False, bool))
         self.halcomp["ts_chk_use_tool_measurement"] = self.chk_use_tool_measurement.get_active()
-        self.hal_led_use_tool_measurement.hal_pin.set(self.chk_use_tool_measurement.get_active())
+        self.hal_led_use_tool_measurement.hal_pin.set(self.halcomp["ts_chk_use_tool_measurement"])
 
-        if self.chk_use_tool_measurement.get_active():
+        if self.halcomp["ts_chk_use_tool_measurement"] == 1:
             self.frm_tool_measurement.set_sensitive(False)
         else:
             self.frm_tool_measurement.set_sensitive(True)
 
-        # init Tickbox from gui for enable rotating spindle (without saving pref)
-        self.halcomp.newpin("ts_chk_use_rot_spindle_reverse", hal.HAL_BIT, hal.HAL_OUT)
-        self.chk_use_rot_spindle_reverse = self.builder.get_object("chk_use_rot_spindle_reverse")
 
-        # reading/saving pref is not wanted for rotation so we want to start with 0
-        self.halcomp["ts_chk_use_rot_spindle_reverse"] = self.chk_use_rot_spindle_reverse.get_active()
-        self.hal_led_use_rot_spindle_reverse.hal_pin.set(self.chk_use_rot_spindle_reverse.get_active())
-
+        # load status regarding to ini file
         self._init_tool_setter_data()
 
 
@@ -166,25 +167,29 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
 
     # --------------------------
     #
-    # Thickbox for Remap M6 Buttons
+    # Thickbox for Remap M6 Buttons  (with saving pref)
     #
     # --------------------------
-
-    # Tickbox from gui for enable disable remap (with saving pref)
     def on_chk_use_tool_measurement_toggled(self, gtkcheckbutton, data=None):
         self.halcomp["ts_chk_use_tool_measurement"] = gtkcheckbutton.get_active()
         self.hal_led_use_tool_measurement.hal_pin.set(gtkcheckbutton.get_active())
         self.prefs.putpref("ts_chk_use_tool_measurement", gtkcheckbutton.get_active(), bool)
         if gtkcheckbutton.get_active():
             self.frm_tool_measurement.set_sensitive(False)
+            self.add_history_text("Auto length for remap M6 is activated")
         else:
             self.frm_tool_measurement.set_sensitive(True)
+            self.add_history_text("Auto length for remap M6 is not activated")
 
     # Tickbox from gui for enable rotating spindle (without saving pref)
     def on_chk_use_rot_spindle_reverse_toggled(self, gtkcheckbutton, data=None):
-        # self.prefs.putpref is not wanted  for rotation so we don not use comon method
-        self.hal_led_use_rot_spindle_reverse.hal_pin.set(gtkcheckbutton.get_active())
         self.halcomp["ts_chk_use_rot_spindle_reverse"] = gtkcheckbutton.get_active()
+        self.hal_led_use_rot_spindle_reverse.hal_pin.set(gtkcheckbutton.get_active())
+        # self.prefs.putpref is not wanted for rotation
+        if gtkcheckbutton.get_active():
+            self.add_history_text("Auto spindle reverse rotation is activated")
+        else:
+            self.add_history_text("Auto spindle reverse rotation is not activated")
 
 
     # --------------------------
@@ -199,7 +204,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
     def on_btn_probe_tool_setter_released(self, gtkbutton, data=None):
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [1]") == -1:
+        if self.ocode("o<psng_load_var> call [1] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [4]") == -1:
             return
@@ -224,7 +229,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         )
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
 
     # Down drill bit to tool setter for measuring it
@@ -237,9 +242,20 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             self.error_dialog(message, secondary=secondary)
             return
 
+        # ask new tool number and diameter from popup
+        if self._dialog_spbtn_ask_toolnumber() == -1:
+            self.add_history_text("Tool number to probe canceled by user !")
+            return
+        else:
+            self.add_history_text("set_tool_number = %d" % (self.halcomp["set_tool_number"]))
+
+        s = "M61Q%s" % (self.halcomp["set_tool_number"])
+        if self.gcode(s) == -1:
+            return
+
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [1]") == -1:
+        if self.ocode("o<psng_load_var> call [1] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [6]") == -1:
             return
@@ -262,7 +278,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         )
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
 
     # --------------------------
@@ -283,14 +299,27 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             secondary = _("Did not find a toolfile file in [EMCIO] TOOL_TABLE")
             self.error_dialog(message, secondary=secondary)
             return
-        toolnumber = Popen("halcmd getp iocontrol.0.tool-number", shell=True, stdout=PIPE).stdout.read()
+
+        # ask new tool number and diameter from popup
+        if self._dialog_spbtn_ask_toolnumber() == -1:
+            self.add_history_text("Tool number to probe canceled by user !")
+            return
+        else:
+            self.add_history_text("set_tool_number = %d" % (self.halcomp["set_tool_number"]))
+
+        s = "M61Q%s" % (self.halcomp["set_tool_number"])
+        if self.gcode(s) == -1:
+            return
+
         tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        print("tool-number = ", toolnumber)
+
+        print("tool-number from param 5410 = ", self.params["#5410"])
+        print("tool-number = ", self.halcomp["set_tool_number"])
         print("tooldiameter from halui = ", tooldiameter)
 
         if self.ocode("o<backup_status> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [1]") == -1:
+        if self.ocode("o<psng_load_var> call [1] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [2]") == -1:
             return
@@ -444,7 +473,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             return
         if self.ocode("o<backup_restore> call [999]") == -1:
             return
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
 
     # --------------------------

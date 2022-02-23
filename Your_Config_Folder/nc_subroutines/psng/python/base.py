@@ -89,7 +89,7 @@ class ProbeScreenBase(object):
 
         self.frm_parents = self.builder.get_object("frm_parents")
 
-        self.work_in_progress = 0
+        self._work_in_progress = 0
 
         #do not create hal pin here due to multiple call
 
@@ -309,8 +309,8 @@ class ProbeScreenBase(object):
         if secondary:
             dialog.format_secondary_text(secondary)
         dialog.set_keep_above(True)
-        dialog.show_all()
         dialog.set_title(title)
+        dialog.show_all()
         responce = dialog.run()
         dialog.destroy()
         return responce == gtk.RESPONSE_OK
@@ -321,8 +321,6 @@ class ProbeScreenBase(object):
         if self.halcomp["chk_use_popup_style"] == True or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
             return self._dialog(gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message, secondary, title)
         else:
-#            if self.gcode("M160") == -1:         #o<clear-axis-info> call
-#                return
             if secondary:
                 self.add_history_text("WARNING: %s" % (message))
                 self.add_history_text("WARNING: %s" % (secondary))
@@ -339,8 +337,6 @@ class ProbeScreenBase(object):
             #self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
             return self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
         else:
-#            if self.gcode("M160") == -1:         #o<clear-axis-info> call
-#                return
             if secondary:
                 self.add_history_text("DEBUG: %s" % (message))
                 self.add_history_text("ABORT: %s" % (secondary))
@@ -351,62 +347,156 @@ class ProbeScreenBase(object):
                 self.gcode("(ABORT,**** %s ****)" % (message))
 
 
-    def spbtn_dialog_with_question(self):
+    def _dialog_spbtn_bed_compensation(self):
         """
         Display a dialog with a text entry.
         Returns the text, or None if canceled.
         """
+        xcount  = 2
+        ycount  = 2
+        xlength = 50
+        ylength = 50
+
         dialog = gtk.MessageDialog(self.window,
                               gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
                               gtk.MESSAGE_QUESTION,
                               gtk.BUTTONS_OK_CANCEL,
                               )
-        entry = gtk.Entry()
-        entry.set_text("INPUT TOOL NUMBER")
-        entry.show()
-        dialog.set_title(_("TOOLTABLE CREATOR"))
+
+        label = gtk.Label("FIRST YOU NEED TO MOVE MACHINE XY")
+        dialog.vbox.pack_start(label, False, False, 0)
+
+        label = gtk.Label("AT THE DESIRED START XY POSITION")
+        dialog.vbox.pack_start(label, False, False, 0)
+
+        label = gtk.Label("Z START WHERE HE IS : MOVE IT NEAR")
+        dialog.vbox.pack_start(label, False, False, 0)
+
+        label = gtk.Label("X count point number")
+        dialog.vbox.pack_start(label, False, False, 5)
+        spin_button_xcount = gtk.SpinButton(
+        gtk.Adjustment(
+          value=xcount,
+          lower=2,
+          upper=999,
+          step_incr=1,
+          page_incr=2,
+        ),
+        digits=0)
+        spin_button_xcount.set_numeric(True)
+        spin_button_xcount.set_value(xcount)
+        dialog.vbox.pack_start(spin_button_xcount, False, False, 0)
+
+        label = gtk.Label("Y count point number")
+        dialog.vbox.pack_start(label, False, False, 0)
+        spin_button_ycount = gtk.SpinButton(
+        gtk.Adjustment(
+          value=ycount,
+          lower=2,
+          upper=999,
+          step_incr=1,
+          page_incr=2,
+        ),
+        digits=0)
+        spin_button_ycount.set_numeric(True)
+        spin_button_ycount.set_value(ycount)
+        dialog.vbox.pack_start(spin_button_ycount, False, False, 0)
+
+        label = gtk.Label("X length og the gridd")
+        dialog.vbox.pack_start(label, False, False, 0)
+        spin_button_xlength = gtk.SpinButton(
+        gtk.Adjustment(
+          value=xlength,
+          lower=50,
+          upper=999,
+          step_incr=1,
+          page_incr=2,
+        ),
+        digits=0)
+        spin_button_xlength.set_numeric(True)
+        spin_button_xlength.set_value(xcount)
+        dialog.vbox.pack_start(spin_button_xlength, False, False, 0)
+
+        label = gtk.Label("Y length og the gridd")
+        dialog.vbox.pack_start(label, False, False, 0)
+        spin_button_ylength = gtk.SpinButton(
+        gtk.Adjustment(
+          value=ylength,
+          lower=50,
+          upper=999,
+          step_incr=1,
+          page_incr=2,
+        ),
+        digits=0)
+        spin_button_ylength.set_numeric(True)
+        spin_button_ylength.set_value(ycount)
+        dialog.vbox.pack_start(spin_button_ylength, False, False, 0)
+
+        dialog.set_title(_("BED LEVELLING"))
         dialog.set_keep_above(True)
         dialog.show_all()
-        dialog.vbox.pack_end(entry)
-        entry.connect('activate', lambda _: dialog.response(gtk.RESPONSE_OK))
-        dialog.set_default_response(gtk.RESPONSE_OK)
 
         r = dialog.run()
-        resulttool = entry.get_text().decode('utf8')
         dialog.destroy()
         if r == gtk.RESPONSE_OK:
-            return resulttool
+            dialog.destroy()
+            self.halcomp["compensation_xcount"]  = spin_button_xcount.get_value()
+            self.halcomp["compensation_ycount"]  = spin_button_ycount.get_value()
+            self.halcomp["compensation_xlength"] = spin_button_xlength.get_value()
+            self.halcomp["compensation_ylength"] = spin_button_ylength.get_value()
         else:
+            dialog.destroy()
+            self.halcomp["compensation_xcount"]  = 0
+            self.halcomp["compensation_ycount"]  = 0
+            self.halcomp["compensation_xlength"] = 0
+            self.halcomp["compensation_ylength"] = 0
             return -1
 
 
-#    def spbtn_dialog_tool_length(self):
-#        """
-#        Display a dialog with a text entry.
-#        Returns the text, or None if canceled.
-#        """
-#        dialog = gtk.MessageDialog(self.window,
-#                              gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-#                              gtk.MESSAGE_QUESTION,
-#                              gtk.BUTTONS_OK_CANCEL,
-#                              )
-#        entry = gtk.Entry()
-#        entry.set_text("INPUT TOOL NUMBER")
-#        entry.show()
-#        dialog.set_title(_("TOOLTABLE CREATOR"))
-#        dialog.set_keep_above(True)
-#        dialog.show_all()
-#        dialog.vbox.pack_end(entry)
-#        entry.connect('activate', lambda _: dialog.response(gtk.RESPONSE_OK))
-#        dialog.set_default_response(gtk.RESPONSE_OK)
-#
-#        r = dialog.run()
-#        text = entry.get_text().decode('utf8')
-#        dialog.destroy()
-#        if r == gtk.RESPONSE_OK:
-#            return text
-#        else:
-#            return None
+    def _dialog_spbtn_ask_toolnumber(self):
+        """
+        Display a dialog with a text entry.
+        Returns the text, or None if canceled.
+        """
+        set_tool_number  = 0
+
+        dialog = gtk.MessageDialog(self.window,
+                              gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
+                              gtk.MESSAGE_QUESTION,
+                              gtk.BUTTONS_OK_CANCEL,
+                              )
+
+        label = gtk.Label("Tool number mounted to probe :")
+        dialog.vbox.pack_start(label, False, False, 5)
+        spin_button_set_tool_number = gtk.SpinButton(
+        gtk.Adjustment(
+          value=set_tool_number,
+          lower=1,
+          upper=999,
+          step_incr=1,
+          page_incr=2,
+        ),
+        digits=0)
+        spin_button_set_tool_number.set_numeric(True)
+        spin_button_set_tool_number.set_value(set_tool_number)
+        dialog.vbox.pack_start(spin_button_set_tool_number, False, False, 0)
+
+        dialog.set_title(_("TOOL LENGTH PROBE"))
+        dialog.set_keep_above(True)
+        dialog.show_all()
+
+        r = dialog.run()
+        self.halcomp["set_tool_number"] = spin_button_set_tool_number.get_value()
+        if r == gtk.RESPONSE_OK:
+            dialog.hide()
+            dialog.destroy()
+            return
+        else:
+            dialog.hide()
+            dialog.destroy()
+            #self.halcomp["set_tool_number"]   = 0
+            return -1
+
 
     # --------------------------
     #
@@ -433,13 +523,13 @@ class ProbeScreenBase(object):
                 self.warning_dialog(message, secondary)
                 return -1
 
-#            if self.work_in_progress == 1:
+#            if self._work_in_progress == 1:
 #                message   = _("Please try again after actual job is finished")
 #                secondary = _("You can retry once done")
 #                self.warning_dialog(message, secondary)
 #                #return -1
 #            else:
-#            	  self.work_in_progress = 1
+#               self._work_in_progress = 1
 
             # Execute wrapped function
             return f(self, *args, **kwargs)
@@ -626,27 +716,6 @@ class ProbeScreenBase(object):
             tmpz = tmpz - z + self.halcomp["offs_z"]
             c += " Z%s" % (tmpz)
             self.add_history_text("set_zero_offset_box_z = %.4f" % (z))
-        if self.gcode(c) == -1:
-           return
-
-
-    # --------------------------
-    #
-    #  Generic Position Calculations
-    #
-    # --------------------------
-    def set_zero(self, s="XYZ", x=0.0, y=0.0, z=0.0):
-        c = "G10 L20 P0"
-        s = s.upper()
-        if "X" in s:
-            c += " X%s" % (x)
-            self.add_history_text("set_zero_x = %.4f" % (x))
-        if "Y" in s:
-            c += " Y%s" % (y)
-            self.add_history_text("set_zero_y = %.4f" % (y))
-        if "Z" in s:
-            c += " Z%s" % (z)
-            self.add_history_text("set_zero_z = %.4f" % (z))
         if self.gcode(c) == -1:
            return
 
