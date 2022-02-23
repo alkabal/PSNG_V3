@@ -256,6 +256,8 @@ def settool_epilog(self,**words):
         self.set_errormsg("M61/settool_epilog: %s)" % (e))
         return INTERP_ERROR
 
+
+
 # educational alternative: M61 remapped to an all-Python handler
 # demo - this really does the same thing as the builtin (non-remapped) M61
 #
@@ -267,22 +269,24 @@ def set_tool_number(self, **words):
         if c.q_flag:
             toolno = int(c.q_number)
         else:
-            self.set_errormsg("M61 requires a Q parameter")
+            self.set_errormsg("ERROR : remap M61 requires a Q parameter")
             return status
         (status,pocket) = self.find_tool_pocket(toolno)
         if status != INTERP_OK:
-            self.set_errormsg("M61 failed: requested tool %d not in table" % (toolno))
+            self.set_errormsg("ERROR : remap M61 requested tool %d not in table" % (toolno))
             return status
         self.current_pocket = pocket
         self.current_tool = toolno
         emccanon.CHANGE_TOOL_NUMBER(pocket)
         # cause a sync()
         self.tool_change_flag = True
+        #self.execute("g43")                      # added autolength correction
+        #self.execute("g43 h%s"% self.current_tool)                      # added autolength correction
+        emccanon.USE_TOOL_LENGTH_OFFSET()
         self.set_tool_parameters()
-        self.execute("g43 h%d"% toolno)                      # added autolength correction
         return INTERP_OK
     except Exception as e:
-        self.set_errormsg("M61/set_tool_number: %s" % (e))
+        self.set_errormsg("ERROR : remap M61/set_tool_number: %s" % (e))
         return INTERP_ERROR
 
 _uvw = ("u","v","w","a","b","c")
@@ -373,6 +377,8 @@ def cycle_epilog(self,**words):
 # this should be called from TOPLEVEL __init__()
 def init_stdglue(self):
     self.sticky_params = dict()
+
+
 
 #####################################
 # pure python remaps
@@ -722,7 +728,7 @@ def tool_probe_m6(self, **words):
     # Force to stop mist and flood
     self.execute("M9")
 
-    # record current position XYZ but Z
+    # record current position XYZ but Z in removed #all GO_BACK_LAST_POSITION use G5x
     initial_X = emccanon.GET_EXTERNAL_POSITION_X()
     initial_Y = emccanon.GET_EXTERNAL_POSITION_Y()
     initial_Z = emccanon.GET_EXTERNAL_POSITION_Z()
@@ -851,9 +857,14 @@ def tool_probe_m6(self, **words):
             self.execute("(MSG,BYPASSED AUTO TOOL MEASUREMENT)")
             wait(self)
 
+
+            #print("probe flag : ", self.stat.get_probe_flag)
+
+
+
+
             # apply tool offset after succesfull toolchange without measure
-            self.execute("G43")
-            wait(self)                        #added 2022
+            self.execute("G43 H#<selected_tool>")                                                         # added autolength correction
 
             # RESTORE THE MACHINE XY LIMIT MAX USING JOINT 1 - TS_POS VALUE FOR ALLOW GOTO TOOLSENSOR
             self.execute("M%s P%s" % (self.params["change_x_limit_mcode"], (self.params["_ini[JOINT_0]MAX_LIMIT"] - self.params["_ini[TOOL_SETTER]TS_POS_X"])))
@@ -904,6 +915,8 @@ def tool_probe_m6(self, **words):
             self.execute("G53 G0 Z{:.5f}".format(self.params["_ini[TOOL_SETTER]TS_POS_Z"]))
 # TODO
             #TS_POS_Z = [#<_psng_z_axis_length_abs>  - [[#<_psng_ts_height> + #<_psng_probe_max_z>] - #<_psng_latch>]]
+            # emccanon.GET_EXTERNAL_TOOL_LENGTH_ZOFFSET
+            #GET_EXTERNAL_SELECTED_TOOL_SLOT    USE_TOOL_LENGTH_OFFSET
 
 
 
@@ -987,16 +1000,18 @@ def tool_probe_m6(self, **words):
             self.execute("G10 L1 P#<selected_tool> Z{}".format(tool_offset_calculated))                   # REGISTER NEW TOOL LENGTH in the tooltable
 
             # apply tool offset after succesfull probing
-            self.execute("G43")
+            self.execute("G43 H#<selected_tool>")                                                         # added autolength correction
 
             # Z up first before move to last pos or to change pos                                        ##### ADD QUIL UP HERE OR NOT ADD QUIL UP HERE IS A GOOD QUESTION
             self.execute("G53 G0 Z{:.5f}".format(self.params["_ini[TOOL_CHANGE]Z_TRAVEL_POSITION"]))
             wait(self)
+
+            #all GO_BACK_LAST_POSITION use G5x
             if self.params["_ini[TOOL_CHANGE]GO_BACK_LAST_POSITION"]:
-                self.execute("G53 G0 X{:.5f} Y{:.5f}".format(initial_X,initial_Y))
+                self.execute("G0 X{:.5f} Y{:.5f}".format(initial_X,initial_Y))
                 wait(self)
                 ## imo better to not restore Z
-                #self.execute("G53 G0 Z{:.5f}".format(initial_Z))
+                #self.execute("G0 Z{:.5f}".format(initial_Z))
                 #wait(self)
             else:
                 self.execute("G53 G0 X{:.5f} Y{:.5f}".format(self.params["_ini[CHANGE_POSITION]X"],self.params["_ini[CHANGE_POSITION]Y"]))
@@ -1019,6 +1034,7 @@ def tool_probe_m6(self, **words):
 
         except InterpreterException as e:
             clear_axis_all(self)
+            self.execute("M61Q0")
             tool_probe_restore_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
             msg = "%d: '%s' - %s" % (e.line_number,e.line_text, e.error_message)
             print(msg)
@@ -1027,6 +1043,7 @@ def tool_probe_m6(self, **words):
 
     except Exception as e:
         clear_axis_all(self)
+        self.execute("M61Q0")
         tool_probe_restore_sub(self, ABSOLUTE_FLAG, FEED_BACKUP, BACKUP_METRIC_FLAG)
         print(e)
         self.set_errormsg("tool_probe_m6 remap error: nothing restored or unknown state : %s" % (e))
