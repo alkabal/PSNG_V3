@@ -27,12 +27,6 @@
     <property name="step_increment">0.1</property>
     <property name="page_increment">1</property>
   </object>
-  <object class="GtkAdjustment" id="adj_probe_max_z">
-    <property name="upper">200</property>
-    <property name="lower">10</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkAdjustment" id="adj_probe_max_xy">
     <property name="upper">100</property>
     <property name="lower">1</property>
@@ -51,9 +45,15 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="adj_latch_bed_compensation">
+    <property name="upper">100</property>
+    <property name="lower">2</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkAdjustment" id="adj_block_height">
     <property name="upper">1000</property>
-    <property name="lower">-1000</property>
+    <property name="lower">-1</property>
     <property name="step_increment">0.1</property>
     <property name="page_increment">1</property>
   </object>
@@ -966,13 +966,13 @@
                           <object class="GtkTable" id="table3">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="n_rows">8</property>
+                            <property name="n_rows">7</property>
                             <property name="n_columns">2</property>
-                            <property name="row_spacing">2</property>
+                            <property name="row_spacing">4</property>
 
                             <child>
                               <object class="GtkImage" id="travel_vel.png">
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Travel Velocity</property>
@@ -986,10 +986,10 @@
                             <child>
                               <object class="GtkSpinButton" id="spbtn_vel_for_travel">
                                 <property name="width_request">105</property>
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
+                                <property name="invisible_char">?</property>
                                 <property name="width_chars">8</property>
                                 <property name="invisible_char_set">True</property>
                                 <property name="primary_icon_activatable">False</property>
@@ -1011,7 +1011,7 @@
 
                             <child>
                               <object class="GtkImage" id="search_vel.png">
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Search Velocity</property>
@@ -1027,10 +1027,10 @@
                             <child>
                               <object class="GtkSpinButton" id="spbtn_vel_for_search">
                                 <property name="width_request">105</property>
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
+                                <property name="invisible_char">?</property>
                                 <property name="width_chars">8</property>
                                 <property name="invisible_char_set">True</property>
                                 <property name="primary_icon_activatable">False</property>
@@ -1054,7 +1054,7 @@
 
                             <child>
                               <object class="GtkImage" id="probe_vel.png">
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Probe Velocity</property>
@@ -1070,10 +1070,10 @@
                             <child>
                               <object class="GtkSpinButton" id="spbtn_vel_for_probe">
                                 <property name="width_request">105</property>
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
+                                <property name="invisible_char">?</property>
                                 <property name="width_chars">8</property>
                                 <property name="invisible_char_set">True</property>
                                 <property name="primary_icon_activatable">False</property>
@@ -1096,51 +1096,8 @@
                             </child>
 
                             <child>
-                              <object class="GtkImage" id="probe_max_z.png">
-                                <property name="height_request">32</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="tooltip_text" translatable="yes">Max probe Z distance</property>
-                                <property name="xalign">0.60000002384185791</property>
-                                <property name="pixbuf">icons/probe_max_z.png</property>
-                              </object>
-                              <packing>
-                                <property name="top_attach">3</property>
-                                <property name="bottom_attach">4</property>
-                                <property name="y_options">GTK_SHRINK</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkSpinButton" id="spbtn_probe_max_z">
-                                <property name="width_request">105</property>
-                                <property name="height_request">32</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
-                                <property name="width_chars">8</property>
-                                <property name="invisible_char_set">True</property>
-                                <property name="primary_icon_activatable">False</property>
-                                <property name="secondary_icon_activatable">False</property>
-                                <property name="primary_icon_sensitive">True</property>
-                                <property name="secondary_icon_sensitive">True</property>
-                                <property name="adjustment">adj_probe_max_z</property>
-                                <property name="digits">3</property>
-                                <property name="numeric">True</property>
-                                <signal name="key-press-event" handler="on_spbtn_probe_max_z_key_press_event" swapped="no"/>
-                                <signal name="value-changed" handler="on_spbtn_probe_max_z_value_changed" swapped="no"/>
-                              </object>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="right_attach">2</property>
-                                <property name="top_attach">3</property>
-                                <property name="bottom_attach">4</property>
-                                <property name="y_options">GTK_SHRINK</property>
-                              </packing>
-                            </child>
-
-                            <child>
                               <object class="GtkImage" id="probe_max_xy.png">
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Max probe XY distance</property>
@@ -1148,18 +1105,18 @@
                                 <property name="pixbuf">icons/probe_max_xy.png</property>
                               </object>
                               <packing>
-                                <property name="top_attach">4</property>
-                                <property name="bottom_attach">5</property>
+                                <property name="top_attach">3</property>
+                                <property name="bottom_attach">4</property>
                                 <property name="y_options">GTK_SHRINK</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkSpinButton" id="spbtn_probe_max_xy">
                                 <property name="width_request">105</property>
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
+                                <property name="invisible_char">?</property>
                                 <property name="width_chars">8</property>
                                 <property name="invisible_char_set">True</property>
                                 <property name="primary_icon_activatable">False</property>
@@ -1175,15 +1132,15 @@
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">4</property>
-                                <property name="bottom_attach">5</property>
+                                <property name="top_attach">3</property>
+                                <property name="bottom_attach">4</property>
                                 <property name="y_options">GTK_SHRINK</property>
                               </packing>
                             </child>
 
                             <child>
                               <object class="GtkImage" id="latch_reverse.png">
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Probe Max Latch</property>
@@ -1191,18 +1148,18 @@
                                 <property name="pixbuf">icons/latch_reverse.png</property>
                               </object>
                               <packing>
-                                <property name="top_attach">5</property>
-                                <property name="bottom_attach">6</property>
+                                <property name="top_attach">4</property>
+                                <property name="bottom_attach">5</property>
                                 <property name="y_options">GTK_SHRINK</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkSpinButton" id="spbtn_probe_max_latch">
                                 <property name="width_request">105</property>
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
+                                <property name="invisible_char">?</property>
                                 <property name="width_chars">8</property>
                                 <property name="invisible_char_set">True</property>
                                 <property name="primary_icon_activatable">False</property>
@@ -1218,15 +1175,15 @@
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">5</property>
-                                <property name="bottom_attach">6</property>
+                                <property name="top_attach">4</property>
+                                <property name="bottom_attach">5</property>
                                 <property name="y_options">GTK_SHRINK</property>
                               </packing>
                             </child>
 
                             <child>
                               <object class="GtkImage" id="latch_dist.png">
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Latch distance</property>
@@ -1234,18 +1191,18 @@
                                 <property name="pixbuf">icons/latch_dist.png</property>
                               </object>
                               <packing>
-                                <property name="top_attach">6</property>
-                                <property name="bottom_attach">7</property>
+                                <property name="top_attach">5</property>
+                                <property name="bottom_attach">6</property>
                                 <property name="y_options">GTK_SHRINK</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkSpinButton" id="spbtn_latch">
                                 <property name="width_request">105</property>
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
+                                <property name="invisible_char">?</property>
                                 <property name="width_chars">8</property>
                                 <property name="invisible_char_set">True</property>
                                 <property name="primary_icon_activatable">False</property>
@@ -1261,15 +1218,15 @@
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">6</property>
-                                <property name="bottom_attach">7</property>
+                                <property name="top_attach">5</property>
+                                <property name="bottom_attach">6</property>
                                 <property name="y_options">GTK_SHRINK</property>
                               </packing>
                             </child>
 
                             <child>
                               <object class="GtkImage" id="edge_length.png">
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Edge length</property>
@@ -1277,18 +1234,18 @@
                                 <property name="pixbuf">icons/edge_length.png</property>
                               </object>
                               <packing>
-                                <property name="top_attach">7</property>
-                                <property name="bottom_attach">8</property>
+                                <property name="top_attach">6</property>
+                                <property name="bottom_attach">7</property>
                                 <property name="y_options">GTK_SHRINK</property>
                               </packing>
                             </child>
                             <child>
                               <object class="GtkSpinButton" id="spbtn_edge_length">
                                 <property name="width_request">105</property>
-                                <property name="height_request">32</property>
+                                <property name="height_request">36</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
-                                <property name="invisible_char">●</property>
+                                <property name="invisible_char">?</property>
                                 <property name="width_chars">8</property>
                                 <property name="invisible_char_set">True</property>
                                 <property name="primary_icon_activatable">False</property>
@@ -1304,8 +1261,8 @@
                               <packing>
                                 <property name="left_attach">1</property>
                                 <property name="right_attach">2</property>
-                                <property name="top_attach">7</property>
-                                <property name="bottom_attach">8</property>
+                                <property name="top_attach">6</property>
+                                <property name="bottom_attach">7</property>
                                 <property name="y_options">GTK_SHRINK</property>
                               </packing>
                             </child>
@@ -1484,45 +1441,32 @@
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
                                         <property name="n_rows">2</property>
-                                        <property name="n_columns">2</property>
+                                        <property name="n_columns">3</property>
+                                        <property name="column_spacing">2</property>
+
+
 
                                         <child>
-                                          <object class="GtkCheckButton" id="chk_use_auto_rott">
-                                            <property name="label" translatable="yes">Auto Rot</property>
-                                            <property name="height_request">18</property>
+                                          <object class="GtkLabel" id="blank_label">
+                                            <property name="height_request">25</property>
+                                            <property name="width_request">25</property>
                                             <property name="visible">True</property>
-                                            <property name="can_focus">True</property>
-                                            <property name="receives_default">False</property>
-                                            <property name="image_position">bottom</property>
-                                            <property name="draw_indicator">True</property>
-                                            <signal name="toggled" handler="on_chk_use_auto_rott_toggled" swapped="no"/>
-                                          </object>
-                                        </child>
-                                        <child>
-                                          <object class="HAL_LED" id="hal_led_use_auto_rott">
                                             <property name="can_focus">False</property>
-                                            <property name="blink_color">#a0a0a0a0a0a0</property>
-                                            <property name="led_blink_rate">500</property>
-                                            <property name="led_shiny">True</property>
-                                            <property name="off_color">#a0a0a0a0a0a0</property>
-                                            <property name="on_color">#a0a0a0a0a0a0</property>
-                                            <property name="pick_color_blink">#d8d84242ffff</property>
-                                            <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                                            <property name="label" translatable="no"> </property>
+                                            <property name="use_markup">True</property>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="right_attach">2</property>
                                             <property name="x_options">GTK_SHRINK</property>
                                             <property name="y_options">GTK_SHRINK</property>
                                           </packing>
                                         </child>
-
                                         <child>
                                           <object class="GtkSpinButton" id="spbtn_offs_angle">
-                                            <property name="height_request">34</property>
+                                            <property name="height_request">38</property>
+                                            <property name="width_request">95</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
-                                            <property name="invisible_char">●</property>
+                                            <property name="invisible_char">?</property>
                                             <property name="width_chars">8</property>
                                             <property name="invisible_char_set">True</property>
                                             <property name="primary_icon_activatable">False</property>
@@ -1538,14 +1482,35 @@
                                           <packing>
                                             <property name="top_attach">1</property>
                                             <property name="bottom_attach">2</property>
-                                            <property name="x_options">GTK_SHRINK | GTK_FILL</property>
+                                            <property name="x_options">GTK_SHRINK</property>
+                                            <property name="y_options">GTK_SHRINK</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="HAL_LED" id="hal_led_use_auto_rott">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="blink_color">#a0a0a0a0a0a0</property>
+                                            <property name="led_blink_rate">500</property>
+                                            <property name="led_shiny">True</property>
+                                            <property name="off_color">#a0a0a0a0a0a0</property>
+                                            <property name="on_color">#a0a0a0a0a0a0</property>
+                                            <property name="pick_color_blink">#0dbfef8050f4</property>
+                                            <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                                          </object>
+                                          <packing>
+                                            <property name="top_attach">1</property>
+                                            <property name="bottom_attach">2</property>
+                                            <property name="left_attach">1</property>
+                                            <property name="right_attach">2</property>
+                                            <property name="x_options">GTK_SHRINK</property>
                                             <property name="y_options">GTK_SHRINK</property>
                                           </packing>
                                         </child>
                                         <child>
                                           <object class="GtkButton" id="btn_set_angle">
                                             <property name="width_request">36</property>
-                                            <property name="height_request">34</property>
+                                            <property name="height_request">38</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">True</property>
                                             <property name="receives_default">True</property>
@@ -1559,8 +1524,8 @@
                                             </child>
                                           </object>
                                           <packing>
-                                            <property name="left_attach">1</property>
-                                            <property name="right_attach">2</property>
+                                            <property name="left_attach">2</property>
+                                            <property name="right_attach">3</property>
                                             <property name="top_attach">1</property>
                                             <property name="bottom_attach">2</property>
                                             <property name="x_options">GTK_SHRINK</property>
@@ -1601,8 +1566,8 @@
                             <property name="label_xalign">0</property>
                             <child>
                               <object class="GtkAlignment" id="alignment3">
-                                <property name="width_request">162</property>
-                                <property name="height_request">124</property>
+                                <property name="width_request">166</property>
+                                <property name="height_request">145</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="left_padding">2</property>
@@ -1611,47 +1576,18 @@
                                   <object class="GtkTable" id="table6">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="n_rows">4</property>
-                                    <property name="n_columns">2</property>
-
-                                    <child>
-                                      <object class="GtkCheckButton" id="chk_use_auto_zero_offset_box">
-                                        <property name="label" translatable="yes">Auto Zero</property>
-                                        <property name="height_request">28</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
-                                        <property name="image_position">bottom</property>
-                                        <property name="draw_indicator">True</property>
-                                        <signal name="toggled" handler="on_chk_use_auto_zero_offset_box_toggled" swapped="no"/>
-                                      </object>
-                                    </child>
-                                    <child>
-                                      <object class="HAL_LED" id="hal_led_use_auto_zero_offset_box">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="blink_color">#a0a0a0a0a0a0</property>
-                                        <property name="led_blink_rate">500</property>
-                                        <property name="led_shiny">True</property>
-                                        <property name="off_color">#a0a0a0a0a0a0</property>
-                                        <property name="on_color">#a0a0a0a0a0a0</property>
-                                        <property name="pick_color_blink">#d8d84242ffff</property>
-                                        <property name="pick_color_off">#a0a0a0a0a0a0</property>
-                                      </object>
-                                      <packing>
-                                        <property name="left_attach">1</property>
-                                        <property name="right_attach">2</property>
-                                        <property name="x_options">GTK_SHRINK</property>
-                                        <property name="y_options">GTK_SHRINK</property>
-                                      </packing>
-                                    </child>
+                                    <property name="n_rows">3</property>
+                                    <property name="n_columns">3</property>
+                                    <property name="row_spacing">10</property>
+                                    <property name="column_spacing">2</property>
 
                                     <child>
                                       <object class="GtkSpinButton" id="spbtn_offs_x">
                                         <property name="height_request">34</property>
+                                        <property name="width_request">95</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="invisible_char">●</property>
+                                        <property name="invisible_char">?</property>
                                         <property name="width_chars">8</property>
                                         <property name="invisible_char_set">True</property>
                                         <property name="primary_icon_activatable">False</property>
@@ -1667,14 +1603,35 @@
                                       <packing>
                                         <property name="top_attach">1</property>
                                         <property name="bottom_attach">2</property>
-                                        <property name="x_options">GTK_SHRINK | GTK_FILL</property>
+                                        <property name="x_options">GTK_SHRINK</property>
+                                        <property name="y_options">GTK_SHRINK</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="HAL_LED" id="hal_led_use_offs_x">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="blink_color">#a0a0a0a0a0a0</property>
+                                        <property name="led_blink_rate">500</property>
+                                        <property name="led_shiny">True</property>
+                                        <property name="off_color">#a0a0a0a0a0a0</property>
+                                        <property name="on_color">#a0a0a0a0a0a0</property>
+                                        <property name="pick_color_blink">#0dbfef8050f4</property>
+                                        <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                                      </object>
+                                      <packing>
+                                        <property name="top_attach">1</property>
+                                        <property name="bottom_attach">2</property>
+                                        <property name="left_attach">1</property>
+                                        <property name="right_attach">2</property>
+                                        <property name="x_options">GTK_SHRINK</property>
                                         <property name="y_options">GTK_SHRINK</property>
                                       </packing>
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="btn_set_x">
+                                        <property name="height_request">34</property>
                                         <property name="width_request">28</property>
-                                        <property name="height_request">30</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -1688,10 +1645,10 @@
                                         </child>
                                       </object>
                                       <packing>
-                                        <property name="left_attach">1</property>
-                                        <property name="right_attach">2</property>
                                         <property name="top_attach">1</property>
                                         <property name="bottom_attach">2</property>
+                                        <property name="left_attach">2</property>
+                                        <property name="right_attach">3</property>
                                         <property name="x_options">GTK_SHRINK</property>
                                         <property name="y_options">GTK_SHRINK</property>
                                       </packing>
@@ -1700,9 +1657,10 @@
                                     <child>
                                       <object class="GtkSpinButton" id="spbtn_offs_y">
                                         <property name="height_request">34</property>
+                                        <property name="width_request">95</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="invisible_char">●</property>
+                                        <property name="invisible_char">?</property>
                                         <property name="width_chars">8</property>
                                         <property name="invisible_char_set">True</property>
                                         <property name="primary_icon_activatable">False</property>
@@ -1718,14 +1676,35 @@
                                       <packing>
                                         <property name="top_attach">2</property>
                                         <property name="bottom_attach">3</property>
-                                        <property name="x_options">GTK_SHRINK | GTK_FILL</property>
+                                        <property name="x_options">GTK_SHRINK</property>
+                                        <property name="y_options">GTK_SHRINK</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="HAL_LED" id="hal_led_use_offs_y">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="blink_color">#a0a0a0a0a0a0</property>
+                                        <property name="led_blink_rate">500</property>
+                                        <property name="led_shiny">True</property>
+                                        <property name="off_color">#a0a0a0a0a0a0</property>
+                                        <property name="on_color">#a0a0a0a0a0a0</property>
+                                        <property name="pick_color_blink">#0dbfef8050f4</property>
+                                        <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                                      </object>
+                                      <packing>
+                                        <property name="top_attach">2</property>
+                                        <property name="bottom_attach">3</property>
+                                        <property name="left_attach">1</property>
+                                        <property name="right_attach">2</property>
+                                        <property name="x_options">GTK_SHRINK</property>
                                         <property name="y_options">GTK_SHRINK</property>
                                       </packing>
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="btn_set_y">
+                                        <property name="height_request">34</property>
                                         <property name="width_request">28</property>
-                                        <property name="height_request">30</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -1739,10 +1718,10 @@
                                         </child>
                                       </object>
                                       <packing>
-                                        <property name="left_attach">1</property>
-                                        <property name="right_attach">2</property>
                                         <property name="top_attach">2</property>
                                         <property name="bottom_attach">3</property>
+                                        <property name="left_attach">2</property>
+                                        <property name="right_attach">3</property>
                                         <property name="x_options">GTK_SHRINK</property>
                                         <property name="y_options">GTK_SHRINK</property>
                                       </packing>
@@ -1751,9 +1730,10 @@
                                     <child>
                                       <object class="GtkSpinButton" id="spbtn_offs_z">
                                         <property name="height_request">34</property>
+                                        <property name="width_request">95</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="invisible_char">●</property>
+                                        <property name="invisible_char">?</property>
                                         <property name="width_chars">8</property>
                                         <property name="invisible_char_set">True</property>
                                         <property name="primary_icon_activatable">False</property>
@@ -1769,14 +1749,35 @@
                                       <packing>
                                         <property name="top_attach">3</property>
                                         <property name="bottom_attach">4</property>
-                                        <property name="x_options">GTK_SHRINK | GTK_FILL</property>
+                                        <property name="x_options">GTK_SHRINK</property>
+                                        <property name="y_options">GTK_SHRINK</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="HAL_LED" id="hal_led_use_offs_z">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="blink_color">#a0a0a0a0a0a0</property>
+                                        <property name="led_blink_rate">500</property>
+                                        <property name="led_shiny">True</property>
+                                        <property name="off_color">#a0a0a0a0a0a0</property>
+                                        <property name="on_color">#a0a0a0a0a0a0</property>
+                                        <property name="pick_color_blink">#0dbfef8050f4</property>
+                                        <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                                      </object>
+                                      <packing>
+                                        <property name="top_attach">3</property>
+                                        <property name="bottom_attach">4</property>
+                                        <property name="left_attach">1</property>
+                                        <property name="right_attach">2</property>
+                                        <property name="x_options">GTK_SHRINK</property>
                                         <property name="y_options">GTK_SHRINK</property>
                                       </packing>
                                     </child>
                                     <child>
                                       <object class="GtkButton" id="btn_set_z">
+                                        <property name="height_request">34</property>
                                         <property name="width_request">28</property>
-                                        <property name="height_request">30</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
                                         <property name="receives_default">True</property>
@@ -1790,10 +1791,10 @@
                                         </child>
                                       </object>
                                       <packing>
-                                        <property name="left_attach">1</property>
-                                        <property name="right_attach">2</property>
                                         <property name="top_attach">3</property>
                                         <property name="bottom_attach">4</property>
+                                        <property name="left_attach">2</property>
+                                        <property name="right_attach">3</property>
                                         <property name="x_options">GTK_SHRINK</property>
                                         <property name="y_options">GTK_SHRINK</property>
                                       </packing>
@@ -1816,7 +1817,7 @@
                           </object>
                           <packing>
                             <property name="x">180</property>
-                            <property name="y">155</property>
+                            <property name="y">165</property>
                           </packing>
                         </child>
 
@@ -2453,47 +2454,13 @@
                         </child>
 
                         <child>
-                          <object class="HAL_LED" id="hal_led_use_bed_compensation">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="blink_color">#a0a0a0a0a0a0</property>
-                            <property name="led_blink_rate">500</property>
-                            <property name="led_shiny">True</property>
-                            <property name="off_color">#a0a0a0a0a0a0</property>
-                            <property name="on_color">#a0a0a0a0a0a0</property>
-                            <property name="pick_color_blink">#54215656aaaa</property>
-                            <property name="pick_color_off">#a0a0a0a0a0a0</property>
-                          </object>
-                          <packing>
-                            <property name="x">100</property>
-                            <property name="y">40</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkCheckButton" id="chk_use_bed_compensation">
-                            <property name="width_request">25</property>
-                            <property name="height_request">25</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="image_position">bottom</property>
-                            <property name="draw_indicator">True</property>
-                            <signal name="toggled" handler="on_chk_use_bed_compensation_toggled" swapped="no"/>
-                          </object>
-                          <packing>
-                            <property name="x">125</property>
-                            <property name="y">40</property>
-                          </packing>
-                        </child>
-                        <child>
                           <object class="GtkLabel" id="use_bed_compensation">
-                            <property name="width_request">180</property>
                             <property name="height_request">25</property>
+                            <property name="width_request">180</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">&lt;b&gt;Bed Compensation&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
-                            <property name="width_chars">10</property>
                           </object>
                           <packing>
                             <property name="x">1</property>
@@ -2502,8 +2469,8 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="btn_probe_bed_compensation">
-                            <property name="width_request">90</property>
                             <property name="height_request">50</property>
+                            <property name="width_request">90</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -2520,6 +2487,64 @@
                           <packing>
                             <property name="x">2</property>
                             <property name="y">28</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="HAL_LED" id="hal_led_use_bed_compensation">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="blink_color">#a0a0a0a0a0a0</property>
+                            <property name="led_blink_rate">0</property>
+                            <property name="led_shiny">True</property>
+                            <property name="off_color">#a0a0a0a0a0a0</property>
+                            <property name="on_color">#0dbfef8050f4</property>
+                            <property name="pick_color_blink">#0dbfef8050f4</property>
+                            <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                          </object>
+                          <packing>
+                            <property name="x">100</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="chk_use_bed_compensation">
+                            <property name="height_request">0</property>
+                            <property name="width_request">0</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="relief">half</property>
+                            <property name="image_position">bottom</property>
+                            <property name="draw_indicator">True</property>
+                            <signal name="toggled" handler="on_chk_use_bed_compensation_toggled" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="x">130</property>
+                            <property name="y">20</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkSpinButton" id="spbtn_latch_bed_compensation">
+                            <property name="width_request">45</property>
+                            <property name="height_request">32</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="invisible_char">?</property>
+                            <property name="width_chars">8</property>
+                            <property name="invisible_char_set">True</property>
+                            <property name="primary_icon_activatable">False</property>
+                            <property name="secondary_icon_activatable">False</property>
+                            <property name="primary_icon_sensitive">True</property>
+                            <property name="secondary_icon_sensitive">True</property>
+                            <property name="adjustment">adj_latch_bed_compensation</property>
+                            <property name="digits">0</property>
+                            <property name="numeric">True</property>
+                            <signal name="key-press-event" handler="on_spbtn_latch_bed_compensation_key_press_event" swapped="no"/>
+                            <signal name="value-changed" handler="on_spbtn_latch_bed_compensation_value_changed" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="x">100</property>
+                            <property name="y">47</property>
                           </packing>
                         </child>
 
@@ -2547,7 +2572,7 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="btn_set_table_offset">
-                            <property name="width_request">55</property>
+                            <property name="width_request">58</property>
                             <property name="height_request">26</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2570,12 +2595,12 @@
                           <object class="HAL_LED" id="hal_led_use_table_offset">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="blink_color">#0dbfef8050f4</property>
+                            <property name="blink_color">#a0a0a0a0a0a0</property>
                             <property name="led_blink_rate">0</property>
                             <property name="led_shiny">True</property>
                             <property name="off_color">#a0a0a0a0a0a0</property>
                             <property name="on_color">#0dbfef8050f4</property>
-                            <property name="pick_color_blink">#0dbfef8050f4</property>
+                            <property name="pick_color_blink">#a0a0a0a0a0a0</property>
                             <property name="pick_color_off">#a0a0a0a0a0a0</property>
                           </object>
                           <packing>
@@ -2585,11 +2610,11 @@
                         </child>
                         <child>
                           <object class="GtkSpinButton" id="spbtn_probe_table_offset">
-                            <property name="width_request">75</property>
+                            <property name="width_request">77</property>
                             <property name="height_request">32</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="invisible_char">●</property>
+                            <property name="invisible_char">?</property>
                             <property name="width_chars">8</property>
                             <property name="invisible_char_set">True</property>
                             <property name="primary_icon_activatable">False</property>
@@ -2632,7 +2657,7 @@
                         </child>
                         <child>
                           <object class="GtkButton" id="btn_set_block_height">
-                            <property name="width_request">55</property>
+                            <property name="width_request">58</property>
                             <property name="height_request">26</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2655,12 +2680,12 @@
                           <object class="HAL_LED" id="hal_led_use_block_height">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="blink_color">#0dbfef8050f4</property>
+                            <property name="blink_color">#a0a0a0a0a0a0</property>
                             <property name="led_blink_rate">0</property>
                             <property name="led_shiny">True</property>
                             <property name="off_color">#a0a0a0a0a0a0</property>
                             <property name="on_color">#0dbfef8050f4</property>
-                            <property name="pick_color_blink">#0dbfef8050f4</property>
+                            <property name="pick_color_blink">#a0a0a0a0a0a0</property>
                             <property name="pick_color_off">#a0a0a0a0a0a0</property>
                           </object>
                           <packing>
@@ -2670,7 +2695,7 @@
                         </child>
                         <child>
                           <object class="GtkSpinButton" id="spbtn_probe_block_height">
-                            <property name="width_request">75</property>
+                            <property name="width_request">77</property>
                             <property name="height_request">32</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2695,32 +2720,20 @@
 
                         <child>
                           <object class="GtkCheckButton" id="chk_use_touch_plate">
-                            <property name="width_request">25</property>
-                            <property name="height_request">25</property>
+                            <property name="label" translatable="yes">Touchplate</property>
+                            <property name="height_request">0</property>
+                            <property name="width_request">0</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
+                            <property name="relief">half</property>
                             <property name="image_position">bottom</property>
                             <property name="draw_indicator">True</property>
                             <signal name="toggled" handler="on_chk_use_touch_plate_toggled" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="x">190</property>
-                            <property name="y">140</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="use_touch_plate">
-                            <property name="width_request">100</property>
-                            <property name="height_request">30</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">&lt;b&gt;Touchplate&lt;/b&gt;</property>
-                            <property name="use_markup">True</property>
-                          </object>
-                          <packing>
-                            <property name="x">215</property>
-                            <property name="y">140</property>
+                            <property name="x">195</property>
+                            <property name="y">145</property>
                           </packing>
                         </child>
                         <child>
@@ -2728,16 +2741,54 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="blink_color">#a0a0a0a0a0a0</property>
-                            <property name="led_blink_rate">500</property>
+                            <property name="led_blink_rate">0</property>
                             <property name="led_shiny">True</property>
                             <property name="off_color">#a0a0a0a0a0a0</property>
-                            <property name="on_color">#a0a0a0a0a0a0</property>
-                            <property name="pick_color_blink">#54215656aaaa</property>
+                            <property name="on_color">#0dbfef8050f4</property>
+                            <property name="pick_color_blink">#a0a0a0a0a0a0</property>
                             <property name="pick_color_off">#a0a0a0a0a0a0</property>
                           </object>
                           <packing>
                             <property name="x">320</property>
-                            <property name="y">145</property>
+                            <property name="y">150</property>
+                          </packing>
+                        </child>
+
+                        <child>
+                          <object class="GtkCheckButton" id="chk_use_auto_rott">
+                            <property name="label" translatable="yes">Auto Rotation</property>
+                            <property name="height_request">0</property>
+                            <property name="width_request">0</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="relief">half</property>
+                            <property name="image_position">bottom</property>
+                            <property name="draw_indicator">True</property>
+                            <signal name="toggled" handler="on_chk_use_auto_rott_toggled" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="x">5</property>
+                            <property name="y">267</property>
+                          </packing>
+                        </child>
+
+                        <child>
+                          <object class="GtkCheckButton" id="chk_use_auto_zero_offset_box">
+                            <property name="label" translatable="yes">Auto Offs</property>
+                            <property name="height_request">0</property>
+                            <property name="width_request">0</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">True</property>
+                            <property name="relief">half</property>
+                            <property name="image_position">bottom</property>
+                            <property name="draw_indicator">True</property>
+                            <signal name="toggled" handler="on_chk_use_auto_zero_offset_box_toggled" swapped="no"/>
+                          </object>
+                          <packing>
+                            <property name="x">218</property>
+                            <property name="y">174</property>
                           </packing>
                         </child>
 
@@ -2745,23 +2796,24 @@
                           <object class="HAL_LED" id="hal_led_use_tool_measurement">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="blink_color">#0dbfef8050f4</property>
+                            <property name="blink_color">#a0a0a0a0a0a0</property>
                             <property name="led_blink_rate">0</property>
                             <property name="led_shiny">True</property>
                             <property name="off_color">#a0a0a0a0a0a0</property>
                             <property name="on_color">#0dbfef8050f4</property>
-                            <property name="pick_color_blink">#0dbfef8050f4</property>
+                            <property name="pick_color_blink">#a0a0a0a0a0a0</property>
                             <property name="pick_color_off">#a0a0a0a0a0a0</property>
                           </object>
                           <packing>
-                            <property name="x">180</property>
-                            <property name="y">308</property>
+                            <property name="x">790</property>
+                            <property name="y">12</property>
                           </packing>
                         </child>
                         <child>
                           <object class="GtkCheckButton" id="chk_use_tool_measurement">
-                            <property name="width_request">25</property>
-                            <property name="height_request">25</property>
+                            <property name="label" translatable="yes">Remap M6</property>
+                            <property name="height_request">0</property>
+                            <property name="width_request">0</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
@@ -2771,22 +2823,8 @@
                             <signal name="toggled" handler="on_chk_use_tool_measurement_toggled" swapped="no"/>
                           </object>
                           <packing>
-                            <property name="x">205</property>
-                            <property name="y">308</property>
-                          </packing>
-                        </child>
-                        <child>
-                          <object class="GtkLabel" id="use_tool_measurement">
-                            <property name="width_request">100</property>
-                            <property name="height_request">30</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">&lt;b&gt;Remap M6&lt;/b&gt;</property>
-                            <property name="use_markup">True</property>
-                          </object>
-                          <packing>
-                            <property name="x">235</property>
-                            <property name="y">308</property>
+                            <property name="x">815</property>
+                            <property name="y">12</property>
                           </packing>
                         </child>
 
@@ -2807,6 +2845,42 @@
                                     <property name="can_focus">False</property>
 
                                     <child>
+                                      <object class="HAL_LED" id="hal_led_use_rot_spindle_reverse">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="blink_color">#a0a0a0a0a0a0</property>
+                                        <property name="led_blink_rate">500</property>
+                                        <property name="led_shiny">True</property>
+                                        <property name="off_color">#a0a0a0a0a0a0</property>
+                                        <property name="on_color">#a0a0a0a0a0a0</property>
+                                        <property name="pick_color_blink">#d8d84242ffff</property>
+                                        <property name="pick_color_off">#a0a0a0a0a0a0</property>
+                                      </object>
+                                      <packing>
+                                        <property name="x">0</property>
+                                        <property name="y">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkCheckButton" id="chk_use_rot_spindle_reverse">
+                                        <property name="label" translatable="yes">Rotate spindle</property>
+                                        <property name="height_request">0</property>
+                                        <property name="width_request">0</property>
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">True</property>
+                                        <property name="relief">half</property>
+                                        <property name="image_position">bottom</property>
+                                        <property name="draw_indicator">True</property>
+                                        <signal name="toggled" handler="on_chk_use_rot_spindle_reverse_toggled" swapped="no"/>
+                                      </object>
+                                      <packing>
+                                        <property name="x">25</property>
+                                        <property name="y">0</property>
+                                      </packing>
+                                    </child>
+
+                                    <child>
                                       <object class="GtkButton" id="btn_tool_dia">
                                         <property name="width_request">90</property>
                                         <property name="height_request">65</property>
@@ -2825,7 +2899,7 @@
                                       </object>
                                       <packing>
                                         <property name="x">5</property>
-                                        <property name="y">55</property>
+                                        <property name="y">43</property>
                                       </packing>
                                     </child>
 
@@ -2848,7 +2922,7 @@
                                       </object>
                                       <packing>
                                         <property name="x">100</property>
-                                        <property name="y">55</property>
+                                        <property name="y">43</property>
                                       </packing>
                                     </child>
 
@@ -2871,56 +2945,7 @@
                                       </object>
                                       <packing>
                                         <property name="x">195</property>
-                                        <property name="y">55</property>
-                                      </packing>
-                                    </child>
-
-                                    <child>
-                                      <object class="HAL_LED" id="hal_led_use_rot_spindle_reverse">
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="blink_color">#a0a0a0a0a0a0</property>
-                                        <property name="led_blink_rate">500</property>
-                                        <property name="led_shiny">True</property>
-                                        <property name="off_color">#a0a0a0a0a0a0</property>
-                                        <property name="on_color">#a0a0a0a0a0a0</property>
-                                        <property name="pick_color_blink">#d8d84242ffff</property>
-                                        <property name="pick_color_off">#a0a0a0a0a0a0</property>
-                                      </object>
-                                      <packing>
-                                        <property name="x">0</property>
-                                        <property name="y">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkCheckButton" id="chk_use_rot_spindle_reverse">
-                                        <property name="width_request">25</property>
-                                        <property name="height_request">25</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
-                                        <property name="relief">half</property>
-                                        <property name="image_position">bottom</property>
-                                        <property name="draw_indicator">True</property>
-                                        <signal name="toggled" handler="on_chk_use_rot_spindle_reverse_toggled" swapped="no"/>
-                                      </object>
-                                      <packing>
-                                        <property name="x">25</property>
-                                        <property name="y">0</property>
-                                      </packing>
-                                    </child>
-                                    <child>
-                                      <object class="GtkLabel" id="rotate_spindle">
-                                        <property name="width_request">150</property>
-                                        <property name="height_request">32</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="label" translatable="yes">&lt;b&gt;Rotate spindle&lt;/b&gt;</property>
-                                        <property name="use_markup">True</property>
-                                      </object>
-                                      <packing>
-                                        <property name="x">45</property>
-                                        <property name="y">0</property>
+                                        <property name="y">43</property>
                                       </packing>
                                     </child>
 
@@ -2928,8 +2953,13 @@
                                 </child>
                               </object>
                             </child>
-                            <child type="label_item">
-                              <placeholder/>
+                            <child type="label">
+                              <object class="GtkLabel" id="tool_creator">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="label" translatable="yes">&lt;b&gt;Tool creator&lt;/b&gt;</property>
+                                <property name="use_markup">True</property>
+                              </object>
                             </child>
                           </object>
                           <packing>
@@ -2937,6 +2967,7 @@
                             <property name="y">5</property>
                           </packing>
                         </child>
+
 
                         <child>
                           <object class="GtkFrame" id="frm_history">

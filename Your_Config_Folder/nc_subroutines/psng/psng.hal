@@ -18,8 +18,8 @@ unlinkp iocontrol.0.tool-prepared
 #net psng-tool-number            probe.toolchange-number      <=   iocontrol.0.tool-number
 #net psng-tool-diameter          probe.toolchange-diameter    <=   halui.tool.diameter
 
-#net manual-tool-number         probe.toolchange-number
-#net manual-tool-diameter       probe.toolchange-diameter
+#net manual-tool-number          probe.toolchange-number
+#net manual-tool-diameter        probe.toolchange-diameter
 #******************************************
 
 
@@ -38,15 +38,25 @@ net manual-tool-diameter                                    <= halui.tool.diamet
 #******************************************
 loadusr -Wn probe.compensation python ./nc_subroutines/psng/python/compensation.py
 
-net xpos-cmd 		          <= axis.x.pos-cmd			            => probe.compensation.x-pos
-net ypos-cmd 		          <= axis.y.pos-cmd			            => probe.compensation.y-pos
-net zpos-cmd 	            <= axis.z.pos-cmd		              => probe.compensation.z-pos
-net eoffset-enable	      <= probe.compensation.enable-out	=> axis.z.eoffset-enable
-net eoffset-scale	        <= probe.compensation.scale		    => axis.z.eoffset-scale
-net eoffset-counts	      <= probe.compensation.counts 		  => axis.z.eoffset-counts
-net eoffset-clear	        <= probe.compensation.clear 		  => axis.z.eoffset-clear
+net Z-eoffset-x-pos-cmd 	<= axis.x.pos-cmd			            => probe.compensation.x-pos-cmd-in
+net Z-eoffset-y-pos-cmd 	<= axis.y.pos-cmd			            => probe.compensation.y-pos-cmd-in
+net Z-eoffset-z-pos-cmd 	<= axis.z.pos-cmd		              => probe.compensation.z-pos-cmd-in
 
-net compensation-bed-on	  <= probe.chk_use_bed_compensation  => probe.compensation.enable-in
+
+#net Z-eoffset-out-limit   <= probe.compensation.z-eoffset-out-of-limit  => probe.z-eoffset-out-of-limit
+
+net Z-eoffset-enable	    <= probe.compensation.enable-out	=> axis.z.eoffset-enable
+net Z-eoffset-scale	      <= probe.compensation.scale-out   => axis.z.eoffset-scale
+net Z-eoffset-counts	    <= probe.compensation.counts-out  => axis.z.eoffset-counts
+net Z-eoffset-clear	      <= probe.compensation.clear-out   => axis.z.eoffset-clear
+
+net Z-eoffset-enable                                        => probe.compensation_enable_out
+net Z-eoffset-bed-on	    <= probe.chk_use_bed_compensation => probe.compensation.enable-in
+net Z-eoffset-bed-latch   <= probe.latch_bed_compensation   => probe.compensation.latch-bed-compensation-in
+net Z-eoffset-0.homed  	  <= joint.0.homed                  => probe.compensation.joint-0-is-homed
+net Z-eoffset-1.homed 	  <= joint.1.homed                  => probe.compensation.joint-1-is-homed
+net Z-eoffset-2.homed 	  <= joint.2.homed                  => probe.compensation.joint-2-is-homed
+
 
 #******************************************
 
