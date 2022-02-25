@@ -50,8 +50,11 @@ net Z-eoffset-scale	      <= probe.compensation.scale-out   => axis.z.eoffset-sc
 net Z-eoffset-counts	    <= probe.compensation.counts-out  => axis.z.eoffset-counts
 net Z-eoffset-clear	      <= probe.compensation.clear-out   => axis.z.eoffset-clear
 
-net Z-eoffset-enable                                        => probe.compensation_enable_out
+net Z-eoffset-enable                                        => probe.compensation_active
+net Z-eoffset-is-ready    <= probe.compensation.is-ready	  => probe.compensation_is_ready
+
 net Z-eoffset-bed-on	    <= probe.chk_use_bed_compensation => probe.compensation.enable-in
+net Z-eoffset-value	      <= axis.z.eoffset                 => probe.compensation.eoffset-value-in
 net Z-eoffset-bed-latch   <= probe.latch_bed_compensation   => probe.compensation.latch-bed-compensation-in
 net Z-eoffset-0.homed  	  <= joint.0.homed                  => probe.compensation.joint-0-is-homed
 net Z-eoffset-1.homed 	  <= joint.1.homed                  => probe.compensation.joint-1-is-homed
