@@ -249,8 +249,13 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         else:
             self.add_history_text("set_tool_number = %d" % (self.halcomp["set_tool_number"]))
 
-        s = "M61Q%s" % (self.halcomp["set_tool_number"])
+        s = "M61 Q%s G43" % (self.halcomp["set_tool_number"])
         if self.gcode(s) == -1:
+            return
+
+        # safety check
+        if self.halcomp["set_tool_number"] != float(Popen('halcmd getp iocontrol.0.tool-number', shell=True, stdout=PIPE).stdout.read())):
+            self.add_history_text("ERROR : Tool number mismatch !")
             return
 
         if self.ocode("o<backup_status> call") == -1:
@@ -307,15 +312,17 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         else:
             self.add_history_text("set_tool_number = %d" % (self.halcomp["set_tool_number"]))
 
-        s = "M61Q%s" % (self.halcomp["set_tool_number"])
+        s = "M61 Q%s G43" % (self.halcomp["set_tool_number"])
         if self.gcode(s) == -1:
             return
 
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        # safety check
+        if self.halcomp["set_tool_number"] != float(Popen('halcmd getp iocontrol.0.tool-number', shell=True, stdout=PIPE).stdout.read())):
+            self.add_history_text("ERROR : Tool number mismatch !")
+            return
 
-        print("tool-number from param 5410 = ", self.params["#5410"])
-        print("tool-number = ", self.halcomp["set_tool_number"])
-        print("tooldiameter from halui = ", tooldiameter)
+        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        self.add_history_text("tooldiameter from halui = %d" % (tooldiameter))
 
         if self.ocode("o<backup_status> call") == -1:
             return

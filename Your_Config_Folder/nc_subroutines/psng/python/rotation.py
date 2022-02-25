@@ -49,7 +49,7 @@ class ProbeScreenRotation(ProbeScreenBase):
         self.chk_use_auto_rott = self.builder.get_object("chk_use_auto_rott")
 
         # make the LED
-        self.hal_led_use_auto_rott = self.builder.get_object("hal_led_use_auto_rott")
+        self.hal_led_use_offs_angle = self.builder.get_object("hal_led_use_offs_angle")
 
         # make the pins hal
         self.halcomp.newpin("offs_angle", hal.HAL_FLOAT, hal.HAL_OUT)
@@ -63,11 +63,12 @@ class ProbeScreenRotation(ProbeScreenBase):
             self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
             self.chk_use_auto_rott.set_active(1)
             self.halcomp["chk_use_auto_rott"] = 1
-            self.hal_led_use_auto_rott.set_property("on_color","blue")
-            self.hal_led_use_auto_rott.hal_pin.set(self.halcomp["chk_use_auto_rott"])
+            self.hal_led_use_offs_angle.set_property("on_color","blue")
+            self.hal_led_use_offs_angle.hal_pin.set(self.halcomp["chk_use_auto_rott"])
             self.frm_measure_angle.set_sensitive(False)
         else:
             self.frm_measure_angle.set_sensitive(True)
+
 
     # --------------------------
     #
@@ -78,31 +79,33 @@ class ProbeScreenRotation(ProbeScreenBase):
         self.halcomp["chk_use_auto_rott"] = gtkcheckbutton.get_active()
         self.prefs.putpref("chk_use_auto_rott", self.halcomp["chk_use_auto_rott"], bool)
 
-        if gtkcheckbutton.get_active():
+        if self.halcomp["chk_use_auto_rott"]:
             self.frm_measure_angle.set_sensitive(False)
-            self.add_history_text("Auto rotation is activated")
             self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
             self.prefs.putpref("offs_angle", self.halcomp["offs_angle"], float)
+            self.add_history_text("Auto rotation is activated")
+                                                                                 # todo check for actual angle applied vs hal for color pink
             if self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-               self.hal_led_use_auto_rott.set_property("on_color","blue")
-               self.hal_led_use_auto_rott.hal_pin.set(1)
+               self.halcomp["offs_angle_active"] = 1
+               self.hal_led_use_offs_angle.set_property("on_color","blue")
+               self.hal_led_use_offs_angle.hal_pin.set(1)
             else:
-                self.hal_led_use_auto_rott.set_property("on_color","orange")
-                self.hal_led_use_auto_rott.hal_pin.set(1)
+                self.halcomp["offs_angle_active"] = 0
+                self.hal_led_use_offs_angle.set_property("on_color","orange")
+                self.hal_led_use_offs_angle.hal_pin.set(1)
+                self.add_history_text("ERROR : ANGLE_OFFSET GTK CHECKBUTTON UNKNOW STATUS")
         else:
+            # now we can reset the offset correctly
+            s = "G10 L2 P0 R0"
+            if self.gcode(s) == -1:
+                return
             self.frm_measure_angle.set_sensitive(True)
+            self.halcomp["offs_angle"] = 0
+            self.prefs.putpref("offs_angle", 0, float)
+            self.halcomp["offs_angle_active"] = 0
+            self.hal_led_use_offs_angle.hal_pin.set(0)
+            self.add_history_text("ANGLE_OFFSET G10 L2 P0 Rx VALUE RESETED TO 0")
             self.add_history_text("Auto rotation is not activated")
-            if self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-                self.hal_led_use_auto_rott.set_property("on_color","green")
-                self.hal_led_use_auto_rott.hal_pin.set(1)
-            elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
-                self.hal_led_use_auto_rott.set_property("on_color","red")
-                self.hal_led_use_auto_rott.hal_pin.set(1)
-            else:
-                self.halcomp["offs_angle"] = 0
-                self.prefs.putpref("offs_angle", 0, float)
-                #self.halcomp["offs_angle_active"] = 0
-                self.hal_led_use_auto_rott.hal_pin.set(0)
 
 
     # --------------------------
@@ -112,46 +115,33 @@ class ProbeScreenRotation(ProbeScreenBase):
     # --------------------------
     def on_spbtn_offs_angle_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("offs_angle", gtkspinbutton, data)
-        if self.halcomp["chk_use_auto_rott"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-            self.hal_led_use_auto_rott.set_property("on_color","blue")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-        elif self.halcomp["chk_use_auto_rott"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
-            self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
-            self.hal_led_use_auto_rott.set_property("on_color","pink")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-        elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-            self.hal_led_use_auto_rott.set_property("on_color","green")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-        #elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
-        elif self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
-            self.hal_led_use_auto_rott.set_property("on_color","red")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-        elif self.halcomp["offs_angle_active"] == 0 and self.halcomp["chk_use_auto_rott"] == 0 and self.halcomp["offs_angle"] == 0:
-            self.hal_led_use_auto_rott.hal_pin.set(0)
+        if self.halcomp["offs_angle_active"] == 0:
+            if self.halcomp["offs_angle"] == 0 and self.spbtn_offs_angle.get_value() == 0:
+                self.hal_led_use_offs_angle.hal_pin.set(0)
+            else:
+                self.hal_led_use_offs_angle.set_property("on_color","pink")
+                self.hal_led_use_offs_angle.hal_pin.set(1)
+        elif self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+            self.hal_led_use_offs_angle.set_property("on_color","green")
+            self.hal_led_use_offs_angle.hal_pin.set(1)
         else:
-            self.hal_led_use_auto_rott.set_property("on_color","yellow")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
+            self.hal_led_use_offs_angle.set_property("on_color","red")
+            self.hal_led_use_offs_angle.hal_pin.set(1)
 
     def on_spbtn_offs_angle_value_changed(self, gtkspinbutton, data=None):
-        if self.halcomp["chk_use_auto_rott"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-            self.hal_led_use_auto_rott.set_property("on_color","blue")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-        elif self.halcomp["chk_use_auto_rott"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
-            self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
-            self.hal_led_use_auto_rott.set_property("on_color","pink")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-        elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-            self.hal_led_use_auto_rott.set_property("on_color","green")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-        #elif self.halcomp["offs_angle_active"] == 1 and self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
-        elif self.halcomp["offs_angle"] != self.spbtn_offs_angle.get_value():
-            self.hal_led_use_auto_rott.set_property("on_color","red")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-        elif self.halcomp["offs_angle_active"] == 0 and self.halcomp["chk_use_auto_rott"] == 0 and self.halcomp["offs_angle"] == 0:
-            self.hal_led_use_auto_rott.hal_pin.set(0)
+        self.on_common_spbtn_value_changed("offs_angle", gtkspinbutton, data)
+        if self.halcomp["offs_angle_active"] == 0:
+            if self.halcomp["offs_angle"] == 0 and self.spbtn_offs_angle.get_value() == 0:
+                self.hal_led_use_offs_angle.hal_pin.set(0)
+            else:
+                self.hal_led_use_offs_angle.set_property("on_color","pink")
+                self.hal_led_use_offs_angle.hal_pin.set(1)
+        elif self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+            self.hal_led_use_offs_angle.set_property("on_color","green")
+            self.hal_led_use_offs_angle.hal_pin.set(1)
         else:
-            self.hal_led_use_auto_rott.set_property("on_color","yellow")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
+            self.hal_led_use_offs_angle.set_property("on_color","red")
+            self.hal_led_use_offs_angle.hal_pin.set(1)
 
 
     # --------------------------
@@ -161,41 +151,27 @@ class ProbeScreenRotation(ProbeScreenBase):
     # --------------------------
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_set_angle_released(self, gtkbutton, data=None):
-        self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
-        self.prefs.putpref("offs_angle", self.halcomp["offs_angle"],  float)
-
-        if self.halcomp["offs_angle"] == 0:
-            if self.halcomp["chk_use_auto_rott"] == 1:
-                if self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-                   self.hal_led_use_auto_rott.set_property("on_color","blue")
-                   self.hal_led_use_auto_rott.hal_pin.set(1)
-                else:
-                    self.hal_led_use_auto_rott.set_property("on_color","orange")
-                    self.hal_led_use_auto_rott.hal_pin.set(1)
-            else:
-                self.hal_led_use_auto_rott.hal_pin.set(0)
-                self.halcomp["offs_angle_active"] = 0
-                self.add_history_text("ANGLE_OFFSET G10 L2 P0 Rx VALUE RESETED TO 0")
-
-        else:
-            if self.halcomp["chk_use_auto_rott"] == 1:
-                if self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-                   self.hal_led_use_auto_rott.set_property("on_color","blue")
-                else:
-                    self.hal_led_use_auto_rott.set_property("on_color","orange")
-            else:
-                if self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
-                   self.hal_led_use_auto_rott.set_property("on_color","green")
-                else:
-                    self.hal_led_use_auto_rott.set_property("on_color","orange")
-            self.hal_led_use_auto_rott.hal_pin.set(1)
-            self.halcomp["offs_angle_active"] = 1
-            self.add_history_text("ANGLE_OFFSET SET G10 L2 P0 R%.4f" % (self.halcomp["offs_angle"]))
-
         # now we can apply the offset correctly
-        s = "G10 L2 P0 R%s" % (self.halcomp["offs_angle"])
+        s = "G10 L2 P0 R%s" % (self.spbtn_offs_angle.get_value())
         if self.gcode(s) == -1:
             return
+        self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
+        self.prefs.putpref("offs_angle", self.halcomp["offs_angle"],  float)
+                                                                                 # todo check for actual angle applied vs hal for color pink
+        if self.halcomp["offs_angle"] == 0:
+            self.hal_led_use_offs_angle.hal_pin.set(0)
+            self.halcomp["offs_angle_active"] = 0
+            self.add_history_text("ANGLE_OFFSET G10 L2 P0 Rx VALUE RESETED TO 0")
+
+        elif self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+            self.hal_led_use_offs_angle.set_property("on_color","green")
+            self.hal_led_use_offs_angle.hal_pin.set(1)
+            self.halcomp["offs_angle_active"] = 1
+            self.add_history_text("ANGLE_OFFSET SET G10 L2 P0 R%.4f" % (self.halcomp["offs_angle"]))
+        else:
+            self.hal_led_use_offs_angle.set_property("on_color","yellow")
+            self.hal_led_use_offs_angle.hal_pin.set(1)
+            self.add_history_text("ERROR : ANGLE_OFFSET UNKNOW STATUS")
 
 
     # --------------------------

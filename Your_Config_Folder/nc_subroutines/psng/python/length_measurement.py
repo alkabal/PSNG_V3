@@ -61,7 +61,8 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
 
         self.halcomp.newpin("latch_bed_compensation", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("chk_use_bed_compensation", hal.HAL_BIT, hal.HAL_OUT)
-        self.halcomp.newpin("compensation_enable_out", hal.HAL_BIT, hal.HAL_IN)
+        self.halcomp.newpin("compensation_active", hal.HAL_BIT, hal.HAL_IN)
+        self.halcomp.newpin("compensation_is_ready", hal.HAL_BIT, hal.HAL_IN)
 
 
         # load value regarding to the pref saved
@@ -91,24 +92,34 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     # --------------------------
 
     def on_chk_use_bed_compensation_toggled(self, gtkcheckbutton, data=None):
-        self.halcomp["chk_use_bed_compensation"] = gtkcheckbutton.get_active()
-        self.hal_led_use_bed_compensation.hal_pin.set(self.halcomp["chk_use_bed_compensation"])
-        self.prefs.putpref("chk_use_bed_compensation", self.halcomp["chk_use_bed_compensation"], bool)
-        if self.halcomp["chk_use_bed_compensation"]:
+        if gtkcheckbutton.get_active() == 1 and self.halcomp["compensation_is_ready"] == 1:
             self.spbtn_latch_bed_compensation.set_sensitive(False)
+            self.halcomp["chk_use_bed_compensation"] = 1
+            self.hal_led_use_bed_compensation.hal_pin.set(1)
+            self.prefs.putpref("chk_use_bed_compensation", 1, bool)
+            self.halcomp["latch_bed_compensation"] = self.spbtn_latch_bed_compensation.get_value()
+            self.prefs.putpref("latch_bed_compensation", self.halcomp["latch_bed_compensation"], float)
             self.add_history_text("Bed Compensation z-grid-max   = %.4f" % (float(Popen('halcmd getp probe.compensation.z-grid-max', shell=True, stdout=PIPE).stdout.read())))
             self.add_history_text("Bed Compensation z-grid-min   = %.4f" % (float(Popen('halcmd getp probe.compensation.z-grid-min', shell=True, stdout=PIPE).stdout.read())))
             self.add_history_text("Bed Compensation y-grid-end   = %.4f" % (float(Popen('halcmd getp probe.compensation.y-grid-end', shell=True, stdout=PIPE).stdout.read())))
             self.add_history_text("Bed Compensation y-grid-start = %.4f" % (float(Popen('halcmd getp probe.compensation.y-grid-start', shell=True, stdout=PIPE).stdout.read())))
             self.add_history_text("Bed Compensation x-grid-end   = %.4f" % (float(Popen('halcmd getp probe.compensation.x-grid-end', shell=True, stdout=PIPE).stdout.read())))
             self.add_history_text("Bed Compensation x-grid-start = %.4f" % (float(Popen('halcmd getp probe.compensation.x-grid-start', shell=True, stdout=PIPE).stdout.read())))
+        elif gtkcheckbutton.get_active() == 1 and self.halcomp["compensation_is_ready"] == 0:
+            self.spbtn_latch_bed_compensation.set_sensitive(True)
+            self.halcomp["chk_use_bed_compensation"] = 0
+            self.hal_led_use_bed_compensation.set_property("on_color","red")
+            self.hal_led_use_bed_compensation.hal_pin.set(1)
+            self.prefs.putpref("chk_use_bed_compensation", 0, bool)
+            self.add_history_text("ERROR : BED COMPENSATION IS NOT READY")
         else:
             self.spbtn_latch_bed_compensation.set_sensitive(True)
+            self.halcomp["chk_use_bed_compensation"] = 0
+            self.hal_led_use_bed_compensation.hal_pin.set(0)
+            self.prefs.putpref("chk_use_bed_compensation", 0, bool)
             self.add_history_text("Bed Compensation STOPPED by user")
-
-        self.halcomp["latch_bed_compensation"] = self.spbtn_latch_bed_compensation.get_value()
-        self.prefs.putpref("latch_bed_compensation", self.halcomp["latch_bed_compensation"], float)
-
+            if self.halcomp["compensation_is_ready"] == 0:
+                self.add_history_text("ERROR : BED COMPENSATION IS NOT READY")
 
 
     # --------------------------
@@ -122,46 +133,69 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
 
     def on_spbtn_latch_bed_compensation_value_changed(self, gtkspinbutton, data=None):
         self.on_common_spbtn_value_changed("latch_bed_compensation", gtkspinbutton, data)
+        self.halcomp["latch_bed_compensation"] = gtkspinbutton.get_value()
+        self.prefs.putpref("latch_bed_compensation", self.halcomp["latch_bed_compensation"], float)
 
 
     def on_spbtn_probe_block_height_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("offs_block_height", gtkspinbutton, data)
-        if self.halcomp["offs_block_height"] == self.spbtn_probe_block_height.get_value():
-            self.hal_led_use_block_height.set_property("on_color","green")
-            if self.halcomp["offs_block_height_active"] == 0:
+        if self.halcomp["offs_block_height_active"] == 0:
+            if self.halcomp["offs_block_height"] == 0 and self.spbtn_probe_block_height.get_value() == 0:
                 self.hal_led_use_block_height.hal_pin.set(0)
+            else:
+                self.hal_led_use_block_height.set_property("on_color","pink")
+                self.hal_led_use_block_height.hal_pin.set(1)
+        elif self.halcomp["offs_block_height"] == self.spbtn_probe_block_height.get_value():
+            self.hal_led_use_block_height.set_property("on_color","green")
+            self.hal_led_use_block_height.hal_pin.set(1)
         else:
             self.hal_led_use_block_height.set_property("on_color","red")
             self.hal_led_use_block_height.hal_pin.set(1)
 
     def on_spbtn_probe_block_height_value_changed(self, gtkspinbutton, data=None):
-        if self.halcomp["offs_block_height"] == self.spbtn_probe_block_height.get_value():
-            self.hal_led_use_block_height.set_property("on_color","green")
-            if self.halcomp["offs_block_height_active"] == 0:
+        self.on_common_spbtn_value_changed("offs_block_height", gtkspinbutton, data)
+        if self.halcomp["offs_block_height_active"] == 0:
+            if self.halcomp["offs_block_height"] == 0 and self.spbtn_probe_block_height.get_value() == 0:
                 self.hal_led_use_block_height.hal_pin.set(0)
+            else:
+                self.hal_led_use_block_height.set_property("on_color","pink")
+                self.hal_led_use_block_height.hal_pin.set(1)
+        elif self.halcomp["offs_block_height"] == self.spbtn_probe_block_height.get_value():
+            self.hal_led_use_block_height.set_property("on_color","green")
+            self.hal_led_use_block_height.hal_pin.set(1)
         else:
             self.hal_led_use_block_height.set_property("on_color","red")
             self.hal_led_use_block_height.hal_pin.set(1)
 
     def on_spbtn_probe_table_offset_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("offs_table_offset", gtkspinbutton, data)
-        if self.halcomp["offs_table_offset"] == self.spbtn_probe_table_offset.get_value():
-            self.hal_led_use_table_offset.set_property("on_color","green")
-            if self.halcomp["offs_table_offset_active"] == 0:
+        if self.halcomp["offs_table_offset_active"] == 0:
+            if self.halcomp["offs_table_offset"] == 0 and self.spbtn_probe_table_offset.get_value() == 0:
                 self.hal_led_use_table_offset.hal_pin.set(0)
+            else:
+                self.hal_led_use_table_offset.set_property("on_color","pink")
+                self.hal_led_use_table_offset.hal_pin.set(1)
+        elif self.halcomp["offs_table_offset"] == self.spbtn_probe_table_offset.get_value():
+            self.hal_led_use_table_offset.set_property("on_color","green")
+            self.hal_led_use_table_offset.hal_pin.set(1)
         else:
             self.hal_led_use_table_offset.set_property("on_color","red")
             self.hal_led_use_table_offset.hal_pin.set(1)
 
     def on_spbtn_probe_table_offset_value_changed(self, gtkspinbutton, data=None):
-        if self.halcomp["offs_table_offset"] == self.spbtn_probe_table_offset.get_value():
-            self.hal_led_use_table_offset.set_property("on_color","green")
-            if self.halcomp["offs_table_offset_active"] == 0:
+        self.on_common_spbtn_value_changed("offs_table_offset", gtkspinbutton, data)
+        if self.halcomp["offs_table_offset_active"] == 0:
+            if self.halcomp["offs_table_offset"] == 0 and self.spbtn_probe_table_offset.get_value() == 0:
                 self.hal_led_use_table_offset.hal_pin.set(0)
+            else:
+                self.hal_led_use_table_offset.set_property("on_color","pink")
+                self.hal_led_use_table_offset.hal_pin.set(1)
+        elif self.halcomp["offs_table_offset"] == self.spbtn_probe_table_offset.get_value():
+            self.hal_led_use_table_offset.set_property("on_color","green")
+            self.hal_led_use_table_offset.hal_pin.set(1)
         else:
             self.hal_led_use_table_offset.set_property("on_color","red")
             self.hal_led_use_table_offset.hal_pin.set(1)
-
 
 
     # --------------------------
@@ -213,64 +247,63 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     # button pressed set table_offset manually
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_set_table_offset_released(self, gtkbutton, data=None):
-        self.prefs.putpref("offs_table_offset", self.spbtn_probe_table_offset.get_value(),  float)
-        if self.spbtn_probe_table_offset.get_value() == 0:
-            self.hal_led_use_table_offset.hal_pin.set(0)
-            self.halcomp["offs_table_offset_active"] = 0
-            self.halcomp["offs_table_offset"] = 0
-            self.add_history_text("TABLE_OFFSET G10 L2 VALUE RESETED TO 0")
-            s = "G10 L2 P0 Z0"
-        else:
+
+        if self.spbtn_probe_table_offset.get_value() != 0:
+            s = "G10 L2 P0 Z%s" % (self.spbtn_probe_table_offset.get_value())
+            if self.gcode(s) == -1:
+                return
             self.hal_led_use_table_offset.set_property("on_color","green")
             self.hal_led_use_table_offset.hal_pin.set(1)
-            self.halcomp["offs_table_offset_active"] = 1
             self.halcomp["offs_table_offset"] = self.spbtn_probe_table_offset.get_value()
+            self.prefs.putpref("offs_table_offset", self.halcomp["offs_table_offset"], float)
+            self.halcomp["offs_table_offset_active"] = 1
             self.add_history_text("TABLE_OFFSET SET G10 L2 P0 Z%.4f" % (self.halcomp["offs_table_offset"]))
-            s = "G10 L2 P0 Z%s" % (self.spbtn_probe_table_offset.get_value())
-
-        if self.gcode(s) == -1:
-            return
+        else:
+            s = "G10 L2 P0 Z0"
+            if self.gcode(s) == -1:
+                return
+            self.hal_led_use_table_offset.hal_pin.set(0)
+            self.halcomp["offs_table_offset"] = 0
+            self.prefs.putpref("offs_table_offset", 0, float)
+            self.halcomp["offs_table_offset_active"] = 0
+            self.add_history_text("TABLE_OFFSET G10 L2 VALUE RESETED TO 0")
 
 
     # button pressed set block_height manually
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_set_block_height_released(self, gtkbutton, data=None):
+        s = "G92.1"
+        if self.gcode(s) == -1:
+            return
         if self.spbtn_probe_block_height.get_value() == 0:
             self.hal_led_use_block_height.hal_pin.set(0)
-            self.halcomp["offs_block_height_active"] = 0
             self.halcomp["offs_block_height"] = 0
+            self.prefs.putpref("offs_block_height", 0, float)
+            self.halcomp["offs_block_height_active"] = 0
             self.add_history_text("BLOCK_HEIGHT G92 VALUE RESETED TO 0")
-
-            # now we can reset the offset correctly
-            self.prefs.putpref("offs_block_height", self.halcomp["offs_block_height"],  float)
-            s = "G92.1"
-            if self.gcode(s) == -1:
-                return
         else:
             self.add_history_text("G92 CLEARED BEFORE APPLY NEW OFFSET")
-            s = "G92.1"
-            if self.gcode(s) == -1:
-                return
 
             # before using some self value from linuxcnc we need to poll
             self.stat.poll()        # WE NEED TO POLL FOR READ CORRECTLY THE initial_z_position
             initial_z_position = float(Popen('halcmd getp halui.axis.z.pos-relative', shell=True, stdout=PIPE).stdout.read())
 
+            ## now we can apply the offset correctly
+            #if self.halcomp["offs_table_offset_active"] == 0:
+            #    s = "G92 Z%f" % (initial_z_position - self.spbtn_probe_block_height.get_value())
+            #else:
+            #    s = "G92 Z%f" % (initial_z_position - self.spbtn_probe_block_height.get_value() - self.halcomp["offs_table_offset"])   #use hal value for table offset is important because they are not initialized until is necessary
+            s = "G92 Z%f" % (initial_z_position - self.spbtn_probe_block_height.get_value())
+            if self.gcode(s) == -1:
+                return
+
             # update test_param for prevent cumulating offset and display info to user
             self.hal_led_use_block_height.set_property("on_color","green")
             self.hal_led_use_block_height.hal_pin.set(1)
-            self.halcomp["offs_block_height_active"] = 1
             self.halcomp["offs_block_height"] = self.spbtn_probe_block_height.get_value()
-            self.add_history_text("BLOCK_HEIGHT SET G92 Z%.4f" % (initial_z_position - self.halcomp["offs_block_height"]))
-
-            # now we can apply the offset correctly
             self.prefs.putpref("offs_block_height", self.halcomp["offs_block_height"],  float)
-            if self.halcomp["offs_table_offset_active"] == 0:
-                s = "G92 Z%f" % (initial_z_position - self.halcomp["offs_block_height"])
-            else:
-                s = "G92 Z%f" % (initial_z_position - self.halcomp["offs_block_height"] - self.halcomp["offs_table_offset"])   #use hal value for table offset is important because they are not initialized until is necessary
-            if self.gcode(s) == -1:
-                return
+            self.halcomp["offs_block_height_active"] = 1
+            self.add_history_text("BLOCK_HEIGHT SET G92 Z%.4f" % (initial_z_position - self.halcomp["offs_block_height"]))
 
 
     # Button pressed Down probe to table for measuring it for calculate tool setter height and can set G10 L20 P0 Z0 if you tick auto zero

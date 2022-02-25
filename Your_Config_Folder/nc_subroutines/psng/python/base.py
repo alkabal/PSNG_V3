@@ -744,12 +744,13 @@ class ProbeScreenBase(object):
         # Drop the Italics
         gtkspinbutton.modify_font(pango.FontDescription("normal"))
 
+    def on_settings_spbtn_value_changed(self, pin_name, gtkspinbutton, data=None, _type=float):
+        # Drop the Italics
+        gtkspinbutton.modify_font(pango.FontDescription("normal"))
+
         # Update the pin
         self.halcomp[pin_name] = gtkspinbutton.get_value()
 
         # Update the preferences
         self.prefs.putpref(pin_name, gtkspinbutton.get_value(), _type)
-
-        # Update history display
-        #self.add_history_text("%s = %.4f" % (pin_name, gtkspinbutton.get_value()))
 

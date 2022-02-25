@@ -34,8 +34,9 @@ class States(Enum):
     IDLE = 2
     LOADMAP = 3
     RUNNING = 4
-    RESET = 5
-    STOP = 6
+    UNLOAD = 5
+    RESET = 6
+    STOP = 7
 
 
 class Compensation :
@@ -45,6 +46,7 @@ class Compensation :
 
     # make the pins hal
     self.halcomp = hal.component("probe.compensation")
+    self.halcomp.newpin("is-ready", hal.HAL_BIT, hal.HAL_OUT)
     self.halcomp.newpin("fade-height", hal.HAL_FLOAT, hal.HAL_IN)
     self.halcomp.newpin("enable-in", hal.HAL_BIT, hal.HAL_IN)
     self.halcomp.newpin("enable-out", hal.HAL_BIT, hal.HAL_OUT)
@@ -54,6 +56,7 @@ class Compensation :
     self.halcomp.newpin("x-pos-cmd-in", hal.HAL_FLOAT, hal.HAL_IN)
     self.halcomp.newpin("y-pos-cmd-in", hal.HAL_FLOAT, hal.HAL_IN)
     self.halcomp.newpin("z-pos-cmd-in", hal.HAL_FLOAT, hal.HAL_IN)
+    self.halcomp.newpin("eoffset-value-in", hal.HAL_FLOAT, hal.HAL_IN)
     self.halcomp.newpin("z-axis-max", hal.HAL_FLOAT, hal.HAL_OUT)
     self.halcomp.newpin("z-axis-min", hal.HAL_FLOAT, hal.HAL_OUT)
     self.halcomp.newpin("z-eoffset", hal.HAL_FLOAT, hal.HAL_OUT)
@@ -117,6 +120,7 @@ class Compensation :
 
 
   def loadMap(self) :
+    self.halcomp["is-ready"] = 0
     # data coordinates and values rounded to centieme .xx for xy and Z to micron .xxx
     self.data = np.loadtxt(self.filename, dtype=float, delimiter=" ", usecols=(0, 1, 2))
     self.X_data = np.around(self.data[:,0],2)
@@ -169,6 +173,7 @@ class Compensation :
     self.halcomp["y-grid-end"]  = self.Y_end
     self.halcomp["z-grid-min"] = self.Z_min
     self.halcomp["z-grid-max"] = self.Z_max
+    self.halcomp["is-ready"] = 1
 
 
 
@@ -278,6 +283,8 @@ class Compensation :
             self.loadMap()
             print(" Compensation map reloaded")
             prevMapTime = mapTime
+          else :
+            self.halcomp["is-ready"] = 1
 
           # transition to RUNNING state
           currentState = States.RUNNING
@@ -298,15 +305,22 @@ class Compensation :
               self.halcomp["counts-out"] = self.compensate()
             else :
               self.halcomp["counts-out"] = 0
+              currentState = States.RESET
 
           else :
-            # transition to RESET state
+            # transition to UNLOAD state
             self.halcomp["counts-out"] = 0
-            # wait until the axis is in position before stopping eoffsets
-            #while self.halcomp["z-pos-cmd-in"] = ???
-            #   time.sleep(0.1)
-            time.sleep(1)
-            currentState = States.RESET
+            currentState = States.UNLOAD
+
+        elif currentState == States.UNLOAD :
+          if currentState != prevState :
+            print("\nCompensation entering UNLOAD state")
+            prevState = currentState
+
+          # wait until the axis is in position before stopping eoffsets
+          while round(self.halcomp["eoffset-value-in"], 3) != 0 and self.stat.task_state == linuxcnc.STATE_ON:
+             time.sleep(0.1)
+          currentState = States.RESET
 
         elif currentState == States.RESET :
           if currentState != prevState :

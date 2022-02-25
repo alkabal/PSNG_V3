@@ -160,42 +160,42 @@ class ProbeScreenSettings(ProbeScreenBase):
         self.on_common_spbtn_key_press_event("vel_for_travel", gtkspinbutton, data)
 
     def on_spbtn_vel_for_travel_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("vel_for_travel", gtkspinbutton, data)
+        self.on_settings_spbtn_value_changed("vel_for_travel", gtkspinbutton, data)
 
     def on_spbtn_vel_for_search_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("vel_for_search", gtkspinbutton, data)
 
     def on_spbtn_vel_for_search_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("vel_for_search", gtkspinbutton, data)
+        self.on_settings_spbtn_value_changed("vel_for_search", gtkspinbutton, data)
 
     def on_spbtn_vel_for_probe_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("vel_for_probe", gtkspinbutton, data)
 
     def on_spbtn_vel_for_probe_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("vel_for_probe", gtkspinbutton, data)
+        self.on_settings_spbtn_value_changed("vel_for_probe", gtkspinbutton, data)
 
     def on_spbtn_probe_max_xy_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("probe_max_xy", gtkspinbutton, data)
 
     def on_spbtn_probe_max_xy_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("probe_max_xy", gtkspinbutton, data)
+        self.on_settings_spbtn_value_changed("probe_max_xy", gtkspinbutton, data)
 
     def on_spbtn_probe_max_latch_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("probe_max_latch", gtkspinbutton, data)
 
     def on_spbtn_probe_max_latch_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("probe_max_latch", gtkspinbutton, data)
+        self.on_settings_spbtn_value_changed("probe_max_latch", gtkspinbutton, data)
 
     def on_spbtn_latch_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("latch", gtkspinbutton, data)
 
     def on_spbtn_latch_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("latch", gtkspinbutton, data)
+        self.on_settings_spbtn_value_changed("latch", gtkspinbutton, data)
 
     def on_spbtn_edge_length_key_press_event(self, gtkspinbutton, data=None):
         self.on_common_spbtn_key_press_event("edge_length", gtkspinbutton, data)
 
     def on_spbtn_edge_length_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("edge_length", gtkspinbutton, data)
+        self.on_settings_spbtn_value_changed("edge_length", gtkspinbutton, data)
 
 
