@@ -33,7 +33,7 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="adj_probe_max_latch">
+  <object class="GtkAdjustment" id="adj_latch_probed">
     <property name="upper">25</property>
     <property name="lower">0</property>
     <property name="step_increment">0.1</property>
@@ -45,23 +45,23 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="adj_latch_bed_compensation">
+  <object class="GtkAdjustment" id="adj_compensat_z_offs_out_of_area">
     <property name="upper">100</property>
     <property name="lower">2</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkAdjustment" id="adj_block_height">
-    <property name="upper">1000</property>
-    <property name="lower">-1</property>
+  <object class="GtkAdjustment" id="adj_table_offset">
+    <property name="upper">100</property>
+    <property name="lower">0</property>
     <property name="step_increment">0.1</property>
     <property name="page_increment">1</property>
   </object>
-  <object class="GtkAdjustment" id="adj_table_offset">
-    <property name="upper">30</property>
-    <property name="lower">-1</property>
-    <property name="step_increment">0.01</property>
-    <property name="page_increment">0.1</property>
+  <object class="GtkAdjustment" id="adj_block_height">
+    <property name="upper">1000</property>
+    <property name="lower">0</property>
+    <property name="step_increment">0.1</property>
+    <property name="page_increment">1</property>
   </object>
   <object class="GtkAdjustment" id="adj_offs_angle">
     <property name="upper">359.9999</property>
@@ -1154,7 +1154,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkSpinButton" id="spbtn_probe_max_latch">
+                              <object class="GtkSpinButton" id="spbtn_latch_probed">
                                 <property name="width_request">105</property>
                                 <property name="height_request">36</property>
                                 <property name="visible">True</property>
@@ -1166,11 +1166,11 @@
                                 <property name="secondary_icon_activatable">False</property>
                                 <property name="primary_icon_sensitive">True</property>
                                 <property name="secondary_icon_sensitive">True</property>
-                                <property name="adjustment">adj_probe_max_latch</property>
+                                <property name="adjustment">adj_latch_probed</property>
                                 <property name="digits">3</property>
                                 <property name="numeric">True</property>
-                                <signal name="key-press-event" handler="on_spbtn_probe_max_latch_key_press_event" swapped="no"/>
-                                <signal name="value-changed" handler="on_spbtn_probe_max_latch_value_changed" swapped="no"/>
+                                <signal name="key-press-event" handler="on_spbtn_latch_probed_key_press_event" swapped="no"/>
+                                <signal name="value-changed" handler="on_spbtn_latch_probed_value_changed" swapped="no"/>
                               </object>
                               <packing>
                                 <property name="left_attach">1</property>
@@ -1487,7 +1487,7 @@
                                           </packing>
                                         </child>
                                         <child>
-                                          <object class="HAL_LED" id="hal_led_use_auto_rott">
+                                          <object class="HAL_LED" id="hal_led_use_offs_angle">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
                                             <property name="blink_color">#a0a0a0a0a0a0</property>
@@ -2316,52 +2316,6 @@
                         </child>
 
                         <child>
-                          <object class="GtkButton" id="btn_rect_out">
-                            <property name="width_request">90</property>
-                            <property name="height_request">62</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="tooltip_text" translatable="yes">Rect out pos.</property>
-                            <signal name="released" handler="on_btn_rect_out_released" swapped="no"/>
-                            <child>
-                              <object class="GtkImage" id="rect_out.png">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="pixbuf">icons/rect_out.png</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="x">360</property>
-                            <property name="y">8</property>
-                          </packing>
-                        </child>
-
-                        <child>
-                          <object class="GtkButton" id="btn_rect_in">
-                            <property name="width_request">90</property>
-                            <property name="height_request">62</property>
-                            <property name="visible">True</property>
-                            <property name="can_focus">True</property>
-                            <property name="receives_default">True</property>
-                            <property name="tooltip_text" translatable="yes">Rect in pos.</property>
-                            <signal name="released" handler="on_btn_rect_in_released" swapped="no"/>
-                            <child>
-                              <object class="GtkImage" id="rect_in.png">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="pixbuf">icons/rect_in.png</property>
-                              </object>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="x">360</property>
-                            <property name="y">75</property>
-                          </packing>
-                        </child>
-
-                        <child>
                           <object class="GtkButton" id="btn_lx_out">
                             <property name="width_request">97</property>
                             <property name="height_request">62</property>
@@ -2454,12 +2408,12 @@
                         </child>
 
                         <child>
-                          <object class="GtkLabel" id="use_bed_compensation">
+                          <object class="GtkLabel" id="use_z_eoffset_compensation">
                             <property name="height_request">25</property>
                             <property name="width_request">180</property>
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="label" translatable="yes">&lt;b&gt;Bed Compensation&lt;/b&gt;</property>
+                            <property name="label" translatable="yes">&lt;b&gt;Z_eoffset_Compensation&lt;/b&gt;</property>
                             <property name="use_markup">True</property>
                           </object>
                           <packing>
@@ -2468,14 +2422,14 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkButton" id="btn_probe_bed_compensation">
+                          <object class="GtkButton" id="btn_probe_z_eoffset_compensation">
                             <property name="height_request">50</property>
                             <property name="width_request">90</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="tooltip_text" translatable="yes">Compensation</property>
-                            <signal name="released" handler="on_btn_probe_bed_compensation_released" swapped="no"/>
+                            <property name="tooltip_text" translatable="yes">z_eoffset_compensation</property>
+                            <signal name="released" handler="on_btn_probe_z_eoffset_compensation_released" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="compensation.png">
                                 <property name="visible">True</property>
@@ -2490,7 +2444,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="HAL_LED" id="hal_led_use_bed_compensation">
+                          <object class="HAL_LED" id="hal_led_use_z_eoffset_compensation">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="blink_color">#a0a0a0a0a0a0</property>
@@ -2507,7 +2461,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="chk_use_bed_compensation">
+                          <object class="GtkCheckButton" id="chk_use_z_eoffset_compensation">
                             <property name="height_request">0</property>
                             <property name="width_request">0</property>
                             <property name="visible">True</property>
@@ -2516,7 +2470,7 @@
                             <property name="relief">half</property>
                             <property name="image_position">bottom</property>
                             <property name="draw_indicator">True</property>
-                            <signal name="toggled" handler="on_chk_use_bed_compensation_toggled" swapped="no"/>
+                            <signal name="toggled" handler="on_chk_use_z_eoffset_compensation_toggled" swapped="no"/>
                           </object>
                           <packing>
                             <property name="x">130</property>
@@ -2524,7 +2478,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkSpinButton" id="spbtn_latch_bed_compensation">
+                          <object class="GtkSpinButton" id="spbtn_compensat_z_offs_out_of_area">
                             <property name="width_request">45</property>
                             <property name="height_request">32</property>
                             <property name="visible">True</property>
@@ -2536,11 +2490,11 @@
                             <property name="secondary_icon_activatable">False</property>
                             <property name="primary_icon_sensitive">True</property>
                             <property name="secondary_icon_sensitive">True</property>
-                            <property name="adjustment">adj_latch_bed_compensation</property>
+                            <property name="adjustment">adj_compensat_z_offs_out_of_area</property>
                             <property name="digits">0</property>
                             <property name="numeric">True</property>
-                            <signal name="key-press-event" handler="on_spbtn_latch_bed_compensation_key_press_event" swapped="no"/>
-                            <signal name="value-changed" handler="on_spbtn_latch_bed_compensation_value_changed" swapped="no"/>
+                            <signal name="key-press-event" handler="on_spbtn_compensat_z_offs_out_of_area_key_press_event" swapped="no"/>
+                            <signal name="value-changed" handler="on_spbtn_compensat_z_offs_out_of_area_value_changed" swapped="no"/>
                           </object>
                           <packing>
                             <property name="x">100</property>
@@ -2555,7 +2509,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="tooltip_text" translatable="yes">Table offset</property>
+                            <property name="tooltip_text" translatable="yes">Table_Offset</property>
                             <signal name="released" handler="on_btn_probe_table_offset_released" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="table_offset.png">
@@ -2640,7 +2594,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">True</property>
-                            <property name="tooltip_text" translatable="yes">Compensation</property>
+                            <property name="tooltip_text" translatable="yes">Block_Height</property>
                             <signal name="released" handler="on_btn_probe_block_height_released" swapped="no"/>
                             <child>
                               <object class="GtkImage" id="block_height.png">
@@ -2755,7 +2709,7 @@
                         </child>
 
                         <child>
-                          <object class="GtkCheckButton" id="chk_use_auto_rott">
+                          <object class="GtkCheckButton" id="chk_use_auto_zero_offs_angle">
                             <property name="label" translatable="yes">Auto Rotation</property>
                             <property name="height_request">0</property>
                             <property name="width_request">0</property>
@@ -2765,7 +2719,7 @@
                             <property name="relief">half</property>
                             <property name="image_position">bottom</property>
                             <property name="draw_indicator">True</property>
-                            <signal name="toggled" handler="on_chk_use_auto_rott_toggled" swapped="no"/>
+                            <signal name="toggled" handler="on_chk_use_auto_zero_offs_angle_toggled" swapped="no"/>
                           </object>
                           <packing>
                             <property name="x">5</property>
@@ -2774,7 +2728,7 @@
                         </child>
 
                         <child>
-                          <object class="GtkCheckButton" id="chk_use_auto_zero_offset_box">
+                          <object class="GtkCheckButton" id="chk_use_auto_zero_offs_xyz">
                             <property name="label" translatable="yes">Auto Offs</property>
                             <property name="height_request">0</property>
                             <property name="width_request">0</property>
@@ -2784,7 +2738,7 @@
                             <property name="relief">half</property>
                             <property name="image_position">bottom</property>
                             <property name="draw_indicator">True</property>
-                            <signal name="toggled" handler="on_chk_use_auto_zero_offset_box_toggled" swapped="no"/>
+                            <signal name="toggled" handler="on_chk_use_auto_zero_offs_xyz_toggled" swapped="no"/>
                           </object>
                           <packing>
                             <property name="x">218</property>
