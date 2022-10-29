@@ -35,7 +35,7 @@ class ProbeScreenConfigParser(RawConfigParser):
         RawConfigParser.__init__(self)
 
         if not path:
-            path = "~/.toolch_preferences"
+            path = "~/.psng_preferences"
 
         self.fn = os.path.expanduser(path)
         self.read(self.fn)

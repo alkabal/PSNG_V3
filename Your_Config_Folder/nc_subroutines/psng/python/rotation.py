@@ -39,14 +39,11 @@ class ProbeScreenRotation(ProbeScreenBase):
     def __init__(self, halcomp, builder, useropts):
         super(ProbeScreenRotation, self).__init__(halcomp, builder, useropts)
 
-        # connect the frame for allow to inhibit
-        self.frm_measure_angle = self.builder.get_object("frm_measure_angle")
-
         # make the spinbox button
         self.spbtn_offs_angle = self.builder.get_object("spbtn_offs_angle")
 
         # make the Tickbox
-        self.chk_use_auto_rott = self.builder.get_object("chk_use_auto_rott")
+        self.chk_use_auto_zero_offs_angle = self.builder.get_object("chk_use_auto_zero_offs_angle")
 
         # make the LED
         self.hal_led_use_offs_angle = self.builder.get_object("hal_led_use_offs_angle")
@@ -54,20 +51,31 @@ class ProbeScreenRotation(ProbeScreenBase):
         # make the pins hal
         self.halcomp.newpin("offs_angle", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("offs_angle_active", hal.HAL_BIT, hal.HAL_OUT)
-        self.halcomp.newpin("chk_use_auto_rott", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("chk_use_auto_zero_offs_angle", hal.HAL_BIT, hal.HAL_OUT)
+
+        # After getting value we need to init some of them
+        self._init_rotation_data()
 
 
+    # --------------------------
+    #
+    # Init value etc
+    #
+    # --------------------------
+    def _init_rotation_data(self):
         # load value regarding to the pref saved
-        if self.prefs.getpref("chk_use_auto_rott", False, bool) == 1 :
+        if self.prefs.getpref("chk_use_auto_zero_offs_angle", False, bool):
             self.spbtn_offs_angle.set_value(self.prefs.getpref("offs_angle", 0.0, float))
             self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
-            self.chk_use_auto_rott.set_active(1)
-            self.halcomp["chk_use_auto_rott"] = 1
+            self.chk_use_auto_zero_offs_angle.set_active(1)
+            self.halcomp["chk_use_auto_zero_offs_angle"] = 1
             self.hal_led_use_offs_angle.set_property("on_color","blue")
-            self.hal_led_use_offs_angle.hal_pin.set(self.halcomp["chk_use_auto_rott"])
-            self.frm_measure_angle.set_sensitive(False)
+            self.hal_led_use_offs_angle.hal_pin.set(self.halcomp["chk_use_auto_zero_offs_angle"])
+            self.spbtn_offs_angle.set_sensitive(False)
         else:
-            self.frm_measure_angle.set_sensitive(True)
+            self.spbtn_offs_angle.set_value(self.prefs.getpref("offs_angle", 0.0, float))
+            self.spbtn_offs_angle.set_sensitive(True)
+
 
 
     # --------------------------
@@ -75,12 +83,12 @@ class ProbeScreenRotation(ProbeScreenBase):
     # Checkbox select option
     #
     # --------------------------
-    def on_chk_use_auto_rott_toggled(self, gtkcheckbutton, data=None):
-        self.halcomp["chk_use_auto_rott"] = gtkcheckbutton.get_active()
-        self.prefs.putpref("chk_use_auto_rott", self.halcomp["chk_use_auto_rott"], bool)
+    def on_chk_use_auto_zero_offs_angle_toggled(self, gtkcheckbutton):
+        self.halcomp["chk_use_auto_zero_offs_angle"] = gtkcheckbutton.get_active()
+        self.prefs.putpref("chk_use_auto_zero_offs_angle", self.halcomp["chk_use_auto_zero_offs_angle"], bool)
 
-        if self.halcomp["chk_use_auto_rott"]:
-            self.frm_measure_angle.set_sensitive(False)
+        if self.halcomp["chk_use_auto_zero_offs_angle"]:
+            self.spbtn_offs_angle.set_sensitive(False)
             self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
             self.prefs.putpref("offs_angle", self.halcomp["offs_angle"], float)
             self.add_history_text("Auto rotation is activated")
@@ -93,18 +101,15 @@ class ProbeScreenRotation(ProbeScreenBase):
                 self.halcomp["offs_angle_active"] = 0
                 self.hal_led_use_offs_angle.set_property("on_color","orange")
                 self.hal_led_use_offs_angle.hal_pin.set(1)
-                self.add_history_text("ERROR : ANGLE_OFFSET GTK CHECKBUTTON UNKNOW STATUS")
+                self.warning_dialog("ANGLE_OFFSET GTK CHECKBUTTON UNKNOW STATUS")
         else:
-            # now we can reset the offset correctly
-            s = "G10 L2 P0 R0"
-            if self.gcode(s) == -1:
-                return
-            self.frm_measure_angle.set_sensitive(True)
+            self.spbtn_offs_angle.set_sensitive(True)
             self.halcomp["offs_angle"] = 0
+            self._set_auto_zero_offset("R")
             self.prefs.putpref("offs_angle", 0, float)
             self.halcomp["offs_angle_active"] = 0
             self.hal_led_use_offs_angle.hal_pin.set(0)
-            self.add_history_text("ANGLE_OFFSET G10 L2 P0 Rx VALUE RESETED TO 0")
+            self.add_history_text("ANGLE_OFFSET G10_L2 P0 Rx VALUE RESETED TO 0")
             self.add_history_text("Auto rotation is not activated")
 
 
@@ -113,8 +118,8 @@ class ProbeScreenRotation(ProbeScreenBase):
     # Spinbox entry editable
     #
     # --------------------------
-    def on_spbtn_offs_angle_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("offs_angle", gtkspinbutton, data)
+    def on_spbtn_offs_angle_key_press_event(self, gtkspinbutton):
+        self.on_common_spbtn_key_press_event("offs_angle", gtkspinbutton)
         if self.halcomp["offs_angle_active"] == 0:
             if self.halcomp["offs_angle"] == 0 and self.spbtn_offs_angle.get_value() == 0:
                 self.hal_led_use_offs_angle.hal_pin.set(0)
@@ -128,8 +133,8 @@ class ProbeScreenRotation(ProbeScreenBase):
             self.hal_led_use_offs_angle.set_property("on_color","red")
             self.hal_led_use_offs_angle.hal_pin.set(1)
 
-    def on_spbtn_offs_angle_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("offs_angle", gtkspinbutton, data)
+    def on_spbtn_offs_angle_value_changed(self, gtkspinbutton):
+        self.on_common_spbtn_value_changed("offs_angle", gtkspinbutton)
         if self.halcomp["offs_angle_active"] == 0:
             if self.halcomp["offs_angle"] == 0 and self.spbtn_offs_angle.get_value() == 0:
                 self.hal_led_use_offs_angle.hal_pin.set(0)
@@ -150,28 +155,22 @@ class ProbeScreenRotation(ProbeScreenBase):
     #
     # --------------------------
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_set_angle_released(self, gtkbutton, data=None):
-        # now we can apply the offset correctly
-        s = "G10 L2 P0 R%s" % (self.spbtn_offs_angle.get_value())
-        if self.gcode(s) == -1:
-            return
-        self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
-        self.prefs.putpref("offs_angle", self.halcomp["offs_angle"],  float)
-                                                                                 # todo check for actual angle applied vs hal for color pink
-        if self.halcomp["offs_angle"] == 0:
+    def on_btn_set_angle_released(self, gtkbutton):
+        if self.spbtn_offs_angle.get_value() == 0:
             self.hal_led_use_offs_angle.hal_pin.set(0)
+            self.halcomp["offs_angle"] = 0
+            self._set_auto_zero_offset("R")
             self.halcomp["offs_angle_active"] = 0
-            self.add_history_text("ANGLE_OFFSET G10 L2 P0 Rx VALUE RESETED TO 0")
-
-        elif self.halcomp["offs_angle"] == self.spbtn_offs_angle.get_value():
+            self.prefs.putpref("offs_angle", 0, float)
+            self.add_history_text("OFFSET_BOX_ANGLE REMOVED FROM G10_L2")
+        else:
             self.hal_led_use_offs_angle.set_property("on_color","green")
             self.hal_led_use_offs_angle.hal_pin.set(1)
+            self.halcomp["offs_angle"] = self.spbtn_offs_angle.get_value()
+            self._set_auto_zero_offset("R")
             self.halcomp["offs_angle_active"] = 1
-            self.add_history_text("ANGLE_OFFSET SET G10 L2 P0 R%.4f" % (self.halcomp["offs_angle"]))
-        else:
-            self.hal_led_use_offs_angle.set_property("on_color","yellow")
-            self.hal_led_use_offs_angle.hal_pin.set(1)
-            self.add_history_text("ERROR : ANGLE_OFFSET UNKNOW STATUS")
+            self.prefs.putpref("offs_angle", self.halcomp["offs_angle"], float)
+            self.add_history_text("OFFSET_BOX_ANGLE %.4f ADDED TO G10_L2" % (self.halcomp["offs_angle"]))
 
 
     # --------------------------
@@ -181,32 +180,39 @@ class ProbeScreenRotation(ProbeScreenBase):
     # --------------------------
     # button pressed angle_xp
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_angle_xp_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_angle_xp_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
 
+        # ask confirm from popup
+        if self._dialog_confirm("angle_xp") == -1:
+            self.warning_dialog("angle_xp canceled by user !")
+            return
+
         # Start psng_xplus.ngc load var fromm hal
         if self.ocode("o<psng_start_xplus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xcres = float(a[0]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xcres = float(a[0]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             xcres = float(a[0]) + (0.5 * tooldiameter)
 
         # move to calculated point
         s = """G91
         G1 Y%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
+
+        # TODO OR NOT MANAGE TO ADD ADDITIONAL <_psng_probe_max_xy>
 
         # Start psng_xplus.ngc load var fromm hal
         if self.ocode("o<psng_start_xplus_probing> call") == -1:
@@ -214,11 +220,11 @@ class ProbeScreenRotation(ProbeScreenBase):
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xpres = float(a[0]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xpres = float(a[0]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             xpres = float(a[0]) + (0.5 * tooldiameter)
-        alfa = math.degrees(math.atan2(xcres - xpres, self.halcomp["edge_length"]))
+        alfa = math.degrees(math.atan2(xcres - xpres, self.halcomp["psng_edge_length"]))
 
         # move Z away from probing position
         if self.move_probe_z_up() == -1:
@@ -241,42 +247,49 @@ class ProbeScreenRotation(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.chk_use_auto_rott.get_active():
-            self.on_btn_set_angle_released()
+        if self.chk_use_auto_zero_offs_angle.get_active():
+            self.on_btn_set_angle_released(gtkbutton)
 
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
 
     # button pressed angle_ym
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_angle_ym_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_angle_ym_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
 
+        # ask confirm from popup
+        if self._dialog_confirm("angle_ym") == -1:
+            self.warning_dialog("angle_ym canceled by user !")
+            return
+
         # Start psng_yminus.ngc load var fromm hal
         if self.ocode("o<psng_start_yminus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            ycres = float(a[1]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            ycres = float(a[1]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             ycres = float(a[1]) - (0.5 * tooldiameter)
 
         # move to calculated point
         s = """G91
         G1 X%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
+
+        # TODO OR NOT MANAGE TO ADD ADDITIONAL <_psng_probe_max_xy>
 
         # Start psng_yminus.ngc load var fromm hal
         if self.ocode("o<psng_start_yminus_probing> call") == -1:
@@ -284,11 +297,11 @@ class ProbeScreenRotation(ProbeScreenBase):
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            ymres = float(a[1]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            ymres = float(a[1]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             ymres = float(a[1]) - (0.5 * tooldiameter)
-        alfa = math.degrees(math.atan2(ycres - ymres, self.halcomp["edge_length"]))
+        alfa = math.degrees(math.atan2(ycres - ymres, self.halcomp["psng_edge_length"]))
 
         # move Z away from probing position
         if self.move_probe_z_up() == -1:
@@ -311,42 +324,49 @@ class ProbeScreenRotation(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.chk_use_auto_rott.get_active():
-            self.on_btn_set_angle_released()
+        if self.chk_use_auto_zero_offs_angle.get_active():
+            self.on_btn_set_angle_released(gtkbutton)
 
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
 
     # button pressed angle_yp
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_angle_yp_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_angle_yp_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
 
+        # ask confirm from popup
+        if self._dialog_confirm("angle_yp") == -1:
+            self.warning_dialog("angle_yp canceled by user !")
+            return
+
         # Start psng_yplus.ngc load var fromm hal
         if self.ocode("o<psng_start_yplus_probing> call") == -1:
             return
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            ycres = float(a[1]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            ycres = float(a[1]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             ycres = float(a[1]) + (0.5 * tooldiameter)
 
         # move to calculated point
         s = """G91
         G1 X-%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
+
+        # TODO OR NOT MANAGE TO ADD ADDITIONAL <_psng_probe_max_xy>
 
         # Start psng_yplus.ngc load var fromm hal
         if self.ocode("o<psng_start_yplus_probing> call") == -1:
@@ -354,11 +374,11 @@ class ProbeScreenRotation(ProbeScreenBase):
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            ypres = float(a[1]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            ypres = float(a[1]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             ypres = float(a[1]) + (0.5 * tooldiameter)
-        alfa = math.degrees(math.atan2(ypres - ycres, self.halcomp["edge_length"]))
+        alfa = math.degrees(math.atan2(ypres - ycres, self.halcomp["psng_edge_length"]))
 
         # move Z away from probing position
         if self.move_probe_z_up() == -1:
@@ -381,42 +401,49 @@ class ProbeScreenRotation(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.chk_use_auto_rott.get_active():
-            self.on_btn_set_angle_released()
+        if self.chk_use_auto_zero_offs_angle.get_active():
+            self.on_btn_set_angle_released(gtkbutton)
 
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
 
     # button pressed angle_xm
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_angle_xm_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_angle_xm_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
             return
 
+        # ask confirm from popup
+        if self._dialog_confirm("angle_xm") == -1:
+            self.warning_dialog("angle_xm canceled by user !")
+            return
+
         # Start psng_xminus.ngc load var fromm hal
         if self.ocode("o<psng_start_xminus_probing> call") == -1:
             return
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xcres = float(a[0]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xcres = float(a[0]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             xcres = float(a[0]) - (0.5 * tooldiameter)
 
         # move to calculated point
         s = """G91
         G1 Y-%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
+
+        # TODO OR NOT MANAGE TO ADD ADDITIONAL <_psng_probe_max_xy>
 
         # Start psng_xminus.ngc load var fromm hal
         if self.ocode("o<psng_start_xminus_probing> call") == -1:
@@ -424,11 +451,11 @@ class ProbeScreenRotation(ProbeScreenBase):
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xmres = float(a[0]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xmres = float(a[0]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             xmres = float(a[0]) - (0.5 * tooldiameter)
-        alfa = math.degrees(math.atan2(xcres - xmres, self.halcomp["edge_length"]))
+        alfa = math.degrees(math.atan2(xcres - xmres, self.halcomp["psng_edge_length"]))
 
         # move Z away from probing position
         if self.move_probe_z_up() == -1:
@@ -451,9 +478,9 @@ class ProbeScreenRotation(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.chk_use_auto_rott.get_active():
-            self.on_btn_set_angle_released()
+        if self.chk_use_auto_zero_offs_angle.get_active():
+            self.on_btn_set_angle_released(gtkbutton)
 
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0

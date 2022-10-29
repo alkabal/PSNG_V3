@@ -42,11 +42,13 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self.frm_tool_measurement = self.builder.get_object("frm_tool_measurement")
 
         # for manual tool change dialog
-        #self.halcomp.newpin("toolchange-number", hal.HAL_S32, hal.HAL_OUT)
-        #self.halcomp.newpin("toolchange-prep-number", hal.HAL_S32, hal.HAL_OUT)
-        #self.halcomp.newpin("toolchange-changed", hal.HAL_BIT, hal.HAL_OUT)
-        #pin = self.halcomp.newpin("toolchange-change", hal.HAL_BIT, hal.HAL_OUT)
-        #hal_glib.GPin(pin).connect("value_changed", self.on_tool_change)
+        self.halcomp.newpin("toolchange_number", hal.HAL_S32, hal.HAL_IN)
+        self.halcomp.newpin("toolchange_prep_number", hal.HAL_S32, hal.HAL_IN)
+        self.halcomp.newpin("toolchange_changed", hal.HAL_BIT, hal.HAL_OUT)
+        pin = self.halcomp.newpin("toolchange_change", hal.HAL_BIT, hal.HAL_IN)
+        hal_glib.GPin(pin).connect("value_changed", self.on_tool_change)
+
+        self.halcomp.newpin("toolchange_diameter", hal.HAL_FLOAT, hal.HAL_IN)
 
         # make the Tickbox
         self.chk_use_tool_measurement = self.builder.get_object("chk_use_tool_measurement")
@@ -57,9 +59,9 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self.hal_led_use_rot_spindle_reverse = self.builder.get_object("hal_led_use_rot_spindle_reverse")
 
         # make the pins hal
-        self.halcomp.newpin("set_tool_number", hal.HAL_S32, hal.HAL_OUT)
-        self.halcomp.newpin("ts_probed_tool_z", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_probed_tool_diam", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_popup_tool_number", hal.HAL_S32, hal.HAL_OUT)
+        self.halcomp.newpin("ts_popup_tool_diameter", hal.HAL_S32, hal.HAL_OUT)
+        self.halcomp.newpin("ts_popup_tool_is_spherical", hal.HAL_BIT, hal.HAL_OUT)
 
         self.halcomp.newpin("ts_pos_x", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_pos_y", hal.HAL_FLOAT, hal.HAL_OUT)
@@ -67,33 +69,43 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self.halcomp.newpin("ts_vel_for_search", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_vel_for_probe", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_latch", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_latch_probed", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_height", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_clearance_z", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_clearance_xy", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_clearance_xyz", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_max_tool_lgt", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_probe_max_xy", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_probe_max_latch", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_diam_ext", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_diam_hole", hal.HAL_FLOAT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_diam_offset", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_max_tool_dia", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_tool_rot_speed", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_pad_diameter", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_pad_diameter_offset", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_pad_thickness", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_pad_from_body", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_pad_is_hole", hal.HAL_BIT, hal.HAL_OUT)
 
-        self.halcomp.newpin("ts_chk_use_tool_measurement", hal.HAL_BIT, hal.HAL_OUT)
-        self.halcomp.newpin("ts_chk_use_rot_spindle_reverse", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("chk_use_popup_style_toolchange", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("toolchange_go_back_last_position", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("toolchange_z_travel_position", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("toolchange_with_spindle_on", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("toolchange_with_diam_measurement", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("toolchange_quill_up", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("toolchange_pos_x", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("toolchange_pos_y", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("toolchange_pos_z", hal.HAL_FLOAT, hal.HAL_OUT)
+
+        self.halcomp.newpin("chk_use_tool_measurement", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("chk_use_rot_spindle_reverse", hal.HAL_BIT, hal.HAL_OUT)
 
 
         # load value regarding to the pref saved
-        self.chk_use_tool_measurement.set_active(self.prefs.getpref("ts_chk_use_tool_measurement", False, bool))
-        self.halcomp["ts_chk_use_tool_measurement"] = self.chk_use_tool_measurement.get_active()
-        self.hal_led_use_tool_measurement.hal_pin.set(self.halcomp["ts_chk_use_tool_measurement"])
+        self.chk_use_tool_measurement.set_active(self.prefs.getpref("chk_use_tool_measurement", False, bool))
+        self.halcomp["chk_use_tool_measurement"] = self.chk_use_tool_measurement.get_active()
+        self.hal_led_use_tool_measurement.hal_pin.set(self.halcomp["chk_use_tool_measurement"])
 
-        if self.halcomp["ts_chk_use_tool_measurement"] == 1:
+        if self.halcomp["chk_use_tool_measurement"]:
             self.frm_tool_measurement.set_sensitive(False)
         else:
             self.frm_tool_measurement.set_sensitive(True)
 
-
-        # load status regarding to ini file
+        # After getting value we need to init some of them
         self._init_tool_setter_data()
 
 
@@ -110,15 +122,25 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         ts_vel_for_search = self.inifile.find("TOOL_SETTER", "VEL_FOR_SEARCH")
         ts_vel_for_probe = self.inifile.find("TOOL_SETTER", "VEL_FOR_PROBE")
         ts_latch = self.inifile.find("TOOL_SETTER", "LATCH")
-        ts_clearance_z = self.inifile.find("TOOL_SETTER", "CLEARANCE_Z")
-        ts_clearance_xy = self.inifile.find("TOOL_SETTER", "CLEARANCE_XY")
+        ts_latch_probed = self.inifile.find("TOOL_SETTER", "LATCH_PROBED")
+        ts_clearance_xyz = self.inifile.find("TOOL_SETTER", "CLEARANCE_XYZ")
         ts_max_tool_lgt = self.inifile.find("TOOL_SETTER", "TS_MAX_TOOL_LGT")
-        ts_probe_max_xy = self.inifile.find("TOOL_SETTER", "PROBE_MAX_XY")
-        ts_probe_max_latch = self.inifile.find("TOOL_SETTER", "PROBE_MAX_LATCH")
-        ts_diam_ext = self.inifile.find("TOOL_SETTER", "DIAMETER_EXT")
-        ts_diam_hole = self.inifile.find("TOOL_SETTER", "DIAMETER_HOLE")
-        ts_diam_offset = self.inifile.find("TOOL_SETTER", "DIAM_OFFSET")
+        ts_max_tool_dia = self.inifile.find("TOOL_SETTER", "TS_MAX_TOOL_DIA")
         ts_tool_rot_speed = self.inifile.find("TOOL_SETTER", "TOOL_ROT_SPEED")
+        ts_pad_diameter = self.inifile.find("TOOL_SETTER", "PAD_DIAMETER")
+        ts_pad_diameter_offset = self.inifile.find("TOOL_SETTER", "PAD_DIAMETER_OFFSET")
+        ts_pad_thickness = self.inifile.find("TOOL_SETTER", "PAD_THICKNESS")
+        ts_pad_from_body = self.inifile.find("TOOL_SETTER", "PAD_FROM_BODY")
+        ts_pad_is_hole = self.inifile.find("TOOL_SETTER", "PAD_IS_HOLE")
+        chk_use_popup_style_toolchange = self.inifile.find("TOOL_CHANGE", "POPUP_STYLE")
+        toolchange_go_back_last_position = self.inifile.find("TOOL_CHANGE", "GO_BACK_LAST_POSITION")
+        toolchange_z_travel_position = self.inifile.find("TOOL_CHANGE", "Z_TRAVEL_POSITION")
+        toolchange_with_diam_measurement = self.inifile.find("TOOL_CHANGE", "WITH_DIAM_MEASUREMENT")
+        toolchange_with_spindle_on = self.inifile.find("EMCIO", "TOOL_CHANGE_WITH_SPINDLE_ON")
+        toolchange_quill_up = self.inifile.find("EMCIO", "TOOL_CHANGE_QUILL_UP")
+        toolchange_pos_x = self.inifile.find("TOOL_CHANGE", "POS_X")
+        toolchange_pos_y = self.inifile.find("TOOL_CHANGE", "POS_Y")
+        toolchange_pos_z = self.inifile.find("TOOL_CHANGE", "POS_Z")
 
         if (
             ts_pos_x is None
@@ -128,22 +150,30 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             or ts_vel_for_search is None
             or ts_vel_for_probe is None
             or ts_latch is None
-            or ts_clearance_z is None
-            or ts_clearance_xy is None
+            or ts_latch_probed is None
+            or ts_clearance_xyz is None
             or ts_max_tool_lgt is None
-            or ts_probe_max_xy is None
-            or ts_probe_max_latch is None
-            or ts_diam_ext is None
-            or ts_diam_hole is None
-            or ts_diam_offset is None
+            or ts_max_tool_dia is None
             or ts_tool_rot_speed is None
+            or ts_pad_diameter is None
+            or ts_pad_diameter_offset is None
+            or ts_pad_thickness is None
+            or ts_pad_from_body is None
+            or ts_pad_is_hole is None
+            or chk_use_popup_style_toolchange is None
+            or toolchange_go_back_last_position is None
+            or toolchange_z_travel_position is None
+            or toolchange_with_diam_measurement is None
+            or toolchange_with_spindle_on is None
+            or toolchange_quill_up is None
+            or toolchange_pos_x is None
+            or toolchange_pos_y is None
+            or toolchange_pos_z is None
            ):
             self.chk_use_tool_measurement.set_active(False)
             self.frm_tool_measurement.set_sensitive(False)
 
-            message   = _("Invalidate REMAP M6")
-            secondary = _("Please check the TOOL_SETTER INI configurations")
-            self.warning_dialog(message, secondary)
+            self.warning_dialog("Invalidate REMAP M6", "Please check the TOOL_SETTER INI configurations", title=_("PSNG Manual Toolchange"))
             return 0
         else:
 
@@ -154,15 +184,25 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             self.halcomp["ts_vel_for_search"] = float(ts_vel_for_search)
             self.halcomp["ts_vel_for_probe"] = float(ts_vel_for_probe)
             self.halcomp["ts_latch"] = float(ts_latch)
-            self.halcomp["ts_clearance_z"] = float(ts_clearance_z)
-            self.halcomp["ts_clearance_xy"] = float(ts_clearance_xy)
+            self.halcomp["ts_latch_probed"] = float(ts_latch_probed)
+            self.halcomp["ts_clearance_xyz"] = float(ts_clearance_xyz)
             self.halcomp["ts_max_tool_lgt"] = float(ts_max_tool_lgt)
-            self.halcomp["ts_probe_max_xy"] = float(ts_probe_max_xy)
-            self.halcomp["ts_probe_max_latch"] = float(ts_probe_max_latch)
-            self.halcomp["ts_diam_ext"] = float(ts_diam_ext)
-            self.halcomp["ts_diam_hole"] = float(ts_diam_hole)
-            self.halcomp["ts_diam_offset"] = float(ts_diam_offset)
+            self.halcomp["ts_max_tool_dia"] = float(ts_max_tool_dia)
             self.halcomp["ts_tool_rot_speed"] = float(ts_tool_rot_speed)
+            self.halcomp["ts_pad_diameter"] = float(ts_pad_diameter)
+            self.halcomp["ts_pad_diameter_offset"] = float(ts_pad_diameter_offset)
+            self.halcomp["ts_pad_thickness"] = float(ts_pad_thickness)
+            self.halcomp["ts_pad_from_body"] = float(ts_pad_from_body)
+            self.halcomp["ts_pad_is_hole"] = float(ts_pad_is_hole)
+            self.halcomp["chk_use_popup_style_toolchange"] = float(chk_use_popup_style_toolchange)
+            self.halcomp["toolchange_go_back_last_position"] = float(toolchange_go_back_last_position)
+            self.halcomp["toolchange_z_travel_position"] = float(toolchange_z_travel_position)
+            self.halcomp["toolchange_with_diam_measurement"] = float(toolchange_with_diam_measurement)
+            self.halcomp["toolchange_with_spindle_on"] = float(toolchange_with_spindle_on)
+            self.halcomp["toolchange_quill_up"] = float(toolchange_quill_up)
+            self.halcomp["toolchange_pos_x"] = float(toolchange_pos_x)
+            self.halcomp["toolchange_pos_y"] = float(toolchange_pos_y)
+            self.halcomp["toolchange_pos_z"] = float(toolchange_pos_z)
 
 
     # --------------------------
@@ -170,10 +210,10 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
     # Thickbox for Remap M6 Buttons  (with saving pref)
     #
     # --------------------------
-    def on_chk_use_tool_measurement_toggled(self, gtkcheckbutton, data=None):
-        self.halcomp["ts_chk_use_tool_measurement"] = gtkcheckbutton.get_active()
+    def on_chk_use_tool_measurement_toggled(self, gtkcheckbutton):
+        self.halcomp["chk_use_tool_measurement"] = gtkcheckbutton.get_active()
         self.hal_led_use_tool_measurement.hal_pin.set(gtkcheckbutton.get_active())
-        self.prefs.putpref("ts_chk_use_tool_measurement", gtkcheckbutton.get_active(), bool)
+        self.prefs.putpref("chk_use_tool_measurement", gtkcheckbutton.get_active(), bool)
         if gtkcheckbutton.get_active():
             self.frm_tool_measurement.set_sensitive(False)
             self.add_history_text("Auto length for remap M6 is activated")
@@ -182,8 +222,8 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             self.add_history_text("Auto length for remap M6 is not activated")
 
     # Tickbox from gui for enable rotating spindle (without saving pref)
-    def on_chk_use_rot_spindle_reverse_toggled(self, gtkcheckbutton, data=None):
-        self.halcomp["ts_chk_use_rot_spindle_reverse"] = gtkcheckbutton.get_active()
+    def on_chk_use_rot_spindle_reverse_toggled(self, gtkcheckbutton):
+        self.halcomp["chk_use_rot_spindle_reverse"] = gtkcheckbutton.get_active()
         self.hal_led_use_rot_spindle_reverse.hal_pin.set(gtkcheckbutton.get_active())
         # self.prefs.putpref is not wanted for rotation
         if gtkcheckbutton.get_active():
@@ -201,12 +241,17 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
     # Down probe to tool setter for measuring it vs table probing result
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
-    def on_btn_probe_tool_setter_released(self, gtkbutton, data=None):
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_probe_tool_setter_released(self, gtkbutton):
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
-        if self.ocode("o<psng_load_var> call [1] [0]") == -1:
+        if self.ocode("o<psng_load_var> call [0] [1]") == -1:
             return
         if self.ocode("o<psng_hook> call [4]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("probe_tool_setter") == -1:
+            self.warning_dialog("probe_tool_setter canceled by user !")
             return
 
         # Start psng_probe_setter_height
@@ -215,50 +260,60 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
 
         # Calculate Z result
         a = self.stat.probed_position
-        tsres = (float(a[2]) - self.halcomp["table_offset"])
+        tsres = (float(a[2]) - self.halcomp["offs_table_offset"])
 
         # save and show the probed point
         # update setter height gui value
         #self.halcomp["ts_height"] = tsres
         self.add_history_text("ts_height : %s" % (tsres))
-        self.add_history_text("table_offset = %.4f" % (self.halcomp["table_offset"]))
+        self.add_history_text("table_offset = %.4f" % (self.halcomp["offs_table_offset"]))
         self.add_history(
             gtkbutton.get_tooltip_text(),
             "Z",
             z=tsres,
         )
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
 
     # Down drill bit to tool setter for measuring it
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_tool_length_released(self, gtkbutton, data=None):
+    def on_btn_tool_length_released(self, gtkbutton):
         tooltable = self.inifile.find("EMCIO", "TOOL_TABLE")
         if not tooltable:
-            message   = _("Tool Measurement Error")
-            secondary = _("Did not find a toolfile file in [EMCIO] TOOL_TABLE")
-            self.error_dialog(message, secondary=secondary)
+            self.warning_dialog("Tool Measurement Error", "Did not find a toolfile file in [EMCIO] TOOL_TABLE", title=_("PSNG Manual Toolchange"))
             return
 
         # ask new tool number and diameter from popup
         if self._dialog_spbtn_ask_toolnumber() == -1:
-            self.add_history_text("Tool number to probe canceled by user !")
+            self.warning_dialog("Tool number to probe canceled by user !")
             return
         else:
-            self.add_history_text("set_tool_number = %d" % (self.halcomp["set_tool_number"]))
+            self.add_history_text("ts_popup_tool_number = %d" % (self.halcomp["ts_popup_tool_number"]))
+            self.add_history_text("ts_popup_tool_diameter = %d" % (self.halcomp["ts_popup_tool_diameter"]))
 
-        s = "M61 Q%s G43" % (self.halcomp["set_tool_number"])
+        if self.halcomp["ts_pad_diameter"] < self.halcomp["ts_popup_tool_diameter"] :
+            self.warning_dialog("Tool diameter is higher than pad TODO ADD A OFFSET FOR ALLOW TO MEASURE ON FLUTE !")
+            if self.halcomp["ts_pad_is_hole"]:
+                self.warning_dialog("Tool diameter is higher than pad hole so we can't measure it !")
+                return
+
+        s = "M61 Q%s" % (self.halcomp["ts_popup_tool_number"])
+        if self.gcode(s) == -1:
+            return
+
+        # update and reload tool table
+        s = "G10 L1 P#<_current_tool> R%f G43" % (0.5 * self.halcomp["ts_popup_tool_diameter"])
         if self.gcode(s) == -1:
             return
 
         # safety check
-        if self.halcomp["set_tool_number"] != float(Popen('halcmd getp iocontrol.0.tool-number', shell=True, stdout=PIPE).stdout.read())):
-            self.add_history_text("ERROR : Tool number mismatch !")
+        if self.halcomp["ts_popup_tool_number"] != self.halcomp["toolchange_number"]:
+            self.warning_dialog("Tool number mismatch !", title=_("PSNG Manual Toolchange"))
             return
 
-        if self.ocode("o<backup_status> call") == -1:
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [1] [0]") == -1:
             return
@@ -269,19 +324,11 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         if self.ocode("o<psng_probe_tool_length> call") == -1:
             return
 
-        # Calculate Z result
-        a = self.stat.probed_position
-        tlres = (float(a[2]) - self.halcomp["ts_height"])
-        print("probed result python = ",tlres)
+        self.halcomp["ts_popup_tool_number"] = 0
+        self.halcomp["ts_popup_tool_diameter"] = 0
 
-        # save and show the probed point
-        #self.halcomp["ts_probed_tool_z"] = tlres
-        self.add_history(
-            gtkbutton.get_tooltip_text(),
-            "Z",
-            z=tlres,
-        )
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        self.add_history_text("Measured tool_length = %f" % (float(Popen("halcmd getp halui.tool.length_offset.z", shell=True, stdout=PIPE).stdout.read())))
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
@@ -297,34 +344,44 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
     # IMH this sequence need to be done secondly with other tool using button Dia only off course
     # ALL OF THIS NEED TO EDIT TOOL TABLE MANUALLY FOR ADD NEW TOOL AND (approximative) KNOW DIAMETER
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_tool_dia_released(self, gtkbutton, data=None):
+    def on_btn_tool_dia_released(self, gtkbutton):
         tooltable = self.inifile.find("EMCIO", "TOOL_TABLE")
         if not tooltable:
-            message   = _("Tool Measurement Error")
-            secondary = _("Did not find a toolfile file in [EMCIO] TOOL_TABLE")
-            self.error_dialog(message, secondary=secondary)
+            self.warning_dialog("Tool Measurement Error", "Did not find a toolfile file in [EMCIO] TOOL_TABLE", title=_("PSNG Manual Toolchange"))
             return
 
         # ask new tool number and diameter from popup
-        if self._dialog_spbtn_ask_toolnumber() == -1:
-            self.add_history_text("Tool number to probe canceled by user !")
+        if self._dialog_spbtn_ask_toolnumber_diameter() == -1:
+            self.warning_dialog("Tool diameter to probe canceled by user !")
             return
         else:
-            self.add_history_text("set_tool_number = %d" % (self.halcomp["set_tool_number"]))
+            self.add_history_text("ts_popup_tool_number = %d" % (self.halcomp["ts_popup_tool_number"]))
+            self.add_history_text("ts_popup_tool_diameter = %d" % (self.halcomp["ts_popup_tool_diameter"]))
+            self.add_history_text("ts_popup_tool_is_spherical = %d" % (self.halcomp["ts_popup_tool_is_spherical"]))
 
-        s = "M61 Q%s G43" % (self.halcomp["set_tool_number"])
+
+        s = "M61 Q%s" % (self.halcomp["ts_popup_tool_number"])
         if self.gcode(s) == -1:
             return
 
-        # safety check
-        if self.halcomp["set_tool_number"] != float(Popen('halcmd getp iocontrol.0.tool-number', shell=True, stdout=PIPE).stdout.read())):
-            self.add_history_text("ERROR : Tool number mismatch !")
+        # update and reload tool table
+        s = "G10 L1 P#<_current_tool> R%f G43" % (0.5 * self.halcomp["ts_popup_tool_diameter"])
+        if self.gcode(s) == -1:
             return
 
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        self.add_history_text("tooldiameter from halui = %d" % (tooldiameter))
+        if self.halcomp["ts_max_tool_dia"] < self.halcomp["ts_popup_tool_diameter"] or (self.halcomp["ts_pad_is_hole"] and self.halcomp["ts_pad_diameter"] <= self.halcomp["ts_popup_tool_diameter"]) or self.halcomp["ts_max_tool_dia"] <= 0:
+            self.warning_dialog("Tool diameter is higher than allowed by ini config or by pad_is_hole !")
+            return
 
-        if self.ocode("o<backup_status> call") == -1:
+        if self.halcomp["ts_pad_diameter"] < self.halcomp["ts_popup_tool_diameter"] :
+            self.warning_dialog("Tool diameter is higher than pad TODO ADD A OFFSET FOR ALLOW TO MEASURE ON FLUTE !")
+
+        # safety check
+        if self.halcomp["ts_popup_tool_number"] != self.halcomp["toolchange_number"]: #float(Popen('halcmd getp iocontrol.0.tool-number', shell=True, stdout=PIPE).stdout.read()):
+            self.warning_dialog("Tool number mismatch !")
+            return
+
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [1] [0]") == -1:
             return
@@ -335,235 +392,66 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         if self.ocode("o<psng_probe_tool_diameter> call") == -1:
             return
 
-        # Calculate Z result
-        a = self.probed_position_with_offsets()
-        tlres = (float(a[2]) - self.halcomp["ts_height"])
+        self.halcomp["ts_popup_tool_number"] = 0
+        self.halcomp["ts_popup_tool_diameter"] = 0
+        self.halcomp["ts_popup_tool_is_spherical"] = 0
 
-        # save and show the probed point
-        self.halcomp["ts_probed_tool_z"] = tlres
-
-        # move to calculated point
-        tmpx = (0.5 * (self.halcomp["ts_diam_ext"] + tooldiameter) + self.halcomp["ts_clearance_xy"])
-        s = """G91
-        G1 X-%f
-        G90""" % (tmpx)
-        if self.gcode(s) == -1:
-            return
-
-        # Start psng_probe_tool_diameter_check
-        if self.ocode("o<psng_probe_tool_diameter_check> call") == -1:
-            message   = _("TOOL DIAMETER MEASUREMENT STOPPED")
-            self.error_dialog(message)
-            return
-
-        # move Z to probing position
-        if self.move_tool_z_down() == -1:
-            return
-
-        # Start psng_xplus.ngc var already loaded from ini by Start psng_probe_tool_diameter.ngc
-        if self.ocode("o<psng_start_xplus_probing> call") == -1:
-            return
-
-        # show X result
-        a = self.probed_position_with_offsets()
-        xpres = float(a[0]) + 0.5 * self.halcomp["ts_diam_ext"]
-        #    print("xpres = ",xpres)
-
-        # move Z temporary away from probing position
-        if self.move_tool_z_up() == -1:
-            return
-
-        # move to calculated point
-        tmpx = (self.halcomp["ts_diam_ext"] + tooldiameter) + (2*self.halcomp["ts_clearance_xy"])
-        s = """G91
-        G1 X%f
-        G90""" % (tmpx)
-        if self.gcode(s) == -1:
-            return
-
-        # move Z to probing position
-        if self.move_tool_z_down() == -1:
-            return
-
-        # Start psng_xminus.ngc var already loaded from ini by Start psng_probe_tool_diameter.ngc
-        if self.ocode("o<psng_start_xminus_probing> call") == -1:
-            return
-
-        # show X result
-        a = self.probed_position_with_offsets()
-        xmres = float(a[0]) - 0.5 * self.halcomp["ts_diam_ext"]
-        #    print("xmres = ",xmres)
-        #self.length_x()                                #used for clear display ??????????????
-        xcres = 0.5 * (xpres + xmres)
-
-        # move Z temporary away from probing position
-        if self.move_tool_z_up() == -1:
-            return
-
-        # go to the new center of X
-        s = "G1 X%f" % (xcres)
-        print("xcenter = ",xcres)
-        if self.gcode(s) == -1:
-            return
-
-        # move to calculated point
-        tmpy = (0.5 * (self.halcomp["ts_diam_ext"] + tooldiameter) + self.halcomp["ts_clearance_xy"])
-        s = """G91
-        G1 Y-%f
-        G90""" % (tmpy)
-        if self.gcode(s) == -1:
-            return
-
-        # move Z to probing position
-        if self.move_tool_z_down() == -1:
-            return
-
-        # Start psng_yplus.ngc var already loaded from ini by Start psng_probe_tool_diameter.ngc
-        if self.ocode("o<psng_start_yplus_probing> call") == -1:
-            return
-
-        # show Y result
-        a = self.probed_position_with_offsets()
-        ypres = float(a[1]) + 0.5 * self.halcomp["ts_diam_ext"]
-        print("simple probed pos Y+ = ",self.stat.probed_position)
-        print("ypres = ",ypres)
-
-        # move Z temporary away from probing position
-        if self.move_tool_z_up() == -1:
-            return
-
-        # move to calculated point
-        tmpy = (self.halcomp["ts_diam_ext"] + tooldiameter) + (2*self.halcomp["ts_clearance_xy"])
-        s = """G91
-        G1 Y%f
-        G90""" % (tmpy)
-        if self.gcode(s) == -1:
-            return
-
-        # move Z to probing position
-        if self.move_tool_z_down() == -1:
-            return
-
-        # Start psng_yminus.ngc var already loaded from ini by Start psng_probe_tool_diameter.ngc
-        if self.ocode("o<psng_start_yminus_probing> call") == -1:
-            return
-
-        # calculate and show Y result
-        a = self.probed_position_with_offsets()
-        ymres = float(a[1]) - 0.5 * self.halcomp["ts_diam_ext"]
-        print("simple probed pos Y- = ", self.stat.probed_position)
-        print("ymres = ",ymres)
-        #self.length_y()                                #used for clear display ??????????????
-        ycres = 0.5 * (ypres + ymres)
-        print("ycres = ",ycres)
-        diamres = ymres - ypres
-        diamwithofsset = diamres + (2*self.halcomp["ts_diam_offset"])
-
-        # save and show the tool data
-        self.halcomp["ts_probed_tool_diam"] = diamwithofsset
-        self.add_history_text("old tooldiameter from tooltable = %.4f" % (tooldiameter))
-        self.add_history_text("new tooldiameter measured = %.4f" % (diamres))
-        self.add_history_text("new tooldiameter compensated set in tootlable = %.4f" % (diamwithofsset))
-        self.add_history(
-            gtkbutton.get_tooltip_text(),
-            "XcYcZD",
-            xc=xcres,
-            yc=ycres,
-            z=tlres,
-            d=diamwithofsset,
-        )
-        # update and reload tool table
-        s = "G10 L1 P#<_current_tool> Z%f R%f G43" % ((tlres),(0.5*diamwithofsset))           # 0.14 seem to be needed for my setter adding the necessary distance for radial triggering probe (0.07mm each direction)
-        if self.gcode(s) == -1:
-            return
-        if self.ocode("o<psng_probe_tool_diameter_end> call") == -1:                          # replace Z clearence and goto new center Y with return to tool change positon
-            return
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        self.add_history_text("Measured tool_length = %f" % (float(Popen("halcmd getp halui.tool.length_offset.z", shell=True, stdout=PIPE).stdout.read())))
+        self.add_history_text("Measured tool_diameter = %f" % (self.halcomp["toolchange_diameter"]))
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
 
     # --------------------------
     #
-    #  Generic tool setter Movement Methods
+    # TOOL CHANGE WITH AUTOLENGTH REACTING TO M6
     #
     # --------------------------
-    def move_tool_z_down(self, data=None):
-        s = """G91
-        G1 Z-%f
-        G90""" % (self.halcomp["ts_clearance_z"])
-        if self.gcode(s) == -1:
-            return -1
-        return 0
+    # Here we create a manual tool change dialog
+    def on_tool_change(self, gtkbutton):
 
-    def move_tool_z_up(self, data=None):
-        s = """G91
-        G1 Z%f
-        G90""" % (self.halcomp["ts_clearance_z"])
-        if self.gcode(s) == -1:
-            return -1
-        return 0
+# One issue need to be corrected if you ask the same tool as actual tool probe start without any confirmation (patched in ocode with M0)(need to patch here if use stglue.py)
+
+        if self.halcomp["toolchange_change"]:
+
+            tooltable = self.inifile.find("EMCIO", "TOOL_TABLE")
+            if not tooltable:
+                self.warning_dialog("Tool Measurement", "Did not find a toolfile file in [EMCIO] TOOL_TABLE", title=_("PSNG Manual Toolchange"))
+                return
+            CONFIGPATH = os.environ["CONFIG_DIR"]
+            toolfile = os.path.join(CONFIGPATH, tooltable)
+            self.tooledit1.set_filename(toolfile)
+
+            #self.add_history_text("tool-number = %s" % (self.halcomp["toolchange_number"]))
+            #self.add_history_text("tool_prep_number = %s" % (self.halcomp["toolchange_prep_number"]))
+
+            if self.halcomp["chk_use_popup_style_toolchange"]:
+            	  # we will get an error because can't get any tooldescription, so we avoid that case
+                if self.halcomp["toolchange_prep_number"] == 0:
+                    message   = _("Please remove the mounted tool and press OK when done or CLOSE popup for cancel")
+                elif self.halcomp["toolchange_prep_number"] == self.halcomp["toolchange_number"]:
+                    message   = _("Please check if the mounted tool is the good one and press OK when done or CLOSE popup for cancel")
+                else:
+                    tooldescr = self.tooledit1.get_toolinfo(self.halcomp["toolchange_prep_number"])[16]
+                    message = _(
+                        "Please change to tool\n\n# {0:d}     {1}\n\n then click OK or CLOSE popup for cancel"
+                    ).format(self.halcomp["toolchange_prep_number"], tooldescr)
+
+                result = self.warning_dialog(message, title=_("PSNG Manual Toolchange"))
+            else:
+                result = 1
+
+            if result:
+                #self.vcp_reload()                                     # DO NOT DO THAT OR AUTOLENGTH IS KILLED
+                self.add_history_text("TOOL %s CHANGED CORRECTLY" % (self.halcomp["toolchange_prep_number"]))
+                self.halcomp["toolchange_changed"] = True
+            else:
+                self.halcomp["toolchange_prep_number"] = self.halcomp["toolchange_number"]
+                self.halcomp["toolchange_change"] = False  # Is there any reason to do this to input pin ? i think yes for be sure to reset connected self.on_tool_change
+                self.halcomp["toolchange_changed"] = True
+                self.error_dialog("TOOLCHANGE ABORTED", title=_("PSNG Manual Toolchange"))
+        else:
+            self.halcomp["toolchange_changed"] = False
 
 
-#    # Here we create a manual tool change dialog
-#    def on_tool_change(self, gtkbutton, data=None):
-#        change = self.halcomp["toolchange-change"]
-#        toolnumber = Popen("halcmd getp iocontrol.0.tool-number", shell=True, stdout=PIPE).stdout.read()
-#        toolprepnumber = self.halcomp["toolchange-prep-number"]
-#        self.add_history_text("tool-number = %.4f" % (toolnumber))
-#        self.add_history_text("tool_prep_number = %.4f" % (toolprepnumber))
-#        print("tool-number = %.4f" % (toolnumber))
-#        print("tool_prep_number = %.4f" % (toolprepnumber))
-#        if self.usepopup == 0:
-#                 result = 0
-#
-## One issue need to be corrected if you ask the same tool as actual tool probe start without any confirmation (patched in ocode with M0)
-## One issue need to be corrected if you ask the same tool as actual tool probe start without any confirmation (need to patch here if use stglue.py)
-#
-#        if change:
-#            # if toolprepnumber = 0 we will get an error because we will not be able to get
-#            # any tooldescription, so we avoid that case
-#            if toolprepnumber == 0:
-#                if self.usepopup == 0:
-#                      result = 1
-#                elif self.usepopup == 1:
-#                      message   = _("Please remove the mounted tool and press OK when done or CLOSE popup for cancel")
-#                      self.warning_dialog(message, title=_("PSNG Manual Toolchange"))
-#            elif toolprepnumber == toolnumber:
-#                if self.usepopup == 0:
-#                      result = 1
-#                elif self.usepopup == 1:
-#                      message   = _("Please check if the mounted tool is the good one and press OK when done or CLOSE popup for cancel")
-#                      self.warning_dialog(message, title=_("PSNG Manual Toolchange"))
-#            else:
-#                tooltable = self.inifile.find("EMCIO", "TOOL_TABLE")
-#                if not tooltable:
-#                    message   = _("Tool Measurement Error")
-#                    secondary = _("Did not find a toolfile file in [EMCIO] TOOL_TABLE")
-#                    self.error_dialog(message, secondary, title=_("PSNG Manual Toolchange"))
-#                    return
-#                CONFIGPATH = os.environ["CONFIG_DIR"]
-#                toolfile = os.path.join(CONFIGPATH, tooltable)
-#                self.tooledit1.set_filename(toolfile)
-#                tooldescr = self.tooledit1.get_toolinfo(toolprepnumber)[16]
-#                if self.usepopup == 0:
-#                      result = 1
-#                elif self.usepopup == 1:
-#                      message = _(
-#                          "Please change to tool\n\n# {0:d}     {1}\n\n then click OK or CLOSE popup for cancel"
-#                      ).format(toolprepnumber, tooldescr)
-#
-#            if self.usepopup == 1:
-#                 result = self.warning_dialog(message, title=_("PSNG Manual Toolchange"))
-#            if result:
-#                #self.vcp_reload()                                     # DO NOT DO THAT OR AUTOLENGTH IS KILLED
-#                self.add_history_text("TOOLCHANGED CORRECTLY")
-#                self.halcomp["toolchange-changed"] = True
-#            else:
-#                self.halcomp["toolchange-prep-number"] = toolnumber
-#                self.halcomp["toolchange-change"] = False  # Is there any reason to do this to input pin ?
-#                self.halcomp["toolchange-changed"] = True
-#                message = _("TOOLCHANGE ABORTED")
-#                self.error_dialog(message, title=_("PSNG Manual Toolchange"))
-#        else:
-#            self.halcomp["toolchange-changed"] = False

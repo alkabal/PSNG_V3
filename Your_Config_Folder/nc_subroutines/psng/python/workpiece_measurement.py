@@ -45,13 +45,18 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
     # Button pressed X+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_xp_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xp_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xp") == -1:
+            self.warning_dialog("xp canceled by user !")
             return
 
         # Start psng_xplus.ngc
@@ -60,8 +65,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xres = float(a[0]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xres = float(a[0]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             xres = float(a[0]) + (0.5 * tooldiameter)
 
@@ -82,21 +87,27 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("X")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("X")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
+
     # Button pressed Y+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_yp_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_yp_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("yp") == -1:
+            self.warning_dialog("yp canceled by user !")
             return
 
         # Start psng_yplus.ngc
@@ -105,8 +116,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            yres = float(a[1]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            yres = float(a[1]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             yres = float(a[1]) + (0.5 * tooldiameter)
 
@@ -127,21 +138,27 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("Y")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("Y")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
+
     # Button pressed X-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_xm_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xm_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xm") == -1:
+            self.warning_dialog("xm canceled by user !")
             return
 
         # Start psng_xminus.ngc
@@ -150,8 +167,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xres = float(a[0]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xres = float(a[0]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             xres = float(a[0]) - (0.5 * tooldiameter)
 
@@ -172,21 +189,27 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("X")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("X")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
+
     # Button pressed Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_ym_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_ym_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("ym") == -1:
+            self.warning_dialog("ym canceled by user !")
             return
 
         # Start psng_yminus.ngc
@@ -195,8 +218,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            yres = float(a[1]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            yres = float(a[1]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             yres = float(a[1]) - (0.5 * tooldiameter)
 
@@ -217,9 +240,9 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("Y")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("Y")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
@@ -233,13 +256,18 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Move Probe manual under corner 2-3 mm
     # Button pressed X+Y+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_xpyp_out_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xpyp_out_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xpyp") == -1:
+            self.warning_dialog("xpyp canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -250,7 +278,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # move to calculated point
         s = """G91
         G1 Y%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
 
@@ -260,8 +288,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xres = float(a[0]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xres = float(a[0]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             xres = float(a[0]) + (0.5 * tooldiameter)
 
@@ -273,7 +301,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # move to calculated point
         s = """G91
         G1 X%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
 
@@ -283,8 +311,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            yres = float(a[1]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            yres = float(a[1]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             yres = float(a[1]) + (0.5 * tooldiameter)
 
@@ -312,21 +340,27 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
+
     # Button pressed X+Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_xpym_out_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xpym_out_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xpym") == -1:
+            self.warning_dialog("xpym canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -337,7 +371,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # move to calculated point
         s = """G91
         G1 Y-%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
 
@@ -347,8 +381,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xres = float(a[0]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xres = float(a[0]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             xres = float(a[0]) + (0.5 * tooldiameter)
 
@@ -360,7 +394,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # move to calculated point
         s = """G91
         G1 X%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
 
@@ -370,8 +404,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            yres = float(a[1]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            yres = float(a[1]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             yres = float(a[1]) - (0.5 * tooldiameter)
 
@@ -399,21 +433,27 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
+
     # Button pressed X-Y+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_xmyp_out_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xmyp_out_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xmyp") == -1:
+            self.warning_dialog("xmyp canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -424,7 +464,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # move to calculated point
         s = """G91
         G1 Y%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
 
@@ -434,8 +474,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xres = float(a[0]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xres = float(a[0]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             xres = float(a[0]) - (0.5 * tooldiameter)
 
@@ -447,7 +487,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # move to calculated point
         s = """G91
         G1 X-%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
 
@@ -457,8 +497,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            yres = float(a[1]) + self.halcomp["tp_XY_thickness"] + (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            yres = float(a[1]) + self.halcomp["psng_tp_xy_thickness"] + (0.5 * tooldiameter)
         else:
             yres = float(a[1]) + (0.5 * tooldiameter)
 
@@ -486,21 +526,27 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
+
     # Button pressed X-Y-
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_xmym_out_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xmym_out_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xmym") == -1:
+            self.warning_dialog("xmym canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -511,7 +557,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # move to calculated point
         s = """G91
         G1 Y-%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
 
@@ -521,8 +567,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate X result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            xres = float(a[0]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            xres = float(a[0]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             xres = float(a[0]) - (0.5 * tooldiameter)
 
@@ -534,7 +580,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # move to calculated point
         s = """G91
         G1 X-%f
-        G90""" % (self.halcomp["edge_length"])
+        G90""" % (self.halcomp["psng_edge_length"])
         if self.gcode(s) == -1:
             return
 
@@ -544,8 +590,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
 
         # Calculate Y result
         a = self.probed_position_with_offsets()
-        if self.halcomp["chk_use_touch_plate"] == True:
-            yres = float(a[1]) - self.halcomp["tp_XY_thickness"] - (0.5 * tooldiameter)
+        if self.halcomp["chk_use_touch_plate"]:
+            yres = float(a[1]) - self.halcomp["psng_tp_xy_thickness"] - (0.5 * tooldiameter)
         else:
             yres = float(a[1]) - (0.5 * tooldiameter)
 
@@ -573,22 +619,28 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
+
 
     # Button pressed Center X+ X- Y+ Y-
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
-    def on_btn_xy_center_out_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xy_center_out_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("center") == -1:
+            self.warning_dialog("center canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -596,17 +648,13 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         initial_x_position = self.stat.position[0]
 
         # Start psng_start_z_probing_for_diam.ngc
-        if self.ocode("o<psng_start_z_probing_for_diam> call [1]") == -1:
+        if self.ocode("o<psng_start_z_probing> call [1]") == -1:
             return
-
-#        # Start psng_start_inverse_probing.ngc
-#        if self.ocode("o<psng_start_inverse_probing> call [1]") == -1:
-#            return
 
         # move to calculated point X clearance + up Z with latch value
         s = """G91
         G1 X-%f Z%f
-        G90""" % (self.halcomp["latch"] + tooldiameter, self.halcomp["latch"])
+        G90""" % (self.halcomp["psng_latch"] + tooldiameter, self.halcomp["psng_latch"])
         if self.gcode(s) == -1:
             return
 
@@ -632,17 +680,13 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # Start psng_start_z_probing_for_diam.ngc
-        if self.ocode("o<psng_start_z_probing_for_diam> call [2]") == -1:
+        if self.ocode("o<psng_start_z_probing> call [2]") == -1:
             return
-
-#        # Start psng_start_inverse_probing.ngc
-#        if self.ocode("o<psng_start_inverse_probing> call [2]") == -1:
-#            return
 
         # move to calculated point X clearance + up Z with latch value
         s = """G91
         G1 X%f Z%f
-        G90""" % (self.halcomp["latch"] + tooldiameter, self.halcomp["latch"])
+        G90""" % (self.halcomp["psng_latch"] + tooldiameter, self.halcomp["psng_latch"])
         if self.gcode(s) == -1:
             return
 
@@ -663,11 +707,11 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         if self.move_probe_z_up() == -1:
             return
 
+
         # go to the new center of X
         s = "G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
-
 
 
         # before using some self value from linuxcnc we need to poll
@@ -675,17 +719,13 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         initial_y_position = self.stat.position[1]
 
         # Start psng_start_z_probing_for_diam.ngc
-        if self.ocode("o<psng_start_z_probing_for_diam> call [3]") == -1:
+        if self.ocode("o<psng_start_z_probing> call [3]") == -1:
             return
-
-#        # Start psng_start_inverse_probing.ngc
-#        if self.ocode("o<psng_start_inverse_probing> call [3]") == -1:
-#            return
 
         # move to calculated point Y clearance + up Z with latch value
         s = """G91
         G1 Y-%f Z%f
-        G90""" % (self.halcomp["latch"] + tooldiameter, self.halcomp["latch"])
+        G90""" % (self.halcomp["psng_latch"] + tooldiameter, self.halcomp["psng_latch"])
         if self.gcode(s) == -1:
             return
 
@@ -711,17 +751,13 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # Start psng_start_z_probing_for_diam.ngc
-        if self.ocode("o<psng_start_z_probing_for_diam> call [4]") == -1:
+        if self.ocode("o<psng_start_z_probing> call [4]") == -1:
             return
-
-#        # Start psng_start_inverse_probing.ngc
-#        if self.ocode("o<psng_start_inverse_probing> call [4]") == -1:
-#            return
 
         # move to calculated point Y clearance + up Z with latch value
         s = """G91
         G1 Y%f Z%f
-        G90""" % (self.halcomp["latch"] + tooldiameter, self.halcomp["latch"])
+        G90""" % (self.halcomp["psng_latch"] + tooldiameter, self.halcomp["psng_latch"])
         if self.gcode(s) == -1:
             return
 
@@ -742,13 +778,16 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         if self.move_probe_z_up() == -1:
             return
 
+
         # go to the new center of Y
         s = "G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
 
+
         # Calculate result diameter
         diam = ymres - ypres
+        diam = 0.5 * ((xpres - xmres) + (ypres - ymres))
 
         # show calculated point center
         self.add_history(
@@ -766,9 +805,9 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
@@ -786,13 +825,18 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed X+Y+
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
-    def on_btn_xpyp_in_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xpyp_in_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xpyp_in") == -1:
+            self.warning_dialog("xpyp_in canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -845,22 +889,27 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
     # Button pressed X+Y-
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
-    def on_btn_xpym_in_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xpym_in_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xpym_in") == -1:
+            self.warning_dialog("xpym_in canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -913,22 +962,28 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
+
 
     # Button pressed X-Y+
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
-    def on_btn_xmyp_in_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xmyp_in_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xmyp_in") == -1:
+            self.warning_dialog("xmyp_in canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -981,22 +1036,28 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
+
 
     # Button pressed X-Y-
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
-    def on_btn_xmym_in_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xmym_in_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xmym_in") == -1:
+            self.warning_dialog("xmym_in canceled by user !")
             return
 
         # before using some self value from linuxcnc we need to poll
@@ -1040,21 +1101,27 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
 
+
     # Button pressed Hole Xin- Xin+ Yin- Yin+
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_xy_hole_in_released(self, gtkbutton, data=None):
-        tooldiameter = float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
-        if self.ocode("o<backup_status> call") == -1:
+    def on_btn_xy_hole_in_released(self, gtkbutton):
+        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
             return
         if self.ocode("o<psng_hook> call [7]") == -1:
+            return
+
+        # ask confirm from popup
+        if self._dialog_confirm("xy_hole") == -1:
+            self.warning_dialog("xy_hole canceled by user !")
             return
 
         # Start psng_xminus.ngc
@@ -1074,7 +1141,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         xpres = float(a[0]) + (0.5 * tooldiameter)
         xcres = 0.5 * (xmres + xpres)
 
-        # move X to new center
+
+        # go to the new center of X
         s = "G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
@@ -1097,7 +1165,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         ypres = float(a[1]) + (0.5 * tooldiameter)
         ycres = 0.5 * (ymres + ypres)
 
-        # move to calculated point
+
+        # go to the new center of Y
         s = "G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
@@ -1126,8 +1195,8 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         )
 
         # Optional auto zero selectable from gui
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
-            self.set_zero_offset_box("XY")
-        if self.ocode("o<backup_restore> call [999]") == -1:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
+            self._set_auto_zero_offset("XY")
+        if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0

@@ -39,8 +39,8 @@ class ProbeScreenZero(ProbeScreenBase):
         self.spbtn_offs_z = self.builder.get_object("spbtn_offs_z")
 
         # make the Tickbox
-        self.chk_use_auto_zero_offset_box = self.builder.get_object("chk_use_auto_zero_offset_box")
-        self.chk_use_auto_zero_offset_box.set_active(self.prefs.getpref("chk_use_auto_zero_offset_box", False, bool))
+        self.chk_use_auto_zero_offs_xyz = self.builder.get_object("chk_use_auto_zero_offs_xyz")
+        self.chk_use_auto_zero_offs_xyz.set_active(self.prefs.getpref("chk_use_auto_zero_offs_xyz", False, bool))
 
         # make the LED
         self.hal_led_use_offs_x = self.builder.get_object("hal_led_use_offs_x")
@@ -56,19 +56,28 @@ class ProbeScreenZero(ProbeScreenBase):
         self.halcomp.newpin("offs_y_active", hal.HAL_BIT, hal.HAL_OUT)
         self.halcomp.newpin("offs_z_active", hal.HAL_BIT, hal.HAL_OUT)
 
-        self.halcomp.newpin("chk_use_auto_zero_offset_box", hal.HAL_BIT, hal.HAL_OUT)
+        self.halcomp.newpin("chk_use_auto_zero_offs_xyz", hal.HAL_BIT, hal.HAL_OUT)
+
+        # After getting value we need to init some of them
+        self._init_zero_offs_data()
 
 
+    # --------------------------
+    #
+    # Init value etc
+    #
+    # --------------------------
+    def _init_zero_offs_data(self):
         # load value regarding to the pref saved
-        if self.prefs.getpref("chk_use_auto_zero_offset_box", False, bool) == 1 :
+        if self.prefs.getpref("chk_use_auto_zero_offs_xyz", False, bool):
             self.spbtn_offs_x.set_value(self.prefs.getpref("offs_x", 0.0, float))
             self.spbtn_offs_y.set_value(self.prefs.getpref("offs_y", 0.0, float))
             self.spbtn_offs_z.set_value(self.prefs.getpref("offs_z", 0.0, float))
             self.halcomp["offs_x"] = self.spbtn_offs_x.get_value()
             self.halcomp["offs_y"] = self.spbtn_offs_x.get_value()
             self.halcomp["offs_z"] = self.spbtn_offs_x.get_value()
-            self.chk_use_auto_zero_offset_box.set_active(1)
-            self.halcomp["chk_use_auto_zero_offset_box"] = 1
+            self.chk_use_auto_zero_offs_xyz.set_active(1)
+            self.halcomp["chk_use_auto_zero_offs_xyz"] = 1
             self.hal_led_use_offs_x.set_property("on_color","blue")
             self.hal_led_use_offs_y.set_property("on_color","blue")
             self.hal_led_use_offs_z.set_property("on_color","blue")
@@ -77,6 +86,9 @@ class ProbeScreenZero(ProbeScreenBase):
             self.hal_led_use_offs_z.hal_pin.set(1)
             self.frm_zero.set_sensitive(False)
         else:
+            self.spbtn_offs_x.set_value(self.prefs.getpref("offs_x", 0.0, float))
+            self.spbtn_offs_y.set_value(self.prefs.getpref("offs_y", 0.0, float))
+            self.spbtn_offs_z.set_value(self.prefs.getpref("offs_z", 0.0, float))
             self.frm_zero.set_sensitive(True)
 
 
@@ -85,11 +97,11 @@ class ProbeScreenZero(ProbeScreenBase):
     # Checkbox select option
     #
     # --------------------------
-    def on_chk_use_auto_zero_offset_box_toggled(self, gtkcheckbutton, data=None):
-        self.halcomp["chk_use_auto_zero_offset_box"] = gtkcheckbutton.get_active()
-        self.prefs.putpref("chk_use_auto_zero_offset_box", gtkcheckbutton.get_active(), bool)
+    def on_chk_use_auto_zero_offs_xyz_toggled(self, gtkcheckbutton):
+        self.halcomp["chk_use_auto_zero_offs_xyz"] = gtkcheckbutton.get_active()
+        self.prefs.putpref("chk_use_auto_zero_offs_xyz", gtkcheckbutton.get_active(), bool)
 
-        if self.halcomp["chk_use_auto_zero_offset_box"]:
+        if self.halcomp["chk_use_auto_zero_offs_xyz"]:
             self.frm_zero.set_sensitive(False)
             self.add_history_text("Auto zero with offset is activated")
             self.halcomp["offs_x"] = self.spbtn_offs_x.get_value()
@@ -107,7 +119,7 @@ class ProbeScreenZero(ProbeScreenBase):
                 self.halcomp["offs_x_active"] = 0
                 self.hal_led_use_offs_x.set_property("on_color","orange")
                 self.hal_led_use_offs_x.hal_pin.set(1)
-                self.add_history_text("ERROR : OFFS_X GTK CHECKBUTTON UNKNOW STATUS")
+                self.warning_dialog("OFFS_X GTK CHECKBUTTON UNKNOW STATUS")
 
                                                                                  # todo check for actual offset applied vs hal for color pink
             if self.halcomp["offs_y"] == self.spbtn_offs_y.get_value():
@@ -118,7 +130,7 @@ class ProbeScreenZero(ProbeScreenBase):
                 self.halcomp["offs_y_active"] = 0
                 self.hal_led_use_offs_y.set_property("on_color","orange")
                 self.hal_led_use_offs_y.hal_pin.set(1)
-                self.add_history_text("ERROR : OFFS_Y GTK CHECKBUTTON UNKNOW STATUS")
+                self.warning_dialog("OFFS_Y GTK CHECKBUTTON UNKNOW STATUS")
 
                                                                                  # todo check for actual offset applied vs hal for color pink
             if self.halcomp["offs_z"] == self.spbtn_offs_z.get_value():
@@ -129,7 +141,7 @@ class ProbeScreenZero(ProbeScreenBase):
                 self.halcomp["offs_z_active"] = 0
                 self.hal_led_use_offs_z.set_property("on_color","orange")
                 self.hal_led_use_offs_z.hal_pin.set(1)
-                self.add_history_text("ERROR : OFFS_Z GTK CHECKBUTTON UNKNOW STATUS")
+                self.warning_dialog("OFFS_Z GTK CHECKBUTTON UNKNOW STATUS")
         else:
             # now we can reset the offset correctly
             s = "G10 L2 P0 X0 Y0 Z0"
@@ -154,8 +166,8 @@ class ProbeScreenZero(ProbeScreenBase):
     # Spinbox entry editable
     #
     # --------------------------
-    def on_spbtn_offs_x_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("offs_x", gtkspinbutton, data)
+    def on_spbtn_offs_x_key_press_event(self, gtkspinbutton):
+        self.on_common_spbtn_key_press_event("offs_x", gtkspinbutton)
         if self.halcomp["offs_x_active"] == 0:
             if self.halcomp["offs_x"] == 0 and self.spbtn_offs_x.get_value() == 0:
                 self.hal_led_use_offs_x.hal_pin.set(0)
@@ -169,8 +181,8 @@ class ProbeScreenZero(ProbeScreenBase):
             self.hal_led_use_offs_x.set_property("on_color","red")
             self.hal_led_use_offs_x.hal_pin.set(1)
 
-    def on_spbtn_offs_x_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("offs_x", gtkspinbutton, data)
+    def on_spbtn_offs_x_value_changed(self, gtkspinbutton):
+        self.on_common_spbtn_value_changed("offs_x", gtkspinbutton)
         if self.halcomp["offs_x_active"] == 0:
             if self.halcomp["offs_x"] == 0 and self.spbtn_offs_x.get_value() == 0:
                 self.hal_led_use_offs_x.hal_pin.set(0)
@@ -184,8 +196,8 @@ class ProbeScreenZero(ProbeScreenBase):
             self.hal_led_use_offs_x.set_property("on_color","red")
             self.hal_led_use_offs_x.hal_pin.set(1)
 
-    def on_spbtn_offs_y_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("offs_y", gtkspinbutton, data)
+    def on_spbtn_offs_y_key_press_event(self, gtkspinbutton):
+        self.on_common_spbtn_key_press_event("offs_y", gtkspinbutton)
         if self.halcomp["offs_y_active"] == 0:
             if self.halcomp["offs_y"] == 0 and self.spbtn_offs_y.get_value() == 0:
                 self.hal_led_use_offs_y.hal_pin.set(0)
@@ -199,8 +211,8 @@ class ProbeScreenZero(ProbeScreenBase):
             self.hal_led_use_offs_y.set_property("on_color","red")
             self.hal_led_use_offs_y.hal_pin.set(1)
 
-    def on_spbtn_offs_y_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("offs_y", gtkspinbutton, data)
+    def on_spbtn_offs_y_value_changed(self, gtkspinbutton):
+        self.on_common_spbtn_value_changed("offs_y", gtkspinbutton)
         if self.halcomp["offs_y_active"] == 0:
             if self.halcomp["offs_y"] == 0 and self.spbtn_offs_y.get_value() == 0:
                 self.hal_led_use_offs_y.hal_pin.set(0)
@@ -214,8 +226,8 @@ class ProbeScreenZero(ProbeScreenBase):
             self.hal_led_use_offs_y.set_property("on_color","red")
             self.hal_led_use_offs_y.hal_pin.set(1)
 
-    def on_spbtn_offs_z_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("offs_z", gtkspinbutton, data)
+    def on_spbtn_offs_z_key_press_event(self, gtkspinbutton):
+        self.on_common_spbtn_key_press_event("offs_z", gtkspinbutton)
         if self.halcomp["offs_z_active"] == 0:
             if self.halcomp["offs_z"] == 0 and self.spbtn_offs_z.get_value() == 0:
                 self.hal_led_use_offs_z.hal_pin.set(0)
@@ -229,8 +241,8 @@ class ProbeScreenZero(ProbeScreenBase):
             self.hal_led_use_offs_z.set_property("on_color","red")
             self.hal_led_use_offs_z.hal_pin.set(1)
 
-    def on_spbtn_offs_z_value_changed(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_value_changed("offs_z", gtkspinbutton, data)
+    def on_spbtn_offs_z_value_changed(self, gtkspinbutton):
+        self.on_common_spbtn_value_changed("offs_z", gtkspinbutton)
         if self.halcomp["offs_z_active"] == 0:
             if self.halcomp["offs_z"] == 0 and self.spbtn_offs_z.get_value() == 0:
                 self.hal_led_use_offs_z.hal_pin.set(0)
@@ -251,74 +263,59 @@ class ProbeScreenZero(ProbeScreenBase):
     # --------------------------
     # button pressed set offset x manually
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_set_x_released(self, gtkbutton, data=None):
-        # now we can apply the offset correctly
-        self.set_zero_offset_box("X", self.spbtn_offs_x.get_value(), 0, 0)
-        self.halcomp["offs_x"] = self.spbtn_offs_x.get_value()
-        self.prefs.putpref("offs_x", self.halcomp["offs_x"],  float)
-                                                                                 # todo check for actual offset applied vs hal for color pink
-        if self.halcomp["offs_x"] == 0:
+    def on_btn_set_x_released(self, gtkbutton):
+        if self.spbtn_offs_x.get_value() == 0:
             self.hal_led_use_offs_x.hal_pin.set(0)
+            self.halcomp["offs_x"] = 0
+            self._set_auto_zero_offset("X")
             self.halcomp["offs_x_active"] = 0
-            self.add_history_text("OFFSET BOX X G10 L20 P0 VALUE RESETED TO 0")
-
-        elif self.halcomp["offs_x"] == self.spbtn_offs_x.get_value():
+            self.prefs.putpref("offs_x", 0, float)
+            self.add_history_text("OFFSET_BOX_X REMOVED FROM G10_L2")
+        else:
             self.hal_led_use_offs_x.set_property("on_color","green")
             self.hal_led_use_offs_x.hal_pin.set(1)
+            self.halcomp["offs_x"] = self.spbtn_offs_x.get_value()
+            self._set_auto_zero_offset("X")
             self.halcomp["offs_x_active"] = 1
-            self.add_history_text("OFFSET BOX X SET G10 L20 P0 X%.4f" % (self.halcomp["offs_x"]))
-        else:
-            self.hal_led_use_offs_x.set_property("on_color","yellow")
-            self.hal_led_use_offs_x.hal_pin.set(1)
-            self.add_history_text("ERROR : OFFSET BOX X UNKNOW STATUS")
-        self._work_in_progress = 0
+            self.prefs.putpref("offs_x", self.halcomp["offs_x"], float)
+            self.add_history_text("OFFSET_BOX_X %.4f ADDED TO G10_L2" % (self.halcomp["offs_x"]))
 
     # button pressed set offset y manually
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_set_y_released(self, gtkbutton, data=None):
-        # now we can apply the offset correctly
-        self.set_zero_offset_box("Y", 0, self.spbtn_offs_y.get_value(), 0)
-        self.halcomp["offs_y"] = self.spbtn_offs_y.get_value()
-        self.prefs.putpref("offs_y", self.halcomp["offs_y"],  float)
-                                                                                 # todo check for actual offset applied vs hal for color pink
-        if self.halcomp["offs_y"] == 0:
+    def on_btn_set_y_released(self, gtkbutton):
+        if self.spbtn_offs_y.get_value() == 0:
             self.hal_led_use_offs_y.hal_pin.set(0)
+            self.halcomp["offs_y"] = 0
+            self._set_auto_zero_offset("Y")
             self.halcomp["offs_y_active"] = 0
-            self.add_history_text("OFFSET BOY Y G10 L20 P0 VALUE RESETED TO 0")
-
-        elif self.halcomp["offs_y"] == self.spbtn_offs_y.get_value():
+            self.prefs.putpref("offs_y", 0, float)
+            self.add_history_text("OFFSET_BOX_Y REMOVED FROM G10_L2")
+        else:
             self.hal_led_use_offs_y.set_property("on_color","green")
             self.hal_led_use_offs_y.hal_pin.set(1)
+            self.halcomp["offs_y"] = self.spbtn_offs_y.get_value()
+            self._set_auto_zero_offset("Y")
             self.halcomp["offs_y_active"] = 1
-            self.add_history_text("OFFSET BOY Y SET G10 L20 P0 Y%.4f" % (self.halcomp["offs_y"]))
-        else:
-            self.hal_led_use_offs_y.set_property("on_color","yellow")
-            self.hal_led_use_offs_y.hal_pin.set(1)
-            self.add_history_text("ERROR : OFFSET BOY Y UNKNOW STATUS")
-        self._work_in_progress = 0
+            self.prefs.putpref("offs_y", self.halcomp["offs_y"], float)
+            self.add_history_text("OFFSET_BOX_Y %.4f ADDED TO G10_L2" % (self.halcomp["offs_y"]))
 
     # button pressed set offset z manually
     @ProbeScreenBase.ensure_errors_dismissed
-    def on_btn_set_z_released(self, gtkbutton, data=None):
-        # now we can apply the offset correctly
-        self.set_zero_offset_box("Z", 0, 0, self.spbtn_offs_z.get_value())
-        self.halcomp["offs_z"] = self.spbtn_offs_z.get_value()
-        self.prefs.putpref("offs_z", self.halcomp["offs_z"],  float)
-                                                                                 # todo check for actual offset applied vs hal for color pink
-        if self.halcomp["offs_z"] == 0:
+    def on_btn_set_z_released(self, gtkbutton):
+        if self.spbtn_offs_z.get_value() == 0:
             self.hal_led_use_offs_z.hal_pin.set(0)
+            self.halcomp["offs_z"] = 0
+            self._set_auto_zero_offset("Z")
             self.halcomp["offs_z_active"] = 0
-            self.add_history_text("OFFSET BOZ Z G10 L20 P0 VALUE RESETED TO 0")
-
-        elif self.halcomp["offs_z"] == self.spbtn_offs_z.get_value():
+            self.prefs.putpref("offs_z", 0, float)
+            self.add_history_text("OFFSET_BOX_Z REMOVED FROM G10_L2")
+        else:
             self.hal_led_use_offs_z.set_property("on_color","green")
             self.hal_led_use_offs_z.hal_pin.set(1)
+            self.halcomp["offs_z"] = self.spbtn_offs_z.get_value()
+            self._set_auto_zero_offset("Z")
             self.halcomp["offs_z_active"] = 1
-            self.add_history_text("OFFSET BOZ Z SET G10 L20 P0 Z%.4f" % (self.halcomp["offs_z"]))
-        else:
-            self.hal_led_use_offs_z.set_property("on_color","yellow")
-            self.hal_led_use_offs_z.hal_pin.set(1)
-            self.add_history_text("ERROR : OFFSET BOZ Z UNKNOW STATUS")
-        self._work_in_progress = 0
+            self.prefs.putpref("offs_z", self.halcomp["offs_z"], float)
+            self.add_history_text("OFFSET_BOX_Z %.4f ADDED TO G10_L2" % (self.halcomp["offs_z"]))
 
 

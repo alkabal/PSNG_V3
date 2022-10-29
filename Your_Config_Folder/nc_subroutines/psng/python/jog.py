@@ -17,12 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; If not, see <http://www.gnu.org/licenses/>.
 
+from .base import ProbeScreenBase
+
 import gtk  # base for pygtk widgets and constants
 import hal  # base hal class to react to hal signals
 import linuxcnc
 
-from .base import ProbeScreenBase
-
+#import gi
+#gi.require_version("Gtk", "3.0")
+#from gi.repository import Gtk
 
 class ProbeScreenJog(ProbeScreenBase):
     # --------------------------
@@ -38,11 +41,19 @@ class ProbeScreenJog(ProbeScreenBase):
         self.incr_rbt_list = []  # we use this list to add hal pin to the button later
         self.jog_increments = []  # This holds the increment values
         self.distance = 0  # This global will hold the jog distance
-        self.halcomp.newpin("jog-increment", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("psng_jog_increment", hal.HAL_FLOAT, hal.HAL_OUT)
 
-        self._init_jog_increments()
 
-    def _init_jog_increments(self):
+        # After getting value we need to init some of them
+        self._init_jog_increments_data()
+
+
+    # --------------------------
+    #
+    # Init value etc
+    #
+    # --------------------------
+    def _init_jog_increments_data(self):
         # Get the increments from INI File
         jog_increments = []
         increments = self.inifile.find("DISPLAY", "INCREMENTS")
@@ -55,16 +66,13 @@ class ProbeScreenJog(ProbeScreenBase):
             jog_increments.insert(0, 0)
         else:
             jog_increments = [0, "1,000", "0,100", "0,010", "0,001"]
-            #self.add_history_text("WARNING : No default jog increments entry found in [DISPLAY] of INI file")
-            message   = _("No default jog increments entry found in [DISPLAY] of INI file")
-            secondary = _("Please check the DISPLAY INI configurations")
-            self.warning_dialog(message, secondary)
+            self.warning_dialog("No default jog increments entry found in [DISPLAY] of INI file", "Please check the DISPLAY INI configurations")
 
         self.jog_increments = jog_increments
         if len(self.jog_increments) > 6:
-            print("**** PROBE SCREEN INFO ****")
-            print("**** To many increments given in INI File for this screen ****")
-            print("**** Only the first 5 will be reachable through this screen ****")
+            print ("**** PROBE SCREEN INFO ****")
+            print ("**** To many increments given in INI File for this screen ****")
+            print ("**** Only the first 5 will be reachable through this screen ****")
             # we shorten the incrementlist to 5 (first is default = 0)
             self.jog_increments = self.jog_increments[0:5]
 
@@ -107,7 +115,7 @@ class ProbeScreenJog(ProbeScreenBase):
             self.distance = 0
         else:
             self.distance = self._parse_increment(data)
-        self.halcomp["jog-increment"] = self.distance
+        self.halcomp["psng_jog_increment"] = self.distance
         self.active_increment = widget.__name__
 
     def _from_internal_linear_unit(self, v, unit=None):
@@ -147,9 +155,8 @@ class ProbeScreenJog(ProbeScreenBase):
 
         axisletter = widget.get_label()[0]
         if not axisletter.lower() in "xyzabcuvw":
-            #self.add_history_text("WARNING : unknown axis %s" % (axisletter))
-            message   = _("unknown axis %s" % (axisletter))
-            self.error_dialog(message)
+            #message   = _("unknown axis %s" % (axisletter))
+            self.warning_dialog("unknown axis %s") % (axisletter)
             return
 
         # get the axisnumber
@@ -184,12 +191,11 @@ class ProbeScreenJog(ProbeScreenBase):
                 linuxcnc.JOG_CONTINUOUS, False, axisnumber, direction * velocity
             )
 
-    def on_btn_jog_released(self, widget, data=None):
+    def on_btn_jog_released(self, widget):
         axisletter = widget.get_label()[0]
         if not axisletter.lower() in "xyzabcuvw":
-            #self.add_history_text("WARNING : unknown axis %s" % (axisletter))
-            message   = _("unknown axis %s" % (axisletter))
-            self.error_dialog(message)
+            #message   = _("unknown axis %s" % (axisletter))
+            self.warning_dialog("unknown axis %s") % (axisletter)
             return
 
         axis = "xyzabcuvw".index(axisletter.lower())
