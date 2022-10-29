@@ -1,7 +1,7 @@
-o<psng_move_z_up> sub
+o<psng_move_z_down> sub
 
         G91
         G1 Z-#<_psng_z_clearence_auto>
 
-o<psng_move_z_up> endsub
+o<psng_move_z_down> endsub
 M2
