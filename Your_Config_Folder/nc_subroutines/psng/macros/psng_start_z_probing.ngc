@@ -1,7 +1,6 @@
 o<psng_start_z_probing> sub
 
-#<_from_manual_change> = #1        ; call [1] = call from manual change for reset tool if error with probing
-
+#<axis_and_dir> = #1
   M160    ;o<clear-axis-info> call
 
   M5 M9 ; stop spindle, mist+flood off
@@ -15,37 +14,52 @@ o<psng_start_z_probing> sub
   G38.3 Z-#<_psng_probe_max_z> F#<_psng_vel_for_search>
   o500 call
 
-  o100 if [#<_psng_probe_max_latch> GT 0]
-       G38.5 Z#<_psng_probe_max_latch> F[#<_psng_vel_for_search>*0.5]     ; DO NOT WORK FINE WITHOUT SPRING MOUNTED SETTER
+  o100 if [#<_psng_latch_probed> GT 0]
+       G38.5 Z#<_psng_latch_probed> F[#<_psng_vel_for_search>*0.5]     ; DO NOT WORK FINE WITHOUT SPRING MOUNTED SETTER
        o500 call
   o100 endif
 
   ; Move away
   G1 Z#<_psng_latch> F#<_psng_vel_for_travel>
 
-  ; Start final prove
+  ; Start final probe and stay here if we probe some XY length after Z
   G38.3 Z-[#<_psng_latch>*1.5] F#<_psng_vel_for_probe>       ; *1.3 after a latch move we need to probe a little more for be sure to found the contact point
   o500 call
 
-  #<_psng_touch_result_Z> = #5063
+  #<_psng_touch_result_z> = #5063
 
-  o200 if [#<_psng_probe_max_latch> GT 0]
-       G38.5 Z#<_psng_probe_max_latch> F[#<_psng_vel_for_search>*0.5]     ; DO NOT WORK FINE WITHOUT SPRING MOUNTED SETTER
+  o200 if [#<axis_and_dir> EQ 1 and #<_psng_use_touch_plate> EQ 0]
+       G38.5 X-#<_psng_probe_max_x> F[#<_psng_vel_for_search>]
        o500 call
+  o200 elseif [#<axis_and_dir> EQ 2 and #<_psng_use_touch_plate> EQ 0]
+       G38.5 X#<_psng_probe_max_x> F[#<_psng_vel_for_search>]
+       o500 call
+  o200 elseif [#<axis_and_dir> EQ 3 and #<_psng_use_touch_plate> EQ 0]
+       G38.5 Y-#<_psng_probe_max_y> F[#<_psng_vel_for_search>]
+       o500 call
+  o200 elseif [#<axis_and_dir> EQ 4 and #<_psng_use_touch_plate> EQ 0]
+       G38.5 Y#<_psng_probe_max_y> F[#<_psng_vel_for_search>]
+       o500 call
+  o200 else
+       o210 if [#<_psng_latch_probed> GT 0]
+            G38.5 Z#<_psng_latch_probed> F[#<_psng_vel_for_search>*0.5]     ; DO NOT WORK FINE WITHOUT SPRING MOUNTED SETTER
+            o500 call
+       o210 endif
+
+       ; Move away
+       G1 Z#<_psng_latch> F#<_psng_vel_for_travel>
   o200 endif
 
-  ; Move away and allow a half second for the probe to clear
-  G1 Z#<_psng_latch> F#<_psng_vel_for_travel>
+  ; Allow a 0.1 second for the probe to clear
   G4 P0.1
 
-  G90       ; a remplacer par if backup
-
 o500 sub
-     o510 if [#5070 EQ 0 AND #<_from_manual_change> EQ 1] ; call 1 = call from manual change for reset tool if error with probing
-          M61Q0           ; reset the tool number
-          (ABORT,TOOLSETTER Z DOES NOT FOUND THE CONTACT POINT)
-     o510 elseif  [#5070 EQ 0 AND #<_from_manual_change> EQ 0]
-          (ABORT,3D PROBE OR SETTER Z DOES NOT FOUND THE CONTACT POINT)
+     o510 if  [#5070 EQ 0]
+          o511 if [#<_psng_from_tool_measurement> EQ 1]
+               M61Q0
+          o511 endif
+          (ABORT,3D PROBE OR SETTER DOES NOT FOUND THE CONTACT POINT)
+          #<_psng_error> = -7
      o510 endif
 o500 endsub
 

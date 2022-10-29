@@ -1,45 +1,79 @@
 o<psng_probe_tool_diameter> sub
 
 M160    ;o<clear-axis-info> call
-o15 if [#<_psng_ts_height> LE 0]
-    (ABORT,TOOLSETTER HEIGHT NOT PROBED/CONFIGURED)
-o15 endif
-
-o<psng_goto_toolsensor> call
-
-(cancel Z offsets)
-G92.1                                                                      ; use pause can be better than reset ??? ADDED 12/2021 NEED TO BE VERIFED
-G49
-
-;o<backup_coord_offset> call                                                ; backup G54 offset for correct calc tool measurement
-
-o<psng_start_z_probing> call
-o40 if [#5070 EQ 0]
-    (ABORT,TOOL SETTER FOR TOOL DIAMETER DOES NOT FOUND THE CONTACT POINT)
-o40 endif
-
-G91                    ; For next move we need to manage additional Move away for allow tool to contact tool setter for diameter
-o50 if [#<_current_tool> EQ #<_psng_probe_number>]
-     (DEBUG,USE PROBE DIAM for calc Z clearence)
-     G1 Z[#<_psng_ts_clearance_z> - #<_psng_latch> - 0.5*#<_psng_tool_diam_from_tooltable>] F#<_psng_vel_for_search>
-o50 else
-     (DEBUG,USE Zclearence - LATCH)
-     G1 Z[0.7*#<_psng_ts_clearance_z> - #<_psng_latch>] F#<_psng_vel_for_search>    ; macro use vel_for_travel*0.7 for allow tool to be en contact with setter pad
-o50 endif
-G90       ; a remplacer par if backup
-
-;2022 try to do that in the python code at same time with set diameter
-;#<_psng_touch_calculated_z> = [#<_psng_touch_result_Z> - #<_psng_ts_height> + #<_g5x_offset_Z>]
-;(print, probe Z=#<_psng_touch_calculated_z> )
-;
-;G10 L1 P#<_current_tool> Z#<_psng_touch_calculated_z>
 
 
-;(start spindle if you use reverse spindle for tool diameter measuring)
-o60 if [#<_current_tool> GT 0 AND #<_current_tool> NE #<_psng_probe_number> and #<_psng_ts_use_rot_spindle_reverse> EQ 1 AND #<_hal[and2.combined-probe.in0]> EQ 1]
-     M4 S[#<_psng_ts_tool_rot_speed>]
-o60 endif
+  o50 if [[#<_psng_ts_pad_is_hole> EQ 1 and #<_psng_tool_diam_from_tooltable> LT #<_psng_ts_pad_diameter>] or #<_psng_ts_pad_is_hole> EQ 0]
+      #<_psng_from_tool_diameter> = 1
+      o<psng_probe_tool_length> call
+      o500 call
+  o50 else
+       (ABORT,TOOL_DIAMETER IS HIGHER THAN PAD_DIAMETER USING PAD_IS_HOLE)
+  o50 endif
 
-; nothing to do at the end of this ; next for x+ x- y+ y- call inside python code
-o<psng_probe_tool_diameter> endsub
+  ;(start spindle if you use reverse spindle for tool diameter measuring)
+  o100 if [#<_current_tool> GT 0 AND #<_current_tool> NE #<_psng_probe_number> and #<_psng_ts_use_rot_spindle_reverse> EQ 1 AND #<_hal[motion.probe-input]> EQ 0]
+       M4 S[#<_psng_ts_tool_rot_speed>]
+  o100 endif
+
+
+  o200 if [#<_psng_ts_pad_is_hole> EQ 0]
+
+       ; move_tool_z_up
+       G91
+       G1 Z[#<_psng_ts_clearance_xyz> - #<_psng_latch>] F#<_psng_vel_for_search>    ; position is already on latch after o<psng_probe_tool_length>
+
+       ; move to calculated X- point
+       G91
+       G1 X-#<_psng_moveradius> F#<_psng_vel_for_travel>
+
+       ; move_tool_z_down
+       G91
+       G1 Z-#<_psng_z_clearence_dw> F#<_psng_vel_for_search>
+
+       o210 if [[#<_current_tool> EQ #<_psng_probe_number> or #<_psng_ts_tool_is_spherical> EQ 1] and [[0.5*#<_psng_tool_diam_from_tooltable>] + [0.5*#<_psng_ts_pad_thickness>]] LT #<_psng_ts_pad_from_body>]
+            (DEBUG,USE DIAM for calc Z down pos due to round tool)
+            G1 Z-[#<_psng_ts_clearance_xyz> + [0.5*#<_psng_tool_diam_from_tooltable>] + [0.5*#<_psng_ts_pad_thickness>]] F#<_psng_vel_for_search>
+       o210 elseif [#<_psng_ts_tool_is_spherical> EQ 1 and [0.5 * #<_psng_tool_diam_from_tooltable> GT #<_psng_ts_pad_from_body>]]
+            (ABORT,SPHERICAL TOOL RADIUS IS HIGHER THAN PAD_FROM_BODY)
+       o210 elseif [[#<_psng_ts_clearance_xyz> + [0.5*#<_psng_ts_pad_thickness>]] LT #<_psng_ts_pad_from_body>]
+            (DEBUG,use clearance_xyz for calc Z down)
+            G1 Z-[#<_psng_ts_clearance_xyz> + [0.5*#<_psng_ts_pad_thickness>]] F#<_psng_vel_for_travel>
+       o210 else
+            (ABORT,Z DOWN MOVE FOR DIAM EXT IS HIGHER THAN PAD_FROM_BODY)
+       o210 endif
+
+       o<psng_start_diam_ext_probing> call
+       o500 call
+
+  o200 else
+
+       o<psng_start_diam_int_probing> call
+       o500 call
+  o200 endif
+
+  #<radiusres> = [[[#<_psng_ym_res> - #<_psng_yp_res>] - #<_psng_ts_pad_diameter>] / 2]
+  #<radiuswithofsset> = [#<radiusres> + #<_psng_ts_pad_diameter_offset>]
+
+  G10 L1 P#<_current_tool> R#<radiuswithofsset>
+  G43
+  M5 ; stop spindle if you use reverse spindle for tool diameter measurement
+
+  ; after tool measurement we want to allow the use GO_BACK_LAST_POSITION
+  #<_psng_from_tool_measurement> = 0
+  #<_psng_from_tool_diameter> = 0
+  o<psng_goto_changepos> call
+  #<_restore_from_tool_sensor> = 0
+
+
+o500 sub
+     o510 if [#5070 EQ 0 or #<_psng_error> LT 0]
+          M61Q0
+          (ABORT,TOOL SETTER FOR MANUAL CHANGE WITH DIAMETER DOES NOT FOUND THE CONTACT POINT)
+          #<_psng_error> = -2
+     o510 return
+     o510 endif
+o500 endsub
+
+o<psng_probe_tool_diameter> endsub [1]
 M2

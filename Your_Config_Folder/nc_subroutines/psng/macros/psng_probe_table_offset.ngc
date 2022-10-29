@@ -2,19 +2,21 @@ o<psng_probe_table_offset> sub
 
   M160    ;o<clear-axis-info> call
 
-  G43          ; force tool offset for correct calc
-  #<intial_Z>=#<_z> (save current Z position)
-
   o<psng_start_z_probing> call
-  o500 if [#5070 EQ 0]
-      (ABORT,PROBE FOR TABLE DISTANCE DOES NOT FOUND THE CONTACT POINT)
-  o500 endif
+  o500 call
 
-  (print, probe_table Z=#<_psng_touch_result_Z>)
+  ; only displayable probe_table value are changed inside python code
+  (print, probe_table Z=#<_psng_touch_result_z>)
 
-  (back to start point)
+  ; back to start point
   G90 ; force G90 for G54 initial move
-  G1 Z#<intial_Z> F#<_psng_vel_for_travel>
+  G1 Z#<_psng_initial_z> F#<_psng_vel_for_travel>
+
+o500 sub
+  o510 if [#5070 EQ 0]
+      (ABORT,PROBE FOR TABLE DISTANCE DOES NOT FOUND THE CONTACT POINT)
+  o510 endif
+o500 endsub
 
 o<psng_probe_table_offset> endsub
 M2

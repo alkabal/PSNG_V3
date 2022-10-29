@@ -1,43 +1,50 @@
 o<psng_start_yminus_probing> sub
 
-M160    ;o<clear-axis-info> call
-o10 if [#<_hal[motion.probe-input]> EQ 1]
-    (ABORT,!!! PROBE OR SETTER ALREADY TRIGGERED BEFORE PROBE Y- !!!)
-o10 endif
+  M160    ;o<clear-axis-info> call
+  o10 if [#<_hal[motion.probe-input]> EQ 1]
+      (ABORT,!!! PROBE OR SETTER ALREADY TRIGGERED BEFORE PROBE Y- !!!)
+  o10 endif
 
-#<intial_Y>=#<_y> (save start Y position)
-G91
+  o20 if [#<_Y> - #<_psng_probe_max_x> LT #<_hal[ini.y.min_limit]> or #<_Y> + #<_psng_latch> GT #<_hal[ini.y.max_limit]> or #<_Y> + #<_psng_latch_probed> GT #<_hal[ini.y.max_limit]>]
+      (ABORT,PROBE IS TOO CLOSE FROM Y MACHINE LIMIT FOR ALLOWING PROBING OR FINAL MOVE)
+  o20 endif
 
-G38.3 Y-#<_psng_probe_max_xy> F#<_psng_vel_for_search>
-o500 call
+  #<_psng_saved_y>=#<_y> (save start Y position here for correct calc)
+  G91
 
-  o100 if [#<_psng_probe_max_latch> GT 0]
-       G38.5 Y#<_psng_probe_max_latch> F[#<_psng_vel_for_search>*0.5]     ;DO NOT WORK FINE WITHOUT SPRING MOUNTED PROBE
+  G38.3 Y-#<_psng_probe_max_y> F#<_psng_vel_for_search>
+  o500 call
+
+  o100 if [#<_psng_latch_probed> GT 0]
+       G38.5 Y#<_psng_latch_probed> F[#<_psng_vel_for_search>*0.5]     ;DO NOT WORK FINE WITHOUT SPRING MOUNTED PROBE
        o500 call
   o100 endif
 
   ; Move away
   G1    Y#<_psng_latch> F#<_psng_vel_for_travel>
 
-  ; Start final prove
+  ; Start final probe
   G38.3 Y-[#<_psng_latch>*1.5] F#<_psng_vel_for_probe>       ; *1.3 after a latch move we need to probe a little more for be sure to found the contact point
   o500 call
 
-#<_psng_touch_resultY> = #5062
-(print,probe Y=#5062)
+  #<_psng_touch_resultY> = #5062
+  (print,probe Y=#5062)
 
-  o200 if [#<_psng_probe_max_latch> GT 0]
-       G38.5 Y#<_psng_probe_max_latch> F[#<_psng_vel_for_search>*0.5]     ;DO NOT WORK FINE WITHOUT SPRING MOUNTED PROBE
+  o200 if [#<_psng_latch_probed> GT 0]
+       G38.5 Y#<_psng_latch_probed> F[#<_psng_vel_for_search>*0.5]     ;DO NOT WORK FINE WITHOUT SPRING MOUNTED PROBE
        o500 call
   o200 endif
 
-       G90       ; a conserver ici
-       ; Move away back to start point and allow a half second for the probe to clear
-       G1 Y#<intial_Y> F#<_psng_vel_for_travel>
-       G4 P0.1
+  G90 ; force G90 for G54 initial move
+  ; Move away back to start point and allow a half second for the probe to clear
+  G1 Y#<_psng_saved_y> F#<_psng_vel_for_travel>
+  G4 P0.1
 
 o500 sub
-     o510 if [#5070 EQ 0]
+     o510 if  [#5070 EQ 0]
+          o511 if [#<_psng_from_tool_measurement> EQ 1]
+               M61Q0
+          o511 endif
           (ABORT,PROBE Y- DOES NOT FOUND THE CONTACT POINT)
      o510 endif
 o500 endsub

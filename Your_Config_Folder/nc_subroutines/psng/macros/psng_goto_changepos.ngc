@@ -2,14 +2,25 @@ o<psng_goto_changepos> sub
 
 ;first go up
 G90      ; force G90 for G53 G0 movement
-o20 if [#<_ini[EMCIO]TOOL_CHANGE_QUILL_UP> EQ 1]
-    G53 G0 Z#<_ini[JOINT_2]HOME>                                    ; Respecting the traditional linuxcnc behavior
+o20 if [#<_psng_toolchange_quill_up> EQ 1]
+    G53 G0 Z#<_psng_toolchange_home_pos_z>                             ; Respecting the traditional linuxcnc behavior
 o20 else
-    G53 G0 Z#<_ini[TOOL_CHANGE]Z_TRAVEL_POSITION>
+    G53 G0 Z#<_psng_toolchange_z_travel_position>
 o20 endif
 
-G53 G0 X[#<_ini[TOOL_CHANGE]X>] Y[#<_ini[TOOL_CHANGE]Y>]
-G53 G0 Z[#<_ini[TOOL_CHANGE]Z>]
+o30 if [#<_psng_from_tool_measurement> EQ 1]
+    G53 G0 X#<_psng_toolchange_pos_x> Y#<_psng_toolchange_pos_y>
+    G53 G0 Z#<_psng_toolchange_pos_z>
+o30 else
+    ;move XY to initial pos or tool change pos
+    o31 if [#<_psng_toolchange_go_back_last_position> EQ 1]
+         G0 X#<_psng_initial_x> Y#<_psng_initial_y>
+    o31 else
+         G53 G0 X#<_psng_toolchange_pos_x> Y#<_psng_toolchange_pos_y> ; Respecting the traditional linuxcnc behavior
+    o31 endif
+o30 endif
+
+  M5 M9 ; stop spindle, mist+flood off
 
   M170 P[#<_hal[ini.0.max_limit]> - #<_psng_ts_pos_x>] ; allow to restore the X axis length after goto tool_sensor
   M171 P[#<_hal[ini.1.max_limit]> - #<_psng_ts_pos_y>] ; allow to restore the Y axis length after goto tool_sensor
