@@ -1,0 +1,116 @@
+o<backup_coord_offset_saving> sub
+
+       ;5211-5219 - Shared "G52" and "G92" offset for X, Y, Z, A, B, C, U, V & W. Volatile by default
+       #<_g9x_offset_X> = #5211
+       #<_g9x_offset_Y> = #5212
+       #<_g9x_offset_Z> = #5213
+       #<_g9x_offset_A> = #5214
+       #<_g9x_offset_B> = #5215
+       #<_g9x_offset_C> = #5216
+       #<_g9x_offset_U> = #5217
+       #<_g9x_offset_V> = #5218
+       #<_g9x_offset_W> = #5219
+
+ o400 if [#<_coord_system> EQ 540]
+       #<_g5x_offset_X> = #5221
+       #<_g5x_offset_Y> = #5222
+       #<_g5x_offset_Z> = #5223
+       #<_g5x_offset_A> = #5224
+       #<_g5x_offset_B> = #5225
+       #<_g5x_offset_C> = #5226
+       #<_g5x_offset_U> = #5227
+       #<_g5x_offset_V> = #5228
+       #<_g5x_offset_W> = #5229
+       #<_g5x_offset_R> = #5230
+ o400 elseif [#<_coord_system> EQ 550]
+       #<_g5x_offset_X> = #5241
+       #<_g5x_offset_Y> = #5242
+       #<_g5x_offset_Z> = #5243
+       #<_g5x_offset_A> = #5244
+       #<_g5x_offset_B> = #5245
+       #<_g5x_offset_C> = #5246
+       #<_g5x_offset_U> = #5247
+       #<_g5x_offset_V> = #5248
+       #<_g5x_offset_W> = #5249
+       #<_g5x_offset_R> = #5250
+ o400 elseif [#<_coord_system> EQ 560]
+       #<_g5x_offset_X> = #5261
+       #<_g5x_offset_Y> = #5262
+       #<_g5x_offset_Z> = #5263
+       #<_g5x_offset_A> = #5264
+       #<_g5x_offset_B> = #5265
+       #<_g5x_offset_C> = #5266
+       #<_g5x_offset_U> = #5267
+       #<_g5x_offset_V> = #5268
+       #<_g5x_offset_W> = #5269
+       #<_g5x_offset_R> = #5270
+ o400 elseif [#<_coord_system> EQ 570]
+       #<_g5x_offset_X> = #5281
+       #<_g5x_offset_Y> = #5282
+       #<_g5x_offset_Z> = #5283
+       #<_g5x_offset_A> = #5284
+       #<_g5x_offset_B> = #5285
+       #<_g5x_offset_C> = #5286
+       #<_g5x_offset_U> = #5287
+       #<_g5x_offset_V> = #5288
+       #<_g5x_offset_W> = #5289
+       #<_g5x_offset_R> = #5290
+ o400 elseif [#<_coord_system> EQ 580]
+       #<_g5x_offset_X> = #5301
+       #<_g5x_offset_Y> = #5302
+       #<_g5x_offset_Z> = #5303
+       #<_g5x_offset_A> = #5304
+       #<_g5x_offset_B> = #5305
+       #<_g5x_offset_C> = #5306
+       #<_g5x_offset_U> = #5307
+       #<_g5x_offset_V> = #5308
+       #<_g5x_offset_W> = #5309
+       #<_g5x_offset_R> = #5310
+ o400 elseif [#<_coord_system> EQ 590]
+       #<_g5x_offset_X> = #5321
+       #<_g5x_offset_Y> = #5322
+       #<_g5x_offset_Z> = #5323
+       #<_g5x_offset_A> = #5324
+       #<_g5x_offset_B> = #5325
+       #<_g5x_offset_C> = #5326
+       #<_g5x_offset_U> = #5327
+       #<_g5x_offset_V> = #5328
+       #<_g5x_offset_W> = #5329
+       #<_g5x_offset_R> = #5330
+ o400 elseif [#<_coord_system> EQ 591]
+       #<_g5x_offset_X> = #5341
+       #<_g5x_offset_Y> = #5342
+       #<_g5x_offset_Z> = #5343
+       #<_g5x_offset_A> = #5344
+       #<_g5x_offset_B> = #5345
+       #<_g5x_offset_C> = #5346
+       #<_g5x_offset_U> = #5347
+       #<_g5x_offset_V> = #5348
+       #<_g5x_offset_W> = #5349
+       #<_g5x_offset_R> = #5350
+ o400 elseif [#<_coord_system> EQ 592]
+       #<_g5x_offset_X> = #5361
+       #<_g5x_offset_Y> = #5362
+       #<_g5x_offset_Z> = #5363
+       #<_g5x_offset_A> = #5364
+       #<_g5x_offset_B> = #5365
+       #<_g5x_offset_C> = #5366
+       #<_g5x_offset_U> = #5367
+       #<_g5x_offset_V> = #5368
+       #<_g5x_offset_W> = #5369
+       #<_g5x_offset_R> = #5370
+ o400 elseif [#<_coord_system> EQ 593]
+       #<_g5x_offset_X> = #5381
+       #<_g5x_offset_Y> = #5382
+       #<_g5x_offset_Z> = #5383
+       #<_g5x_offset_A> = #5384
+       #<_g5x_offset_B> = #5385
+       #<_g5x_offset_C> = #5386
+       #<_g5x_offset_U> = #5387
+       #<_g5x_offset_V> = #5388
+       #<_g5x_offset_W> = #5389
+       #<_g5x_offset_R> = #5390
+ o400 endif
+
+o<backup_coord_offset_saving> endsub
+M2

@@ -1,0 +1,43 @@
+o<backup_status_saving> sub
+
+;path control mode NOT USED BECAUSE NOT ABLE TO SAVE P0.0001 #<_backup_control_mode> = #<_control_mode>
+;override   #<_backup_speed_override> = #<_speed_override>
+;override   #<_backup_feed_override>  = #<_feed_override>
+;adaptative #<_backup_adaptive_feed>  = #<_adaptive_feed>
+;feed hold  #<_backup_feed_hold>      = #<_feed_hold>
+
+
+  ; Initialize offset value
+  o<backup_coord_offset_saving> call
+
+
+#<_backup_metric>           = #<_metric>
+#<_backup_absolute>         = #<_absolute>
+#<_backup_feed>             = #<_feed>
+#<_backup_ccomp>            = #<_ccomp>
+#<_backup_tool_offset>      = #<_tool_offset>
+#<_backup_coord_system>     = #<_coord_system>
+#<_backup_ijk_abs_mode>     = #<_ijk_absolute_mode>
+#<_backup_plane>            = #<_plane>
+#<_backup_inverse_time>     = #<_inverse_time>
+#<_backup_units_per_rev>    = #<_units_per_rev>
+#<_backup_spindle_rpm_mode> = #<_spindle_rpm_mode>
+#<_backup_retract_old_z>    = #<_retract_old_z>
+
+
+; test for switch and use allways macro with machine unit
+     o10 if [#<_hal[halui.machine.units-per-mm]> EQ 1 AND #<_metric> EQ 0]
+         (DEBUG,switched Units to metric for macro according to machine unit)
+         G21
+     o10 elseif [#<_hal[halui.machine.units-per-mm]> EQ 0 AND #<_metric> EQ 1]
+         (DEBUG,switched Units to imperial for macro according to machine unit)
+         G20
+     o10 endif
+
+
+o50 if [EXISTS[#<_ini[DISPLAY]LATHE>]]
+   #<_backup_lathe_diam_mode> = #<_lathe_diameter_mode>
+o50 endif
+
+o<backup_status_saving> endsub
+M2
