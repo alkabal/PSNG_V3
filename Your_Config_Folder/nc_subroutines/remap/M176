@@ -1,0 +1,5 @@
+#!/bin/bash
+# RESTORE THE MACHINE Z LIMIT MIN for allow to probe the table correctly
+
+halcmd setp dynamicZ.probe-in-progress 0
+exit 0

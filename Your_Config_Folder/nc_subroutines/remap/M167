@@ -1,4 +1,4 @@
 #!/bin/bash
-# TOOL-SETTER unhibition
+# activate setter output to motion.probe-inpute (logic inverted)
 halcmd sets touch-setter-on-off 1
 exit 0

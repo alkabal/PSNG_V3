@@ -1,0 +1,7 @@
+#!/bin/bash
+# REPLACE THE MACHINE Z LIMIT MIN ACCORDING TO TOOL LENGTH FOR PREVENT TABLE COLISION
+tooloffset=$1
+
+halcmd setp ini.z.min_limit $tooloffset
+# voir a ajouter touch_plate block_heigth et table_offset a l'equation si check_use
+exit 0
