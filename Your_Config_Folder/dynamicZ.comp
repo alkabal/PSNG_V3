@@ -1,0 +1,92 @@
+component dynamicZ "This component is designed to adjuste Z length according to tool length from table (using tool with negative offset from table 0)";
+
+//sudo halcompile --install /home/pi/my_Lathe_and_Mill/dynamicZ.comp
+
+pin in   s32 tool_number                     "connect to iocontrol.0.tool-number";
+pin in   float tool_length                   "connect to motion.tooloffset.z";
+pin in   bit   inhibit                       "for stop the Z length modification";
+pin out  bit   is_changed                    "This pin goes high when we have set the new axis length succefully";
+pin out  bit   is_override                   "This pin goes high when we have set the table override";
+pin out  bit   is_inhibited                  "This pin goes high when we have set inhibit to 1";
+pin in   float axis_z_min;
+pin in   float axis_z_max;
+pin out  float axis_z_min_as_toollength;
+pin in   float axis_z_table_clearence = 0.05 "default 0.05 from table if not configured";
+pin in   bit   probe_in_progress            "Allow to extend the Z axis for probing table or bed compensation correctly";
+pin in   float axis_z_table_override = 2     "default 2mm for probe under the table if not configured";
+
+pin in   bit   eoffsets_active;
+pin in   float eoffsets_scale;
+pin in   s32   eoffsets_counts;
+pin out  float axis_z_max_as_eoffset;
+
+
+
+//variable int   oneshot1 = 0;
+
+option fp yes;
+
+
+function _ ;
+license "GPL";
+author "ALKABAL 2022";
+
+;;
+
+FUNCTION(_) {
+
+
+    if (tool_number == 0 || tool_length == 0 || tool_length > 0 || inhibit){
+        axis_z_min_as_toollength = axis_z_min;
+        is_changed = 0;
+        is_override = 0;
+        is_inhibited = 1;
+    }
+    else if (!probe_in_progress){
+            axis_z_min_as_toollength = (tool_length + axis_z_table_clearence);
+            is_changed = 1;
+            is_override = 0;
+            is_inhibited = 0;
+    }
+    else if (!is_override){
+            axis_z_min_as_toollength = axis_z_min_as_toollength - axis_z_table_override;
+            is_changed = 0;
+            is_override = 1;
+            is_inhibited = 0;
+    }
+
+
+
+
+
+
+//    // remove 0.05 from tool length for protecting the table from colision.
+//    if (!probe_in_progress){
+//        if (tool_number == 0 || tool_length == 0 || tool_length > 0 || inhibit){
+//            axis_z_min_as_toollength = axis_z_min;
+//            is_changed = 0;
+//            is_override = 0;
+//        }
+//        else{
+//            axis_z_min_as_toollength = (tool_length + axis_z_table_clearence);
+//            is_changed = 1;
+//            is_override = 0;
+//       }
+//    }else if (!is_override){
+//        if (tool_number == 0 || tool_length == 0 || tool_length > 0 || inhibit){
+//            axis_z_min_as_toollength = axis_z_min;
+//            is_changed = 0;
+//            is_override = 0;
+//        }
+//        else{
+//            axis_z_min_as_toollength = axis_z_min_as_toollength - axis_z_table_override;
+//            is_changed = 0;
+//            is_override = 1;
+//       }
+//    }
+    //if (eoffsets_active){
+    //    axis_z_max_as_eoffset = axis_z_max - (eoffsets_counts*eoffsets_scale);
+    //}else{axis_z_max_as_eoffset = axis_z_max;}
+
+}
+
