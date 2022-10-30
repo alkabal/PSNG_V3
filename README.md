@@ -10,11 +10,11 @@
 
 - All Z start probing position are automatically calculated using axis length, block_heigth, table_offset, tool_offset, from machine table 0
 
-- You need to place manually the Touch device on the good Z height for all XY probing
+- You need to place manually the Touch device on the wanted Z height for all XY probing
 
-- The x_max y_max axis is changed automatically using your tool_setter XY position for take it in a safe area
+- The x_max y_max axis limit is changed automatically using your tool_setter XY position for take it in a safe area
 
-- The z_min axis is changed automatically using tool length from tooltable for prevent colision
+- The z_min axis is changed automatically using tool length from tooltable for prevent colision with machine table
 
 
 -TODO : when you une some function using self.ocode() the DRO is not updated
@@ -23,12 +23,7 @@
 
 -TODO : add 2 cycle for probing probe_rect_boss.ngc probe_rect_pocket.ngc like probe_basic
 
--TODO : updating stglue for suppress TS_POS and convert function like popen to full python or emccanon
-
 -TODO : prevent multiple click on the gui when something is already started self.work_in_progress do not work for now (something like that is done for compensation)
-
--TOTHINK : create a popup asking a tool number for tool length measurement but how to to create a new tool in the tooltable ?
-
 
 
 ## Exemple positioning your tool setter in a Y protected area
@@ -71,13 +66,13 @@ TS_POS_Y = 12
 
 ## Info
 
-Probe-Screen is currently being redesigned any help are welcome.
+Probe-Screen is currently being redesigned any help are really welcome.
 
 Added in this release :
 
 -Possibility to swap from 3D touch probe to Touchplate with a simple tickbox.
 
--Manual tool change with auto length use now built in python stglue remap.
+-Manual tool change with auto length do not use anymore python stglue remap.
 
 -You can bypass the auto length stuff with a simple tickbox.
 
@@ -138,7 +133,9 @@ Discussion on the forum linuxcnc.org: <https://forum.linuxcnc.org/49-basic-confi
 ## License
 
    This is a plugin for LinuxCNC
-   Copyright 2015 Serguei Glavatski <info@vers.by>
+   Copyright (c) 2015 Serguei Glavatski ( verser  from cnc-club.ru )
+   Copyright (c) 2020 Probe Screen NG Developers
+   Copyright (c) 2022 Alkabal
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
