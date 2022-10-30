@@ -1,4 +1,4 @@
-# Probe Screen for LinuxCNC 2.8/2.9
+# Probe Screen for LinuxCNC 2.8/   (2.9 do not work for now : TODO convert include for python3)
 
 ## Important things needed :
 
