@@ -1,0 +1,149 @@
+; manual toolchange with automatic tool length probe
+
+o<psng_manual_change> sub
+
+;(DEBUG,in change current_tool=#<current_tool> current_pocket=#<current_pocket>)
+;(DEBUG,selected_tool=#<selected_tool> selected_pocket=#<selected_pocket>)
+
+; we must execute this only in the milltask interpreter
+; or preview will break, so test for '#<_task>' which is 1 for
+; the milltask interpreter and 0 in the UI's
+o10 if [#<_task> EQ 0]
+        (DEBUG,Task ist Null)
+o10     return [999]
+o10 endif
+
+
+
+  o<backup_status_saving> call
+  M175  (REPLACE THE MACHINE Z LIMIT MIN for allow to probe the table correctly)
+  o<psng_load_var> call [1] [0]
+  G49  ; cancel tool offset for Z probe related to tool_setter
+
+    o40 if [#<_psng_toolchange_with_spindle_on> EQ 0]      ; used for surpass ini setting in case of wrong setting if you use manual
+        M5
+    o40 endif
+        M9                                                       ; Force to stop mist and flood
+
+o<psng_goto_changepos> call
+M160    ;o<clear-axis-info> call
+
+o100 if [#<_psng_ts_use_tool_measurement> EQ 0 OR #<_selected_tool> EQ 0]
+  o110 if [#<_psng_toolchange_popup_style> EQ 0]
+       o111 if [#<_selected_tool> EQ 0]
+            (MSG,PLEASE REMOVE TOOL)
+            (MSG,NEED TO UNPAUSE OR ABORT)
+            M0
+            M160    ;o<clear-axis-info> call
+       o111 elseif [#<_current_tool> EQ #<_selected_tool>]
+            (MSG,PLEASE CHECK IF THE MOUNTED TOOL IS THE GOOD ONE)
+            (MSG,NEED TO UNPAUSE OR ABORT)
+            M0
+            M160    ;o<clear-axis-info> call
+       o111 elseif [#<_selected_tool> EQ #<_psng_probe_number>]
+            (DEBUG,PLEASE MOUNT 3D PROBE #<_psng_probe_number>)
+            (MSG,NEED TO UNPAUSE OR ABORT)
+            M0
+            M160    ;o<clear-axis-info> call
+       o111 elseif [#<_selected_tool> GT 0]
+            (DEBUG,PLEASE CHANGE TO TOOL #<_selected_tool>)
+            (MSG,NEED TO UNPAUSE OR ABORT)
+            M0
+            M160    ;o<clear-axis-info> call
+       o111 else
+            (DEBUG,UNKNOW ERROR OCCURED FOR TOOLCHANGE WITHOUT AUTOLENGTH)
+            o<backup_status_restore> call
+           o111 return [-9]
+       o111 endif
+  o110 elseif [#<_current_tool> EQ #<_selected_tool> AND #<_current_tool> GT 0]
+       (MSG,SAME TOOL AS ACTUAL ASKED AND VALIDATED AUTOMATICALLY)
+       (MSG,NEED TO UNPAUSE OR ABORT)
+       M0
+       M160    ;o<clear-axis-info> call
+  o110 endif
+       M6         ; used here for make possible to cancel the toolchange here for M6T0 or M6TX without autolength : this line call the python code from PSNG
+       G43
+       #<_psng_from_tool_measurement> = 0
+       o<backup_status_restore> call [321]
+o100 return [3] ; indicate no tool measurement possible with tool 0 or no tool measurement configured
+
+o100 else
+
+     o110 if [#<_psng_ts_height> LE 0]
+         (MSG,TOOLSETTER HEIGHT NOT CONFIGURED)
+         (MSG,TOOLCHANGE CANCELED)
+         o<backup_status_restore> call
+         o110 return [-3]
+     o110 endif
+
+     o<psng_hook> call [1]                                   ; User macro like pre safe test or probe and setter management etc
+     o130 if [#<_psng_error> LT 0]
+          (DEBUG, PSNG hook indicated a failure: #<_psng_error>)
+          o<backup_status_restore> call
+         o130 return [-4]
+     o130 endif
+
+     o140 if [#<_psng_toolchange_popup_style> EQ 0]
+        o141 if [#<_current_tool> EQ #<_selected_tool>]
+             (MSG,SAME TOOL AS ACTUAL SO MEASUREMENT START AUTOMATICALLY)
+             (MSG,NEED TO UNPAUSE OR ABORT)
+             M0
+             M160    ;o<clear-axis-info> call
+        o141 elseif [#<_selected_tool> EQ #<_psng_probe_number>]
+             (DEBUG,PLEASE MOUNT 3D PROBE #<_psng_probe_number>)
+             (MSG,NEED TO UNPAUSE OR ABORT)
+             M0
+             M160    ;o<clear-axis-info> call
+        o141 elseif [#<_current_tool> NE #<_selected_tool>]
+             (DEBUG,PLEASE CHANGE TO TOOL #<_selected_tool>)
+             (MSG,NEED TO UNPAUSE OR ABORT)
+             M0
+             M160    ;o<clear-axis-info> call
+        o141 else
+            (DEBUG,UNKNOW ERROR OCCURED FOR TOOLCHANGE WITH AUTOLENGTH)
+            o<backup_status_restore> call
+            o141 return [-8]
+        o141 endif
+     o140 elseif [#<_current_tool> EQ #<_selected_tool> AND #<_current_tool> GT 0]
+          (MSG,SAME TOOL AS ACTUAL ASKED AND VALIDATED AUTOMATICALLY)
+          (MSG,NEED TO UNPAUSE OR ABORT)
+          M0                                                                 ; prevent starting move without any popup confirmation !!!!
+          M160    ;o<clear-axis-info> call
+     o140 endif
+o100 endif
+
+M6   ; used here for make possible to cancel the toolchange here for M6TX with autolength : this line call the python code from PSNG
+G43
+
+  o200 if [#<_psng_toolchange_with_diam_measurement> EQ 0]
+       o<psng_probe_tool_length> call
+  o200 else
+        ; after a M6 we need to reload var related to halui.tool.diameter
+        #<_psng_tool_diam_from_tooltable>  = #<_hal[halui.tool.diameter]>
+        #<_psng_movediam>                  = [[#<_psng_ts_pad_diameter> + #<_psng_tool_diam_from_tooltable>] + [2 * #<_psng_ts_clearance_xyz>]]
+        #<_psng_moveradius>                = [0.5 * #<_psng_movediam>]
+        #<_psng_probe_max_x>               = [[#<_psng_moveradius> + #<_psng_latch>] - [0.5 * #<_psng_ts_pad_diameter>]]
+        #<_psng_probe_max_y>               = #<_psng_probe_max_x>
+       (DEBUG,PSNG VAR RELOADED AFTER M6)
+       o201 if [#<_psng_ts_max_tool_dia> LE 0]
+         (MSG,TOOLSETTER HEIGHT NOT CONFIGURED)
+         (MSG,TOOLCHANGE CANCELED)
+         o<backup_status_restore> call
+         o201 return [-2]
+       o201 else
+            o<psng_probe_tool_diameter> call
+       o201 endif
+  o200 endif
+  o300 if [#<_psng_error> LT 0]
+       ;M61Q0
+       (DEBUG,PSNG manual_change indicate a failure: #<_psng_error>)
+       o<backup_status_restore> call
+       o300 return [-6] ; indicate probe contact failure to epilog
+  o300 endif
+
+  #<_psng_from_tool_measurement> = 0
+  o<backup_status_restore> call [321]   ; restore g20/21, g90/g91, feedrate cuter-comp and other using now global _backup_var
+
+; signal success return a value > 0:
+o<psng_manual_change> endsub [1]
+M2

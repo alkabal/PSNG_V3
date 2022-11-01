@@ -1,0 +1,31 @@
+; End users can copy this file to their macros folder and edit as necessary.
+
+; This is useful to allow machine specific logic, such as checking HAL input
+; pins to ensure a probe or toolsetter are connected.
+
+; You should NOT edit this file directly, instead, you should copy this file
+; from the psng/macros folder, to the macros folder and edit the copy.
+
+; Hooked Macro ID -> Name Table
+;
+; 1 = psng_manual_change
+; 2 = psng_probe_tool_diameter
+; 3 = psng_probe_table_offset
+; 4 = psng_probe_setter_height
+; 5 = psng_probe_block_height
+; 6 = psng_probe_tool_length
+; 7 = psng_start_xyplusminus
+
+o<psng_hook> sub
+; The #1 variable will be set to the name of the macro being hooked. For
+; example, when o<psng_xminus> is called, #1 will be set to the
+; value "7".
+#<hooked_macro> = #1
+
+M160    ;o<clear-axis-info> call
+o10 if [#<hooked_macro> GT 7]
+    (ABORT,HOOK UNRECOGNIZED : #<hooked_macro>)
+o10 endif
+
+o<psng_hook> endsub
+M2
