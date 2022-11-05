@@ -1,0 +1,29 @@
+o<psng_goto_toolsensor> sub
+
+M160    ;o<clear-axis-info> call
+
+M170 P#<_hal[ini.0.max_limit]>   ; allow to extend the X axis length before goto tool sensor
+M171 P#<_hal[ini.1.max_limit]>   ; allow to extend the Y axis length before goto tool sensor
+#<_restore_from_tool_sensor> = 1
+
+o10 if [#<_hal[motion.probe-input]> EQ 1 AND #<_psng_from_tool_measurement> EQ 1]
+     (ABORT,TOOLSETTER Z ALREADY TRIGGERED BEFORE GOTO TOOLSENSOR)
+     #<_psng_error> = -1
+o10 return
+o10 elseif [#<_hal[motion.probe-input]> EQ 1 AND #<_psng_from_tool_measurement> EQ 0]
+     (ABORT,3D PROBE OR SETTER Z ALREADY TRIGGERED BEFORE GOTO TOOLSENSOR)
+o10 endif
+
+;first go up
+G90      ; force G90 for G53 G0 movement
+o20 if [#<_psng_toolchange_quill_up> EQ 1]
+    G53 G0 Z#<_psng_toolchange_home_pos_z>                             ; Respecting the traditional linuxcnc behavior
+o20 else
+    G53 G0 Z#<_psng_toolchange_z_travel_position>
+o20 endif
+
+G53 G0 X[#<_psng_ts_pos_x>] Y[#<_psng_ts_pos_y>]
+G53 G0 Z-[#<_psng_ts_start_z_from_mcs>]
+
+o<psng_goto_toolsensor> endsub
+M2
