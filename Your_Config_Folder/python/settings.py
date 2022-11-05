@@ -87,13 +87,13 @@ class ProbeScreenSettings(ProbeScreenBase):
         #self.spbtn_probe_max_xy.set_value(self.prefs.getpref("probe_max_xy", tup[6], float))
         #self.spbtn_edge_length.set_value(self.prefs.getpref("edge_length", tup[7], float))
         # load value regarding to the pref saved
-        self.spbtn_vel_for_search.set_value(self.prefs.getpref("vel_for_search", False, float))
-        self.spbtn_vel_for_probe.set_value(self.prefs.getpref("vel_for_probe", False, float))
-        self.spbtn_vel_for_travel.set_value(self.prefs.getpref("vel_for_travel", False, float))
-        self.spbtn_latch.set_value(self.prefs.getpref("latch", False, float))
-        self.spbtn_latch_probed.set_value(self.prefs.getpref("latch_probed", False, float))
-        self.spbtn_probe_max_xy.set_value(self.prefs.getpref("probe_max_xy", False, float))
-        self.spbtn_edge_length.set_value(self.prefs.getpref("edge_length", False, float))
+        self.spbtn_vel_for_search.set_value(self.prefs.getpref("psng_vel_for_search", False, float))
+        self.spbtn_vel_for_probe.set_value(self.prefs.getpref("psng_vel_for_probe", False, float))
+        self.spbtn_vel_for_travel.set_value(self.prefs.getpref("psng_vel_for_travel", False, float))
+        self.spbtn_probe_max_xy.set_value(self.prefs.getpref("psng_probe_max_xy", False, float))
+        self.spbtn_latch_probed.set_value(self.prefs.getpref("psng_latch_probed", False, float))
+        self.spbtn_latch.set_value(self.prefs.getpref("psng_latch", False, float))
+        self.spbtn_edge_length.set_value(self.prefs.getpref("psng_edge_length", False, float))
 
         self.halcomp["psng_vel_for_search"] = self.spbtn_vel_for_search.get_value()
         self.halcomp["psng_vel_for_probe"] = self.spbtn_vel_for_probe.get_value()
@@ -171,46 +171,46 @@ class ProbeScreenSettings(ProbeScreenBase):
     #
     # --------------------------
 
-    def on_spbtn_vel_for_travel_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("vel_for_travel", gtkspinbutton)
+    def on_spbtn_vel_for_travel_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("psng_vel_for_travel", gtkspinbutton, data)
 
     def on_spbtn_vel_for_travel_value_changed(self, gtkspinbutton):
-        self.on_settings_spbtn_value_changed("vel_for_travel", gtkspinbutton)
+        self.on_common_spbtn_value_changed("psng_vel_for_travel", gtkspinbutton)
 
-    def on_spbtn_vel_for_search_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("vel_for_search", gtkspinbutton)
+    def on_spbtn_vel_for_search_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("psng_vel_for_search", gtkspinbutton, data)
 
     def on_spbtn_vel_for_search_value_changed(self, gtkspinbutton):
-        self.on_settings_spbtn_value_changed("vel_for_search", gtkspinbutton)
+        self.on_common_spbtn_value_changed("psng_vel_for_search", gtkspinbutton)
 
-    def on_spbtn_vel_for_probe_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("vel_for_probe", gtkspinbutton)
+    def on_spbtn_vel_for_probe_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("psng_vel_for_probe", gtkspinbutton, data)
 
     def on_spbtn_vel_for_probe_value_changed(self, gtkspinbutton):
-        self.on_settings_spbtn_value_changed("vel_for_probe", gtkspinbutton)
+        self.on_common_spbtn_value_changed("psng_vel_for_probe", gtkspinbutton)
 
-    def on_spbtn_probe_max_xy_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("probe_max_xy", gtkspinbutton)
+    def on_spbtn_probe_max_xy_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("psng_probe_max_xy", gtkspinbutton, data)
 
     def on_spbtn_probe_max_xy_value_changed(self, gtkspinbutton):
-        self.on_settings_spbtn_value_changed("probe_max_xy", gtkspinbutton)
+        self.on_common_spbtn_value_changed("psng_probe_max_xy", gtkspinbutton)
 
-    def on_spbtn_latch_probed_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("latch_probed", gtkspinbutton)
+    def on_spbtn_latch_probed_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("psng_latch_probed", gtkspinbutton, data)
 
     def on_spbtn_latch_probed_value_changed(self, gtkspinbutton):
-        self.on_settings_spbtn_value_changed("latch_probed", gtkspinbutton)
+        self.on_common_spbtn_value_changed("psng_latch_probed", gtkspinbutton)
 
-    def on_spbtn_latch_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("latch", gtkspinbutton)
+    def on_spbtn_latch_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("psng_latch", gtkspinbutton, data)
 
     def on_spbtn_latch_value_changed(self, gtkspinbutton):
-        self.on_settings_spbtn_value_changed("latch", gtkspinbutton)
+        self.on_common_spbtn_value_changed("psng_latch", gtkspinbutton)
 
-    def on_spbtn_edge_length_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("edge_length", gtkspinbutton)
+    def on_spbtn_edge_length_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("psng_edge_length", gtkspinbutton, data)
 
     def on_spbtn_edge_length_value_changed(self, gtkspinbutton):
-        self.on_settings_spbtn_value_changed("edge_length", gtkspinbutton)
+        self.on_common_spbtn_value_changed("psng_edge_length", gtkspinbutton)
 
 

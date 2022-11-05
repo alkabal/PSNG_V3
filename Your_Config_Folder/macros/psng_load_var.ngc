@@ -1,0 +1,230 @@
+o<psng_load_var> sub
+
+M160    ;o<clear-axis-info> call
+
+G17        (force G17 plane for use with all probe and tool measurement mode)
+
+
+#<_psng_xm_res>                            = 0
+#<_psng_xp_res>                            = 0
+#<_psng_xc_res>                            = 0
+#<_psng_ym_res>                            = 0
+#<_psng_yp_res>                            = 0
+#<_psng_yc_res>                            = 0
+#<_psng_saved_x>                           = 0
+#<_psng_saved_y>                           = 0
+#<_psng_error>                             = 0
+
+#<_psng_touch_result_z>                    = 0
+#<_psng_touch_calculated_z>                = 0
+
+
+
+#<_psng_from_tool_measurement>             = #1        ; call [1] = call by all related move for TOOL-SETTER  [0] = for TOUCH-DEVICE
+#<_psng_extend_Z>                          = #2        ; call [_] [1] = call by all related move to table used for extend z axis
+#<_psng_from_tool_diameter>                = 0         ; only here for create the var
+
+#<_psng_initial_x> = #<_X>
+#<_psng_initial_y> = #<_Y>
+#<_psng_initial_z> = #<_Z>
+
+#<_psng_x_axis_length_abs>                 = abs[#<_hal[ini.x.min_limit]> - #<_hal[ini.x.max_limit]>]
+#<_psng_y_axis_length_abs>                 = abs[#<_hal[ini.y.min_limit]> - #<_hal[ini.y.max_limit]>]
+#<_psng_z_axis_length_abs>                 = abs[#<_hal[ini.z.min_limit]> - #<_hal[ini.z.max_limit]>]
+#<_psng_z_joint_length_abs>                = abs[#<_ini[JOINT_2]MIN_LIMIT> - #<_ini[JOINT_2]MAX_LIMIT>]
+
+#<_psng_table_clearence>                   = #<_hal[probe.psng_table_clearence]>
+#<_psng_table_override>                    = #<_hal[probe.psng_table_override]>
+
+#<_psng_probe_number>                      = #<_hal[probe.psng_probe_number]>
+
+#<_psng_popup_style>                       = #<_hal[probe.chk_use_popup_style_psng]>
+
+#<_psng_tool_length_from_tooltable>        = #<_hal[motion.tooloffset.z]>
+#<_psng_tool_diam_from_tooltable>          = #<_hal[halui.tool.diameter]>
+#<_psng_edge_length>                       = #<_hal[probe.psng_edge_length]>
+
+#<_psng_table_offset>                      = #<_hal[probe.offs_table_offset]>
+#<_psng_block_height>                      = #<_hal[probe.offs_block_height]>
+
+#<_psng_tp_z_full_thickness>               = #<_hal[probe.psng_tp_z_full_thickness]>
+#<_psng_tp_z_thickness>                    = #<_hal[probe.psng_tp_z_thickness]>
+#<_psng_tp_xy_thickness>                   = #<_hal[probe.psng_tp_xy_thickness]>
+
+#<_psng_use_z_eoffset_compensation>        = #<_hal[probe.chk_use_z_eoffset_compensation]>
+#<_psng_use_touch_plate>                   = #<_hal[probe.chk_use_touch_plate]>
+
+#<_psng_ts_pos_x>                          = #<_hal[probe.ts_pos_x]>
+#<_psng_ts_pos_y>                          = #<_hal[probe.ts_pos_y]>
+#<_psng_ts_height>                         = #<_hal[probe.ts_height]>
+#<_psng_ts_clearance_xyz>                  = #<_hal[probe.ts_clearance_xyz]>
+#<_psng_ts_pad_diameter>                   = #<_hal[probe.ts_pad_diameter]>
+#<_psng_ts_pad_is_hole>                    = #<_hal[probe.ts_pad_is_hole]>
+#<_psng_ts_pad_diameter_offset>            = #<_hal[probe.ts_pad_diameter_offset]>
+#<_psng_ts_pad_thickness>                  = #<_hal[probe.ts_pad_thickness]>
+#<_psng_ts_pad_from_body>                  = #<_hal[probe.ts_pad_from_body]>
+#<_psng_ts_tool_rot_speed>                 = #<_hal[probe.ts_tool_rot_speed]>
+#<_psng_ts_use_rot_spindle_reverse>        = #<_hal[probe.chk_use_rot_spindle_reverse]>
+#<_psng_ts_use_tool_measurement>           = #<_hal[probe.chk_use_tool_measurement]>
+#<_psng_ts_max_tool_lgt>                   = #<_hal[probe.ts_max_tool_lgt]>
+#<_psng_ts_max_tool_dia>                   = #<_hal[probe.ts_max_tool_dia]>
+#<_psng_ts_tool_is_spherical>              = #<_hal[probe.ts_popup_tool_is_spherical]>
+
+#<_psng_toolchange_popup_style>            = #<_hal[probe.chk_use_popup_style_toolchange]>
+#<_psng_toolchange_go_back_last_position>  = #<_hal[probe.toolchange_go_back_last_position]>
+#<_psng_toolchange_z_travel_position>      = #<_hal[probe.toolchange_z_travel_position]>
+#<_psng_toolchange_with_diam_measurement>  = #<_hal[probe.toolchange_with_diam_measurement]>
+#<_psng_toolchange_with_spindle_on>        = #<_hal[probe.toolchange_with_spindle_on]>
+#<_psng_toolchange_quill_up>               = #<_hal[probe.toolchange_quill_up]>
+#<_psng_toolchange_pos_x>                  = #<_hal[probe.toolchange_pos_x]>
+#<_psng_toolchange_pos_y>                  = #<_hal[probe.toolchange_pos_y]>
+#<_psng_toolchange_pos_z>                  = #<_hal[probe.toolchange_pos_z]>
+#<_psng_toolchange_home_pos_z>             = #<_hal[ini.2.home]>
+
+#<_psng_compensation_xcount>               = #<_hal[probe.compensat_xcount]>
+#<_psng_compensation_ycount>               = #<_hal[probe.compensat_ycount]>
+#<_psng_compensation_xlength>              = #<_hal[probe.compensat_xlength]>
+#<_psng_compensation_ylength>              = #<_hal[probe.compensat_ylength]>
+
+
+
+o200 if [#<_psng_from_tool_measurement> EQ 0] ; is touch device related
+
+   #<_psng_latch>                     = #<_hal[probe.psng_latch]>
+   #<_psng_latch_probed>              = #<_hal[probe.psng_latch_probed]>
+   #<_psng_vel_for_travel>            = #<_hal[probe.psng_vel_for_travel]>
+   #<_psng_vel_for_search>            = #<_hal[probe.psng_vel_for_search]>
+   #<_psng_vel_for_probe>             = #<_hal[probe.psng_vel_for_probe]>
+
+   #<_psng_probe_max_x>               = #<_hal[probe.psng_probe_max_xy]>
+   #<_psng_probe_max_y>               = #<_hal[probe.psng_probe_max_xy]>
+
+   ;#<_psng_z_clearence_auto>          = #<_hal[probe.z_clearence_auto]>
+
+   o210 if [#<_psng_use_touch_plate> EQ 1]
+        #<_psng_z_clearence_auto>     = [#<_psng_latch> + #<_psng_tp_z_full_thickness>]
+   o210 else
+        #<_psng_z_clearence_auto>     = [#<_psng_latch> + #<_psng_tool_diam_from_tooltable>]
+   o210 endif
+
+   ; is bed or block or table related
+   o220 if [#<_psng_extend_Z> EQ 1]
+       M175  (REPLACE THE MACHINE Z LIMIT MIN for allow to probe the table correctly)
+       #<_psng_probe_max_z>           = [#<_Z> + #<_psng_table_override> - #<_psng_table_clearence>]
+   o220 else
+       o221 if [#<_psng_use_touch_plate> EQ 1]
+            #<_psng_probe_max_z>           = [#<_Z> - #<_psng_table_clearence> - #<_psng_tp_z_full_thickness>]
+       o221 else
+            #<_psng_probe_max_z>           = [#<_Z> - #<_psng_table_clearence>]
+       o221 endif
+   o220 endif
+
+
+   o230 if [#<_psng_tool_length_from_tooltable> EQ 0]
+        (ABORT,TOOL_LENGTH IS UNKNOW FROM TOOLTABLE!!!)
+   o230 elseif [#<_psng_tool_diam_from_tooltable>LE 0]
+        (ABORT,PROBE/TOOL DIAMETER MISSING FROM TOOLTABLE)
+   o230 elseif [#<_psng_edge_length> LE 0]
+        (ABORT,EDGE_LENGTH_FROM GUI NOT CONFIGURED)
+   o230 elseif [#<_psng_use_touch_plate> EQ 0 and #<_current_tool> NE #<_psng_probe_number>]
+        (ABORT,PROBING IS NOT ALLOWED WITHOUT TOUCHPLATE OR 3D PROBE AS TOOL #<_psng_probe_number>)
+   o230 elseif [#<_psng_use_touch_plate> EQ 1]
+        o231 if [#<_psng_tp_z_thickness> LE 0]
+             (ABORT,TP_Z_THICKNESS NOT CONFIGURED)
+        o231 elseif [#<_psng_tp_z_full_thickness> LE 0]
+             (ABORT,TP_Z_FULL_THICKNESS NOT CONFIGURED)
+        o231 elseif [#<_psng_tp_xy_thickness> LE 0]
+             (ABORT,TP_XY_THICKNESS NOT CONFIGURED)
+        o231 elseif [#<_psng_tp_z_full_thickness> LT #<_psng_tp_z_thickness>]
+             (ABORT,TP_Z_FULL_THICKNESS IS LESS THAN TP_Z_THICKNESS)
+        o231 endif
+   o230 endif
+
+   o260 if [abs[#<_Z> - #<_psng_z_clearence_auto>] GT #<_psng_z_axis_length_abs> or abs[#<_Z> + #<_psng_z_clearence_auto>] GT #<_psng_z_axis_length_abs>]
+        (ABORT,PROBE IS TOO CLOSE FROM Z MACHINE LIMIT FOR ALLOWING PROBING : #<_psng_probe_max_z> OR RETRACT : #<_psng_z_clearence_auto>)
+   o260 endif
+
+
+o200 elseif [#<_psng_from_tool_measurement> EQ 1]         ; is tool setter related
+
+   #<_psng_latch>                     = #<_hal[probe.ts_latch]>               ; some var need to share the same name for touch device and touch probe for sharing macro
+   #<_psng_latch_probed>              = #<_hal[probe.ts_latch_probed]>
+   #<_psng_vel_for_travel>            = #<_hal[probe.ts_vel_for_travel]>
+   #<_psng_vel_for_search>            = #<_hal[probe.ts_vel_for_search]>
+   #<_psng_vel_for_probe>             = #<_hal[probe.ts_vel_for_probe]>
+
+   #<_psng_movediam>                  = [[#<_psng_ts_pad_diameter> + #<_psng_tool_diam_from_tooltable>] + [2 * #<_psng_ts_clearance_xyz>]]
+   #<_psng_moveradius>                = [0.5 * #<_psng_movediam>]
+
+   #<_psng_probe_max_z>               = [#<_psng_ts_max_tool_lgt> + #<_psng_ts_clearance_xyz>]
+   #<_psng_probe_max_x>               = [[#<_psng_moveradius> + #<_psng_latch>] - [0.5 * #<_psng_ts_pad_diameter>]]
+   #<_psng_probe_max_y>               = #<_psng_probe_max_x>
+
+
+   #<_psng_ts_start_z_from_mcs>       = [#<_psng_z_joint_length_abs>  - [#<_psng_ts_height> + #<_psng_probe_max_z>]]
+   #<_psng_ts_z_all_offset_calc>      = [#<_psng_ts_start_z_from_mcs> + #<_psng_probe_max_z>]
+
+
+   o330 if [#<_psng_ts_z_all_offset_calc> GT #<_psng_z_joint_length_abs>]
+        M160
+        (DEBUG,!!! Z START POSITION DO NOT MATCH THE Z AXIS LENGTH #<_psng_z_joint_length_abs>)
+        (DEBUG,!!! VS START FROM HOME #<_psng_ts_start_z_from_mcs> + TOOL_SETTER #<_psng_ts_height> + PROBE_MAX_Z #<_psng_probe_max_z> !!!)
+        (DEBUG,!!! Z ALL OFFSET CALC RESULT = #<_psng_ts_z_all_offset_calc> !!!)
+        M0
+        M160    ;o<clear-axis-info> call
+   o330 endif
+
+   o340 if [#<_psng_ts_max_tool_lgt> LE 0]
+       (ABORT,MAX_TOOL_LGT NOT OR WRONGLY CONFIGURED)
+   o340 elseif [#<_psng_ts_tool_rot_speed> LE 0 and #<_psng_ts_use_rot_spindle_reverse> EQ 1]
+       (ABORT,TOOL_ROT_SPEED NOT OR WRONGLY CONFIGURED)
+   o340 elseif [#<_psng_ts_pad_diameter> LE 0]
+       (ABORT,PAD_DIAMETER NOT OR WRONGLY CONFIGURED)
+   o340 elseif [#<_psng_ts_height> LE 0]
+       (ABORT,TS_HEIGHT NOT OR WRONGLY CONFIGURED)
+   o340 elseif [#<_psng_ts_clearance_xyz> LE 0]
+       (ABORT,CLEARANCE_XYZ NOT OR WRONGLY CONFIGURED)
+   o340 elseif [#<_psng_ts_clearance_xyz> LE #<_psng_latch>]
+       (ABORT,CLEARANCE_XYZ IS LESS THAN PROBE LATCH)
+   o340 elseif [#<_psng_ts_pad_thickness> LT 0]
+       (ABORT,PAD_THICKNESS NOT OR WRONGLY CONFIGURED)
+   o340 elseif [#<_psng_ts_pad_from_body> LT 0]
+       (ABORT,PAD_FROM_BODY NOT OR WRONGLY CONFIGURED)
+   o340 elseif [#<_psng_tool_diam_from_tooltable> LE 0 AND #<_psng_from_tool_measurement> EQ 1]
+       (DEBUG,TOOL_DIAMETER MISSING FROM POPUP)
+   o340 endif
+
+o200 else
+
+   M160    ;o<clear-axis-info> call
+  (ABORT,!!! CALL ARGS WRONG FOR o<psng_load_var> #<_psng_from_tool_measurement> !!!)
+
+o200 endif
+
+
+o600 if [#<_psng_vel_for_travel> LE 0]
+    (ABORT,PROBE TRAVEL VELOCITY NOT CONFIGURED)
+o600 elseif [#<_psng_vel_for_search> LE 0]
+    (ABORT,PROBE SEARCH VELOCITY NOT CONFIGURED)
+o600 elseif [#<_psng_vel_for_search> GE #<_psng_vel_for_travel>]
+    (ABORT,PROBE SEARCH VELOCITY iS MORE OR EQUAL TO PROBE TRAVEL VELOCITY)
+o600 elseif [#<_psng_vel_for_probe> LE 0]
+    (ABORT,PROBE VELOCITY NOT CONFIGURED)
+o600 elseif [#<_psng_vel_for_probe> GE #<_psng_vel_for_search>]
+    (ABORT,PROBE VELOCITY iS MORE OR EQUAL TO PROBE SEARCH VELOCITY)
+o600 elseif [#<_psng_probe_max_z> EQ 0]
+    (ABORT,PROBE MAX Z WRONGLY CALCULATED)
+o600 elseif [#<_psng_probe_max_x> LE 0]
+    (ABORT,PROBE MAX X NOT CONFIGURED)
+o600 elseif [#<_psng_probe_max_y> LE 0]
+    (ABORT,PROBE MAX Y NOT CONFIGURED)
+o600 elseif [#<_psng_latch_probed> LT 0]
+    (ABORT,PROBE MAX LATCH NOT CONFIGURED)
+o600 elseif [#<_psng_latch>  LE 0]
+    (ABORT,PROBE LATCH NOT CONFIGURED)
+o600 elseif [#<_psng_probe_number> LE 0]
+    (ABORT,PROBE_NUMBER NOT CONFIGURED)
+o600 endif
+
+o<psng_load_var> endsub
+M2

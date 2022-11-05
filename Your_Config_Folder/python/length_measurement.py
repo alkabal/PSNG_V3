@@ -136,12 +136,12 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
 
     # --------------------------
     #
-    # Spinbox for block height with autosave value inside machine pref file
+    # Spinbox with autosave value inside machine pref file
     #
     # --------------------------
 
-    def on_spbtn_compensat_z_offs_out_of_area_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("compensat_z_offs_out_of_area", gtkspinbutton)
+    def on_spbtn_compensat_z_offs_out_of_area_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("compensat_z_offs_out_of_area", gtkspinbutton, data)
 
     def on_spbtn_compensat_z_offs_out_of_area_value_changed(self, gtkspinbutton):
         self.on_common_spbtn_value_changed("compensat_z_offs_out_of_area", gtkspinbutton)
@@ -149,8 +149,8 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         self.prefs.putpref("compensat_z_offs_out_of_area", self.halcomp["compensat_z_offs_out_of_area"], float)
 
 
-    def on_spbtn_probe_block_height_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("offs_block_height", gtkspinbutton)
+    def on_spbtn_probe_block_height_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("offs_block_height", gtkspinbutton, data)
         if self.halcomp["offs_block_height_active"] == 0:
             if self.halcomp["offs_block_height"] == 0 and self.spbtn_probe_block_height.get_value() == 0:
                 self.hal_led_use_block_height.hal_pin.set(0)
@@ -179,8 +179,8 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.hal_led_use_block_height.set_property("on_color","red")
             self.hal_led_use_block_height.hal_pin.set(1)
 
-    def on_spbtn_probe_table_offset_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("offs_table_offset", gtkspinbutton)
+    def on_spbtn_probe_table_offset_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("offs_table_offset", gtkspinbutton, data)
         if self.halcomp["offs_table_offset_active"] == 0:
             if self.halcomp["offs_table_offset"] == 0 and self.spbtn_probe_table_offset.get_value() == 0:
                 self.hal_led_use_table_offset.hal_pin.set(0)
@@ -212,12 +212,13 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
 
     # --------------------------
     #
-    # probe to block_height and table_offset
+    # function eoffset_compensation block_height and table_offset
     #
     # --------------------------
 
     # Button pressed compensation probe to table for measuring it and use for calculate tool setter height and can set G10_L20 P0 Z0 if you tick auto zero
-    @ProbeScreenBase.ensure_errors_dismissed
+    @ProbeScreenBase.ensure_errors_dismissed    
+    @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_probe_z_eoffset_compensation_released(self, gtkbutton):
 
         # lock the use if compensation is activated
@@ -457,7 +458,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -493,8 +494,8 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         if self.move_probe_z_up() == -1:
             return
 
-        # go to the new center of X
-        s = "G1 X%f" % (xcres)
+        # move X to new center
+        s = "G90 G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
 
@@ -569,7 +570,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -605,8 +606,8 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         if self.move_probe_z_up() == -1:
             return
 
-        # go to the new center of Y
-        s = "G1 Y%f" % (ycres)
+        # move Y to new center
+        s = "G90 G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
 
@@ -663,7 +664,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         xcres = 0.5 * (xmres + xpres)
 
         # move X to new center
-        s = "G1 X%f" % (xcres)
+        s = "G90 G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
 
@@ -724,7 +725,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         ycres = 0.5 * (ymres + ypres)
 
         # move to calculated point
-        s = "G1 Y%f" % (ycres)
+        s = "G90 G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
 
