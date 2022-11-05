@@ -22,7 +22,7 @@ o2 if [EXISTS [#<_backup_metric>]]
    M5
    M9
    ;for a complete restore according to what is configured in my ini
-   G64 P0.001 (Path Blending)
+   G64 P0.005 (Path Blending)
    G80 (cancel canned cycle)
    M48 (set feed and speed overrides)
    M53 (feed Stop Control)
@@ -228,7 +228,7 @@ o2 else
 
    G40 (cutter compensation off)
    G54 (origin offsets are set to the default)
-   G64 P0.001 (Path Blending)
+   G64 P0.005 (Path Blending)
    G80 (cancel canned cycle)
    G90 (absolute)
    G90.1 (Arc Distance mode)

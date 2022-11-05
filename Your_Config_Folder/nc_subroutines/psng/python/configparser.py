@@ -19,7 +19,11 @@
 
 import os
 
+# GTK2
 from ConfigParser import RawConfigParser
+
+# test pour GTK3
+#from configparser import RawConfigParser
 
 
 class ProbeScreenConfigParser(RawConfigParser):
@@ -57,3 +61,4 @@ class ProbeScreenConfigParser(RawConfigParser):
     def putpref(self, option, value, type=bool):
         self.set("DEFAULT", option, type(value))
         self.write(open(self.fn, "w"))
+        ######## TODO NEED TO FIND A WAY FOR GOOD CLOSING actually only the last section changed is correctly saved

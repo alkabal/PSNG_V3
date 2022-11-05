@@ -25,14 +25,17 @@ from datetime import datetime
 from functools import wraps
 from subprocess import PIPE, Popen
 import hal
-
-import gtk
 import linuxcnc
+
+# GTK2
+import gtk  # base for pygtk widgets and constants
 import pango as Pango
 
+
+# test pour GTK3
 #import gi
 #gi.require_version("Gtk", "3.0")
-#from gi.repository import Gtk, Pangoo
+#from gi.repository import Gtk as gtk, Pango
 
 from .configparser import ProbeScreenConfigParser
 from .util import restore_task_mode
@@ -111,7 +114,12 @@ class ProbeScreenBase(object):
             if "G1 " in l:
                 l += " F%f" % (self.halcomp["psng_vel_for_travel"])
             self.command.mdi(l)
-            self.command.wait_complete()
+            rv = self.command.wait_complete(50)
+            if rv == -1:
+                message = _("command timed out")
+                secondary = _("please check self.command.wait_complete timeout in psng base.py")
+                self.warning_dialog(message, secondary=secondary)
+                return -1
             if self.error_poll() == -1:
                 return -1
         return 0
@@ -169,7 +177,6 @@ class ProbeScreenBase(object):
 
             # Something need to be done for add to gmoccapy a hal pin gmoccapy.abort
         else:
-            #message   = _("Unable to poll %s GUI for errors" % (self.display))
             self.error_dialog("UNABLE TO POLL %s GUI FOR ERRORS") % (self.display)
             return -1
 
@@ -854,11 +861,13 @@ class ProbeScreenBase(object):
     #  Generic UI Methods
     #
     # --------------------------
-    def on_common_spbtn_key_press_event(self, pin_name, gtkspinbutton):
+    def on_common_spbtn_key_press_event(self, pin_name, gtkspinbutton, data=None):
         keyname = gtk.gdk.keyval_name(data.keyval)
         if keyname == "Return":
             # Drop the Italics
             gtkspinbutton.modify_font(Pango.FontDescription("normal"))
+            # Update the preferences
+            #self.prefs.putpref(pin_name, gtkspinbutton.get_value())
         elif keyname == "Escape":
             # Restore the original value
             gtkspinbutton.set_value(self.halcomp[pin_name])
@@ -868,10 +877,17 @@ class ProbeScreenBase(object):
         else:
             # Set to Italics
             gtkspinbutton.modify_font(Pango.FontDescription("italic"))
+            
 
     def on_common_spbtn_value_changed(self, pin_name, gtkspinbutton, _type=float):
         # Drop the Italics
         gtkspinbutton.modify_font(Pango.FontDescription("normal"))
+
+        ## Update the pin
+        #self.halcomp[pin_name] = gtkspinbutton.get_value()
+        #
+        ## Update the preferences
+        #self.prefs.putpref(pin_name, gtkspinbutton.get_value(), _type)
 
     def on_settings_spbtn_value_changed(self, pin_name, gtkspinbutton, _type=float):
         # Drop the Italics

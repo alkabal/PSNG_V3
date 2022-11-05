@@ -19,13 +19,17 @@
 
 from .base import ProbeScreenBase
 
-import gtk  # base for pygtk widgets and constants
 import hal  # base hal class to react to hal signals
 import linuxcnc
 
+
+# GTK2
+import gtk  # base for pygtk widgets and constants
+
+# test pour GTK3
 #import gi
 #gi.require_version("Gtk", "3.0")
-#from gi.repository import Gtk
+#from gi.repository import Gtk as gtk
 
 class ProbeScreenJog(ProbeScreenBase):
     # --------------------------
@@ -87,7 +91,8 @@ class ProbeScreenJog(ProbeScreenBase):
         self.steps.pack_start(rbt0, True, True, 0)
         rbt0.set_property("draw_indicator", False)
         rbt0.show()
-        rbt0.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00"))
+        #rbt0.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00")) # GTK2
+        #rbt0.modify_bg(gtk::STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00")) # test pour GTK3
         rbt0.__name__ = "rbt0"
         self.incr_rbt_list.append(rbt0)
         # the rest of the buttons are now added to the group
@@ -99,7 +104,8 @@ class ProbeScreenJog(ProbeScreenBase):
             self.steps.pack_start(rbt, True, True, 0)
             rbt.set_property("draw_indicator", False)
             rbt.show()
-            rbt.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00"))
+            #rbt.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00")) # GTK2
+            #rbt.modify_bg(gtk::STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00")) # test pour GTK3
             rbt.__name__ = "rbt%d" % (item)
             self.incr_rbt_list.append(rbt)
         self.active_increment = "rbt0"
@@ -155,7 +161,6 @@ class ProbeScreenJog(ProbeScreenBase):
 
         axisletter = widget.get_label()[0]
         if not axisletter.lower() in "xyzabcuvw":
-            #message   = _("unknown axis %s" % (axisletter))
             self.warning_dialog("unknown axis %s") % (axisletter)
             return
 
@@ -194,7 +199,6 @@ class ProbeScreenJog(ProbeScreenBase):
     def on_btn_jog_released(self, widget):
         axisletter = widget.get_label()[0]
         if not axisletter.lower() in "xyzabcuvw":
-            #message   = _("unknown axis %s" % (axisletter))
             self.warning_dialog("unknown axis %s") % (axisletter)
             return
 
