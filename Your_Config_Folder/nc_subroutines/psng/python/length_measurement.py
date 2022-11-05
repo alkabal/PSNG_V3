@@ -136,12 +136,12 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
 
     # --------------------------
     #
-    # Spinbox for block height with autosave value inside machine pref file
+    # Spinbox with autosave value inside machine pref file
     #
     # --------------------------
 
-    def on_spbtn_compensat_z_offs_out_of_area_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("compensat_z_offs_out_of_area", gtkspinbutton)
+    def on_spbtn_compensat_z_offs_out_of_area_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("compensat_z_offs_out_of_area", gtkspinbutton, data)
 
     def on_spbtn_compensat_z_offs_out_of_area_value_changed(self, gtkspinbutton):
         self.on_common_spbtn_value_changed("compensat_z_offs_out_of_area", gtkspinbutton)
@@ -149,8 +149,8 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         self.prefs.putpref("compensat_z_offs_out_of_area", self.halcomp["compensat_z_offs_out_of_area"], float)
 
 
-    def on_spbtn_probe_block_height_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("offs_block_height", gtkspinbutton)
+    def on_spbtn_probe_block_height_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("offs_block_height", gtkspinbutton, data)
         if self.halcomp["offs_block_height_active"] == 0:
             if self.halcomp["offs_block_height"] == 0 and self.spbtn_probe_block_height.get_value() == 0:
                 self.hal_led_use_block_height.hal_pin.set(0)
@@ -179,8 +179,8 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.hal_led_use_block_height.set_property("on_color","red")
             self.hal_led_use_block_height.hal_pin.set(1)
 
-    def on_spbtn_probe_table_offset_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("offs_table_offset", gtkspinbutton)
+    def on_spbtn_probe_table_offset_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("offs_table_offset", gtkspinbutton, data)
         if self.halcomp["offs_table_offset_active"] == 0:
             if self.halcomp["offs_table_offset"] == 0 and self.spbtn_probe_table_offset.get_value() == 0:
                 self.hal_led_use_table_offset.hal_pin.set(0)
@@ -212,12 +212,13 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
 
     # --------------------------
     #
-    # probe to block_height and table_offset
+    # function eoffset_compensation block_height and table_offset
     #
     # --------------------------
 
     # Button pressed compensation probe to table for measuring it and use for calculate tool setter height and can set G10_L20 P0 Z0 if you tick auto zero
-    @ProbeScreenBase.ensure_errors_dismissed
+    @ProbeScreenBase.ensure_errors_dismissed    
+    @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_probe_z_eoffset_compensation_released(self, gtkbutton):
 
         # lock the use if compensation is activated
@@ -264,7 +265,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.halcomp["offs_table_offset"] = 0
             self._set_auto_zero_offset("Z")
             self.halcomp["offs_table_offset_active"] = 0
-            self.prefs.putpref("offs_table_offset", 0, float)
+            self.prefs.putpref("offs_table_offset", 0, int)
             self.add_history_text("TABLE_OFFSET REMOVED FROM G10_L2")
         else:
             self.hal_led_use_table_offset.set_property("on_color","green")
@@ -284,7 +285,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.halcomp["offs_block_height"] = 0
             self._set_auto_zero_offset("Z")
             self.halcomp["offs_block_height_active"] = 0
-            self.prefs.putpref("offs_block_height", 0, float)
+            self.prefs.putpref("offs_block_height", 0, int)
             self.add_history_text("BLOCK_HEIGHT REMOVED FROM G10_L2")
         else:
             self.hal_led_use_block_height.set_property("on_color","green")
@@ -292,7 +293,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.halcomp["offs_block_height"] = self.spbtn_probe_block_height.get_value()
             self._set_auto_zero_offset("Z")
             self.halcomp["offs_block_height_active"] = 1
-            self.prefs.putpref("offs_block_height", self.halcomp["offs_block_height"],  float)
+            self.prefs.putpref("offs_block_height", self.halcomp["offs_block_height"], float)
             self.add_history_text("BLOCK_HEIGHT Z%.4f ADDED TO G10_L2" % (self.halcomp["offs_block_height"]))
 
 
@@ -305,7 +306,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         self.halcomp["offs_table_offset"] = 0
         self._set_auto_zero_offset("Z")
         self.halcomp["offs_table_offset_active"] = 0
-        #self.prefs.putpref("offs_table_offset", 0, float)
+        #self.prefs.putpref("offs_table_offset", 0, int)
         self.add_history_text("TABLE_OFFSET REMOVED FROM G10_L2")
 
         if self.ocode("o<backup_status_saving> call") == -1:
@@ -356,7 +357,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         self.halcomp["offs_block_height"] = 0
         self._set_auto_zero_offset("Z")
         self.halcomp["offs_block_height_active"] = 0
-        #self.prefs.putpref("offs_block_height", 0, float)
+        #self.prefs.putpref("offs_block_height", 0, int)
         self.add_history_text("BLOCK_HEIGHT REMOVED FROM G10_L2")
 
         if self.ocode("o<backup_status_saving> call") == -1:
@@ -424,14 +425,13 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         # before using some self value from linuxcnc we need to poll
         self.stat.poll()
         initial_x_position = self.stat.position[0]
+        initial_z_position = self.stat.position[2] - self.stat.g5x_offset[2] - self.stat.g92_offset[2] - self.stat.tool_offset[2]
+        self.add_history_text("initial_x_position %.4f" % (initial_x_position))
+        self.add_history_text("initial_z_position %.4f" % (initial_z_position))
 
         # Start psng_start_z_probing_for_diam.ngc
         if self.ocode("o<psng_start_z_probing> call [1]") == -1:
             return
-
-#        # Start psng_start_inverse_probing.ngc
-#        if self.ocode("o<psng_start_inverse_probing> call [1]") == -1:
-#            return
 
         # move to calculated point X clearance + up Z with latch value
         s = """G91
@@ -452,22 +452,23 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         a = self.probed_position_with_offsets()
         xpres = float(a[0]) + (0.5 * tooldiameter)
 
-        # move Z temporary away from probing position
-        if self.move_probe_z_up() == -1:
+        ## move Z temporary away from probing position
+        #if self.move_probe_z_up() == -1:
+        #    return
+            
+        # move Z to initial position
+        s = "G90 G1 Z%f" % (initial_z_position)
+        if self.gcode(s) == -1:
             return
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
         # Start psng_start_z_probing_for_diam.ngc
-        if self.ocode("o<psng_start_z_probing> call") == -1:
+        if self.ocode("o<psng_start_z_probing> call [2]") == -1:
             return
-
-#        # Start psng_start_inverse_probing.ngc
-#        if self.ocode("o<psng_start_inverse_probing> call [2]") == -1:
-#            return
 
         # move to calculated point X clearance + up Z with latch value
         s = """G91
@@ -489,12 +490,17 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         xmres = float(a[0]) - (0.5 * tooldiameter)
         xcres = 0.5 * (xpres + xmres)
 
-        # move Z away from probing position
-        if self.move_probe_z_up() == -1:
+        ## move Z temporary away from probing position
+        #if self.move_probe_z_up() == -1:
+        #    return
+            
+        # move Z to initial position
+        s = "G90 G1 Z%f" % (initial_z_position)
+        if self.gcode(s) == -1:
             return
 
-        # go to the new center of X
-        s = "G1 X%f" % (xcres)
+        # move X to new center
+        s = "G90 G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
 
@@ -536,14 +542,13 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         # before using some self value from linuxcnc we need to poll
         self.stat.poll()
         initial_y_position = self.stat.position[1]
+        initial_z_position = self.stat.position[2] - self.stat.g5x_offset[2] - self.stat.g92_offset[2] - self.stat.tool_offset[2]
+        self.add_history_text("initial_y_position %.4f" % (initial_y_position))
+        self.add_history_text("initial_z_position %.4f" % (initial_z_position))
 
         # Start psng_start_z_probing_for_diam.ngc
-        if self.ocode("o<psng_start_z_probing> call") == -1:
+        if self.ocode("o<psng_start_z_probing> call [3]") == -1:
             return
-
-#        # Start psng_start_inverse_probing.ngc
-#        if self.ocode("o<psng_start_inverse_probing> call [3]") == -1:
-#            return
 
         # move to calculated point Y clearance + up Z with latch value
         s = """G91
@@ -564,22 +569,23 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         a = self.probed_position_with_offsets()
         ypres = float(a[1]) + (0.5 * tooldiameter)
 
-        # move Z temporary away from probing position
-        if self.move_probe_z_up() == -1:
+        ## move Z temporary away from probing position
+        #if self.move_probe_z_up() == -1:
+        #    return
+            
+        # move Z to initial position
+        s = "G90 G1 Z%f" % (initial_z_position)
+        if self.gcode(s) == -1:
             return
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
         # Start psng_start_z_probing_for_diam.ngc
         if self.ocode("o<psng_start_z_probing> call [4]") == -1:
             return
-
-#        # Start psng_start_inverse_probing.ngc
-#        if self.ocode("o<psng_start_inverse_probing> call [4]") == -1:
-#            return
 
         # move to calculated point Y clearance + up Z with latch value
         s = """G91
@@ -601,12 +607,17 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         ymres = float(a[1]) - (0.5 * tooldiameter)
         ycres = 0.5 * (ypres + ymres)
 
-        # move Z away from probing position
-        if self.move_probe_z_up() == -1:
+        ## move Z temporary away from probing position
+        #if self.move_probe_z_up() == -1:
+        #    return
+            
+        # move Z to initial position
+        s = "G90 G1 Z%f" % (initial_z_position)
+        if self.gcode(s) == -1:
             return
 
-        # go to the new center of Y
-        s = "G1 Y%f" % (ycres)
+        # move Y to new center
+        s = "G90 G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
 
@@ -663,11 +674,11 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         xcres = 0.5 * (xmres + xpres)
 
         # move X to new center
-        s = "G1 X%f" % (xcres)
+        s = "G90 G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
 
-        # move Z away from probing position
+        # move Z temporary away from probing position
         if self.move_probe_z_up() == -1:
             return
 
@@ -724,11 +735,11 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         ycres = 0.5 * (ymres + ypres)
 
         # move to calculated point
-        s = "G1 Y%f" % (ycres)
+        s = "G90 G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
 
-        # move Z away from probing position
+        # move Z temporary away from probing position
         if self.move_probe_z_up() == -1:
             return
 

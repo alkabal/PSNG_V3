@@ -1,8 +1,0 @@
-o<psng_move_z_up> sub
-
-        G91
-        G1 Z#<_psng_z_clearence_auto>
-        G90
-
-o<psng_move_z_up> endsub
-M2

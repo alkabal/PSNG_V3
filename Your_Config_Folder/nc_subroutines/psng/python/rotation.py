@@ -106,7 +106,7 @@ class ProbeScreenRotation(ProbeScreenBase):
             self.spbtn_offs_angle.set_sensitive(True)
             self.halcomp["offs_angle"] = 0
             self._set_auto_zero_offset("R")
-            self.prefs.putpref("offs_angle", 0, float)
+            self.prefs.putpref("offs_angle", 0, int)
             self.halcomp["offs_angle_active"] = 0
             self.hal_led_use_offs_angle.hal_pin.set(0)
             self.add_history_text("ANGLE_OFFSET G10_L2 P0 Rx VALUE RESETED TO 0")
@@ -118,8 +118,8 @@ class ProbeScreenRotation(ProbeScreenBase):
     # Spinbox entry editable
     #
     # --------------------------
-    def on_spbtn_offs_angle_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("offs_angle", gtkspinbutton)
+    def on_spbtn_offs_angle_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("offs_angle", gtkspinbutton, data)
         if self.halcomp["offs_angle_active"] == 0:
             if self.halcomp["offs_angle"] == 0 and self.spbtn_offs_angle.get_value() == 0:
                 self.hal_led_use_offs_angle.hal_pin.set(0)
@@ -161,7 +161,7 @@ class ProbeScreenRotation(ProbeScreenBase):
             self.halcomp["offs_angle"] = 0
             self._set_auto_zero_offset("R")
             self.halcomp["offs_angle_active"] = 0
-            self.prefs.putpref("offs_angle", 0, float)
+            self.prefs.putpref("offs_angle", 0, int)
             self.add_history_text("OFFSET_BOX_ANGLE REMOVED FROM G10_L2")
         else:
             self.hal_led_use_offs_angle.set_property("on_color","green")
@@ -231,7 +231,7 @@ class ProbeScreenRotation(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f" % (xpres)
+        s = "G90 G1 X%f" % (xpres)
         if self.gcode(s) == -1:
             return
 
@@ -308,7 +308,7 @@ class ProbeScreenRotation(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 Y%f" % (ymres)
+        s = "G90 G1 Y%f" % (ymres)
         if self.gcode(s) == -1:
             return
 
@@ -385,7 +385,7 @@ class ProbeScreenRotation(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 Y%f" % (ypres)
+        s = "G90 G1 Y%f" % (ypres)
         if self.gcode(s) == -1:
             return
 
@@ -462,7 +462,7 @@ class ProbeScreenRotation(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f" % (xmres)
+        s = "G90 G1 X%f" % (xmres)
         if self.gcode(s) == -1:
             return
 

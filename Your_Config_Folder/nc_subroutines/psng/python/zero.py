@@ -149,25 +149,26 @@ class ProbeScreenZero(ProbeScreenBase):
                 return
             self.frm_zero.set_sensitive(True)
             self.halcomp["offs_x"] = 0
-            self.prefs.putpref("offs_x", 0, float)
+            self.prefs.putpref("offs_x", 0, int)
             self.halcomp["offs_x_active"] = 0
             self.hal_led_use_offs_x.hal_pin.set(0)
             self.halcomp["offs_y"] = 0
-            self.prefs.putpref("offs_y", 0, float)
+            self.prefs.putpref("offs_y", 0, int)
             self.halcomp["offs_y_active"] = 0
             self.hal_led_use_offs_y.hal_pin.set(0)
             self.halcomp["offs_z"] = 0
-            self.prefs.putpref("offs_z", 0, float)
+            self.prefs.putpref("offs_z", 0, int)
             self.halcomp["offs_z_active"] = 0
             self.hal_led_use_offs_z.hal_pin.set(0)
             self.add_history_text("Auto zero with offset is not activated")
+            
     # --------------------------
     #
     # Spinbox entry editable
     #
     # --------------------------
-    def on_spbtn_offs_x_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("offs_x", gtkspinbutton)
+    def on_spbtn_offs_x_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("offs_x", gtkspinbutton, data)
         if self.halcomp["offs_x_active"] == 0:
             if self.halcomp["offs_x"] == 0 and self.spbtn_offs_x.get_value() == 0:
                 self.hal_led_use_offs_x.hal_pin.set(0)
@@ -196,8 +197,8 @@ class ProbeScreenZero(ProbeScreenBase):
             self.hal_led_use_offs_x.set_property("on_color","red")
             self.hal_led_use_offs_x.hal_pin.set(1)
 
-    def on_spbtn_offs_y_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("offs_y", gtkspinbutton)
+    def on_spbtn_offs_y_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("offs_y", gtkspinbutton, data)
         if self.halcomp["offs_y_active"] == 0:
             if self.halcomp["offs_y"] == 0 and self.spbtn_offs_y.get_value() == 0:
                 self.hal_led_use_offs_y.hal_pin.set(0)
@@ -226,8 +227,8 @@ class ProbeScreenZero(ProbeScreenBase):
             self.hal_led_use_offs_y.set_property("on_color","red")
             self.hal_led_use_offs_y.hal_pin.set(1)
 
-    def on_spbtn_offs_z_key_press_event(self, gtkspinbutton):
-        self.on_common_spbtn_key_press_event("offs_z", gtkspinbutton)
+    def on_spbtn_offs_z_key_press_event(self, gtkspinbutton, data=None):
+        self.on_common_spbtn_key_press_event("offs_z", gtkspinbutton, data)
         if self.halcomp["offs_z_active"] == 0:
             if self.halcomp["offs_z"] == 0 and self.spbtn_offs_z.get_value() == 0:
                 self.hal_led_use_offs_z.hal_pin.set(0)
@@ -269,7 +270,7 @@ class ProbeScreenZero(ProbeScreenBase):
             self.halcomp["offs_x"] = 0
             self._set_auto_zero_offset("X")
             self.halcomp["offs_x_active"] = 0
-            self.prefs.putpref("offs_x", 0, float)
+            self.prefs.putpref("offs_x", 0, int)
             self.add_history_text("OFFSET_BOX_X REMOVED FROM G10_L2")
         else:
             self.hal_led_use_offs_x.set_property("on_color","green")
@@ -288,7 +289,7 @@ class ProbeScreenZero(ProbeScreenBase):
             self.halcomp["offs_y"] = 0
             self._set_auto_zero_offset("Y")
             self.halcomp["offs_y_active"] = 0
-            self.prefs.putpref("offs_y", 0, float)
+            self.prefs.putpref("offs_y", 0, int)
             self.add_history_text("OFFSET_BOX_Y REMOVED FROM G10_L2")
         else:
             self.hal_led_use_offs_y.set_property("on_color","green")
@@ -307,7 +308,7 @@ class ProbeScreenZero(ProbeScreenBase):
             self.halcomp["offs_z"] = 0
             self._set_auto_zero_offset("Z")
             self.halcomp["offs_z_active"] = 0
-            self.prefs.putpref("offs_z", 0, float)
+            self.prefs.putpref("offs_z", 0, int)
             self.add_history_text("OFFSET_BOX_Z REMOVED FROM G10_L2")
         else:
             self.hal_led_use_offs_z.set_property("on_color","green")

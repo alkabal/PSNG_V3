@@ -21,7 +21,7 @@ UPDATE_INTERVAL = 0.01 # this is how often the z external offset value is update
 
 import sys
 import os.path, time
-import numpy as np
+import numpy
 import hal, time
 from scipy.interpolate import griddata
 from enum import Enum, unique
@@ -123,30 +123,30 @@ class Compensation :
   def loadMap(self):
     self.halcomp["map-loaded"] = 0
     # data coordinates and values rounded to centieme .xx for xy and Z to micron .xxx
-    self.data = np.loadtxt(self.filename, dtype=float, delimiter=" ", usecols=(0, 1, 2))
-    self.X_data = np.around(self.data[:,0],2)
-    self.Y_data = np.around(self.data[:,1],2)
-    self.Z_data = np.around(self.data[:,2],3)
+    self.data = numpy.loadtxt(self.filename, dtype=float, delimiter=" ", usecols=(0, 1, 2))
+    self.X_data = numpy.around(self.data[:,0],2)
+    self.Y_data = numpy.around(self.data[:,1],2)
+    self.Z_data = numpy.around(self.data[:,2],3)
 
     # get the x and y, min and max values from the data
-    self.X_start = np.min(self.X_data)
-    self.Y_start = np.max(self.Y_data)
-    self.X_end = np.max(self.X_data)
-    self.Y_end = np.min(self.Y_data)
-    self.Z_max = np.max(self.Z_data)
-    self.Z_min = np.min(self.Z_data)
+    self.X_start = numpy.min(self.X_data)
+    self.Y_start = numpy.max(self.Y_data)
+    self.X_end = numpy.max(self.X_data)
+    self.Y_end = numpy.min(self.Y_data)
+    self.Z_max = numpy.max(self.Z_data)
+    self.Z_min = numpy.min(self.Z_data)
 
     # target grid to interpolate 1 centieme/gridd
     self.X_steps = int((abs(self.X_start-self.X_end)+1) / self.halcomp["grid-precision"])
     self.Y_steps = int((abs(self.Y_end-self.Y_start)+1) / self.halcomp["grid-precision"])
-    self.X = np.round(np.linspace(self.X_start, self.X_end, self.X_steps), 2)
-    self.Y = np.round(np.linspace(self.Y_start, self.Y_end, self.Y_steps), 2)
+    self.X = numpy.round(numpy.linspace(self.X_start, self.X_end, self.X_steps), 2)
+    self.Y = numpy.round(numpy.linspace(self.Y_start, self.Y_end, self.Y_steps), 2)
 
-    self.Xi,self.Yi = np.meshgrid(self.X,self.Y)
+    self.Xi,self.Yi = numpy.meshgrid(self.X,self.Y)
 
     # interpolate, Z has all the offset values but need to be transposed to Zi rounded to micron
-    self.Z = np.round(griddata((self.X_data,self.Y_data),self.Z_data,(self.Xi,self.Yi),method=self.method,fill_value=0.0), 3)
-    self.Zi = np.transpose(self.Z)
+    self.Z = numpy.round(griddata((self.X_data,self.Y_data),self.Z_data,(self.Xi,self.Yi),method=self.method,fill_value=0.0), 3)
+    self.Zi = numpy.transpose(self.Z)
 
     # update hal value and print value to terminal
 #    print ("interp_err_queue = %s" % (self.stat.queue))

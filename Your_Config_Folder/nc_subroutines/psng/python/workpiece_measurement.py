@@ -75,7 +75,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f" % (xres)
+        s = "G90 G1 X%f" % (xres)
         if self.gcode(s) == -1:
             return
 
@@ -126,7 +126,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 Y%f" % (yres)
+        s = "G90 G1 Y%f" % (yres)
         if self.gcode(s) == -1:
             return
 
@@ -177,7 +177,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f" % (xres)
+        s = "G90 G1 X%f" % (xres)
         if self.gcode(s) == -1:
             return
 
@@ -228,7 +228,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 Y%f" % (yres)
+        s = "G90 G1 Y%f" % (yres)
         if self.gcode(s) == -1:
             return
 
@@ -294,7 +294,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             xres = float(a[0]) + (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -317,7 +317,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             yres = float(a[1]) + (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -326,7 +326,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f Y%f" % (xres, yres)
+        s = "G90 G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
 
@@ -387,7 +387,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             xres = float(a[0]) + (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -410,7 +410,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             yres = float(a[1]) - (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -419,7 +419,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f Y%f" % (xres, yres)
+        s = "G90 G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
 
@@ -480,7 +480,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             xres = float(a[0]) - (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -503,7 +503,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             yres = float(a[1]) + (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -512,7 +512,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f Y%f" % (xres, yres)
+        s = "G90 G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
 
@@ -573,7 +573,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             xres = float(a[0]) - (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -596,7 +596,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             yres = float(a[1]) - (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -605,7 +605,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f Y%f" % (xres, yres)
+        s = "G90 G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
 
@@ -646,6 +646,9 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # before using some self value from linuxcnc we need to poll
         self.stat.poll()
         initial_x_position = self.stat.position[0]
+        initial_z_position = self.stat.position[2] - self.stat.g5x_offset[2] - self.stat.g92_offset[2] - self.stat.tool_offset[2]
+        self.add_history_text("initial_x_position %.4f" % (initial_x_position))
+        self.add_history_text("initial_z_position %.4f" % (initial_z_position))
 
         # Start psng_start_z_probing_for_diam.ngc
         if self.ocode("o<psng_start_z_probing> call [1]") == -1:
@@ -670,12 +673,17 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         a = self.probed_position_with_offsets()
         xpres = float(a[0]) + (0.5 * tooldiameter)
 
-        # move Z temporary away from probing position
-        if self.move_probe_z_up() == -1:
+        ## move Z temporary away from probing position
+        #if self.move_probe_z_up() == -1:
+        #    return
+            
+        # move Z to initial position
+        s = "G90 G1 Z%f" % (initial_z_position)
+        if self.gcode(s) == -1:
             return
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -703,13 +711,17 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         xmres = float(a[0]) - (0.5 * tooldiameter)
         xcres = 0.5 * (xpres + xmres)
 
-        # move Z temporary away from probing position
-        if self.move_probe_z_up() == -1:
+        ## move Z temporary away from probing position
+        #if self.move_probe_z_up() == -1:
+        #    return
+            
+        # move Z to initial position
+        s = "G90 G1 Z%f" % (initial_z_position)
+        if self.gcode(s) == -1:
             return
 
-
-        # go to the new center of X
-        s = "G1 X%f" % (xcres)
+        # move X to new center
+        s = "G90 G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
 
@@ -717,6 +729,9 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         # before using some self value from linuxcnc we need to poll
         self.stat.poll()
         initial_y_position = self.stat.position[1]
+        initial_z_position = self.stat.position[2] - self.stat.g5x_offset[2] - self.stat.g92_offset[2] - self.stat.tool_offset[2]
+        self.add_history_text("initial_y_position %.4f" % (initial_y_position))
+        self.add_history_text("initial_z_position %.4f" % (initial_z_position))
 
         # Start psng_start_z_probing_for_diam.ngc
         if self.ocode("o<psng_start_z_probing> call [3]") == -1:
@@ -741,12 +756,17 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         a = self.probed_position_with_offsets()
         ypres = float(a[1]) + (0.5 * tooldiameter)
 
-        # move Z temporary away from probing position
-        if self.move_probe_z_up() == -1:
+        ## move Z temporary away from probing position
+        #if self.move_probe_z_up() == -1:
+        #    return
+            
+        # move Z to initial position
+        s = "G90 G1 Z%f" % (initial_z_position)
+        if self.gcode(s) == -1:
             return
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -774,13 +794,17 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         ymres = float(a[1]) - (0.5 * tooldiameter)
         ycres = 0.5 * (ypres + ymres)
 
-        # move Z away from probing position
-        if self.move_probe_z_up() == -1:
+        ## move Z temporary away from probing position
+        #if self.move_probe_z_up() == -1:
+        #    return
+            
+        # move Z to initial position
+        s = "G90 G1 Z%f" % (initial_z_position)
+        if self.gcode(s) == -1:
             return
 
-
-        # go to the new center of Y
-        s = "G1 Y%f" % (ycres)
+        # move Y to new center
+        s = "G90 G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
 
@@ -853,7 +877,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         xres = float(a[0]) + (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -866,7 +890,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         yres = float(a[1]) + (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -875,7 +899,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f Y%f" % (xres, yres)
+        s = "G90 G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
 
@@ -926,7 +950,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         xres = float(a[0]) + (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -939,7 +963,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         yres = float(a[1]) - (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -948,7 +972,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f Y%f" % (xres, yres)
+        s = "G90 G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
 
@@ -1000,7 +1024,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         xres = float(a[0]) - (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -1013,7 +1037,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         yres = float(a[1]) + (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -1022,7 +1046,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f Y%f" % (xres, yres)
+        s = "G90 G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
 
@@ -1074,7 +1098,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         xres = float(a[0]) - (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 X%f" % (initial_x_position)
+        s = "G90 G1 X%f" % (initial_x_position)
         if self.gcode(s) == -1:
             return
 
@@ -1087,7 +1111,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         yres = float(a[1]) - (0.5 * tooldiameter)
 
         # move to calculated point
-        s = "G1 Y%f" % (initial_y_position)
+        s = "G90 G1 Y%f" % (initial_y_position)
         if self.gcode(s) == -1:
             return
 
@@ -1096,7 +1120,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
             return
 
         # move to calculated point
-        s = "G1 X%f Y%f" % (xres, yres)
+        s = "G90 G1 X%f Y%f" % (xres, yres)
         if self.gcode(s) == -1:
             return
 
@@ -1141,12 +1165,10 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         xpres = float(a[0]) + (0.5 * tooldiameter)
         xcres = 0.5 * (xmres + xpres)
 
-
         # go to the new center of X
-        s = "G1 X%f" % (xcres)
+        s = "G90 G1 X%f" % (xcres)
         if self.gcode(s) == -1:
             return
-
 
         # Start psng_yminus.ngc
         if self.ocode("o<psng_start_yminus_probing> call") == -1:
@@ -1165,12 +1187,10 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         ypres = float(a[1]) + (0.5 * tooldiameter)
         ycres = 0.5 * (ymres + ypres)
 
-
         # go to the new center of Y
-        s = "G1 Y%f" % (ycres)
+        s = "G90 G1 Y%f" % (ycres)
         if self.gcode(s) == -1:
             return
-
 
         # move Z away from probing position
         if self.move_probe_z_up() == -1:
