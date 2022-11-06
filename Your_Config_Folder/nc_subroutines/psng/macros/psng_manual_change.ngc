@@ -125,8 +125,8 @@ G43
         #<_psng_probe_max_x>               = [[#<_psng_moveradius> + #<_psng_latch>] - [0.5 * #<_psng_ts_pad_diameter>]]
         #<_psng_probe_max_y>               = #<_psng_probe_max_x>
        (DEBUG,PSNG VAR RELOADED AFTER M6)
-       o201 if [#<_psng_ts_max_tool_dia> LE 0]
-         (MSG,TOOLSETTER HEIGHT NOT CONFIGURED)
+       o201 if [#<_psng_ts_max_tool_dia> LE 0 OR #<_psng_ts_min_tool_dia> LE 0 OR #<_psng_ts_max_tool_dia> LT #<_psng_ts_min_tool_dia>]
+         (MSG,TOOLSETTER MAX DIAMETER NOT OR INCORRECTLY CONFIGURED)
          (MSG,TOOLCHANGE CANCELED)
          o<backup_status_restore> call
          o201 return [-2]

@@ -68,6 +68,7 @@ G17        (force G17 plane for use with all probe and tool measurement mode)
 #<_psng_ts_use_tool_measurement>           = #<_hal[probe.chk_use_tool_measurement]>
 #<_psng_ts_max_tool_lgt>                   = #<_hal[probe.ts_max_tool_lgt]>
 #<_psng_ts_max_tool_dia>                   = #<_hal[probe.ts_max_tool_dia]>
+#<_psng_ts_min_tool_dia>                   = #<_hal[probe.ts_min_tool_dia]>
 #<_psng_ts_tool_is_spherical>              = #<_hal[probe.ts_popup_tool_is_spherical]>
 
 #<_psng_toolchange_popup_style>            = #<_hal[probe.chk_use_popup_style_toolchange]>
@@ -98,7 +99,7 @@ o200 if [#<_psng_from_tool_measurement> EQ 0] ; is touch device related
 
    #<_psng_probe_max_x>               = #<_hal[probe.psng_probe_max_xy]>
    #<_psng_probe_max_y>               = #<_hal[probe.psng_probe_max_xy]>
-   
+
    ;#<_psng_z_clearence_auto>          = #<_hal[probe.z_clearence_auto]>
 
    o210 if [#<_psng_use_touch_plate> EQ 1]

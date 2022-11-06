@@ -60,7 +60,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
 
         # make the pins hal
         self.halcomp.newpin("ts_popup_tool_number", hal.HAL_S32, hal.HAL_OUT)
-        self.halcomp.newpin("ts_popup_tool_diameter", hal.HAL_S32, hal.HAL_OUT)
+        self.halcomp.newpin("ts_popup_tool_diameter", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_popup_tool_is_spherical", hal.HAL_BIT, hal.HAL_OUT)
 
         self.halcomp.newpin("ts_pos_x", hal.HAL_FLOAT, hal.HAL_OUT)
@@ -74,6 +74,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self.halcomp.newpin("ts_clearance_xyz", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_max_tool_lgt", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_max_tool_dia", hal.HAL_FLOAT, hal.HAL_OUT)
+        self.halcomp.newpin("ts_min_tool_dia", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_tool_rot_speed", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_pad_diameter", hal.HAL_FLOAT, hal.HAL_OUT)
         self.halcomp.newpin("ts_pad_diameter_offset", hal.HAL_FLOAT, hal.HAL_OUT)
@@ -126,6 +127,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         ts_clearance_xyz = self.inifile.find("TOOL_SETTER", "CLEARANCE_XYZ")
         ts_max_tool_lgt = self.inifile.find("TOOL_SETTER", "TS_MAX_TOOL_LGT")
         ts_max_tool_dia = self.inifile.find("TOOL_SETTER", "TS_MAX_TOOL_DIA")
+        ts_min_tool_dia = self.inifile.find("TOOL_SETTER", "TS_MIN_TOOL_DIA")
         ts_tool_rot_speed = self.inifile.find("TOOL_SETTER", "TOOL_ROT_SPEED")
         ts_pad_diameter = self.inifile.find("TOOL_SETTER", "PAD_DIAMETER")
         ts_pad_diameter_offset = self.inifile.find("TOOL_SETTER", "PAD_DIAMETER_OFFSET")
@@ -154,6 +156,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             or ts_clearance_xyz is None
             or ts_max_tool_lgt is None
             or ts_max_tool_dia is None
+            or ts_min_tool_dia is None
             or ts_tool_rot_speed is None
             or ts_pad_diameter is None
             or ts_pad_diameter_offset is None
@@ -188,6 +191,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             self.halcomp["ts_clearance_xyz"] = float(ts_clearance_xyz)
             self.halcomp["ts_max_tool_lgt"] = float(ts_max_tool_lgt)
             self.halcomp["ts_max_tool_dia"] = float(ts_max_tool_dia)
+            self.halcomp["ts_min_tool_dia"] = float(ts_min_tool_dia)
             self.halcomp["ts_tool_rot_speed"] = float(ts_tool_rot_speed)
             self.halcomp["ts_pad_diameter"] = float(ts_pad_diameter)
             self.halcomp["ts_pad_diameter_offset"] = float(ts_pad_diameter_offset)
@@ -263,7 +267,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         tsres = (float(a[2]) - self.halcomp["offs_table_offset"])
 
         # save and show the probed point
-        # update setter height gui value
+        # update setter height gui value you need to edit manually ini file after that
         #self.halcomp["ts_height"] = tsres
         self.add_history_text("ts_height : %s" % (tsres))
         self.add_history_text("table_offset = %.4f" % (self.halcomp["offs_table_offset"]))
@@ -277,6 +281,13 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self._work_in_progress = 0
 
 
+    # --------------------------
+    #
+    # TOOL TABLE CREATOR
+    #
+    # --------------------------
+
+    # --------------------------
     # Down drill bit to tool setter for measuring it
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_tool_length_released(self, gtkbutton):
@@ -333,10 +344,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self._work_in_progress = 0
 
 
-    # --------------------------
-    #
-    # TOOL TABLE CREATOR
-    #
+
     # --------------------------
     # TOOL DIA : use X only for find tool setter center and use after that more accurate Y center value for determinig tool diameter
     # + TOOL length Z and the whole sequence is saved as tooltable for later use
@@ -371,6 +379,10 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
 
         if self.halcomp["ts_max_tool_dia"] < self.halcomp["ts_popup_tool_diameter"] or (self.halcomp["ts_pad_is_hole"] and self.halcomp["ts_pad_diameter"] <= self.halcomp["ts_popup_tool_diameter"]) or self.halcomp["ts_max_tool_dia"] <= 0:
             self.warning_dialog("Tool diameter is higher than allowed by ini config or by pad_is_hole !")
+            return
+
+        if self.halcomp["ts_min_tool_dia"] > self.halcomp["ts_popup_tool_diameter"] or self.halcomp["ts_min_tool_dia"] > self.halcomp["ts_max_tool_dia"] or self.halcomp["ts_min_tool_dia"] <= 0:
+            self.warning_dialog("Tool diameter is lower than allowed by ini config !")
             return
 
         if self.halcomp["ts_pad_diameter"] < self.halcomp["ts_popup_tool_diameter"] :
@@ -411,7 +423,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
     # Here we create a manual tool change dialog
     def on_tool_change(self, gtkbutton):
 
-# One issue need to be corrected if you ask the same tool as actual tool probe start without any confirmation (patched in ocode with M0)(need to patch here if use stglue.py)
+# One issue need to be corrected if you ask the same tool as actual tool probe start without any confirmation (patched in ocode with M0)(need a patch here if use stglue.py)
 
         if self.halcomp["toolchange_change"]:
 

@@ -97,7 +97,7 @@ class ProbeScreenBase(object):
 
         self._work_in_progress = 0
 
-        #do not create hal pin here due to multiple call
+        #DO NOT CREATE HAL PIN HERE DUE TO MULTIPLE CALL
 
     # --------------------------
     #
@@ -291,8 +291,7 @@ class ProbeScreenBase(object):
         # Prepend a timestamp to all History lines
         text = datetime.now().strftime("%H:%M:%S  ") + text
 
-        # Remove the oldest history entries when we have a large
-        # number of entries.
+        # Remove the oldest history entries when we have a large number of entries
         i = self.buffer.get_end_iter()
         if i.get_line() > 1000:
             i.backward_line()
@@ -329,12 +328,9 @@ class ProbeScreenBase(object):
             return self._dialog(gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message, secondary, title)
         else:
             if secondary:
-                #self.add_history_text("WARNING: %s" % (message))
-                #self.add_history_text("WARNING: %s" % (secondary))
                 self.gcode("(DEBUG,**** WARN : %s ****)" % (message))
                 self.gcode("(DEBUG,**** WARN : %s ****)" % (secondary))
             else:
-                #self.add_history_text("WARNING: %s" % (message))
                 self.gcode("(DEBUG,**** WARN : %s ****)" % (message))
 
 
@@ -346,12 +342,9 @@ class ProbeScreenBase(object):
             return self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
         else:
             if secondary:
-                #self.add_history_text("DEBUG: %s" % (message))
-                #self.add_history_text("ABORT: %s" % (secondary))
                 self.gcode("(DEBUG,**** ERROR : %s ****)" % (message))
                 self.gcode("(ABORT,**** ERROR : %s ****)" % (secondary))
             else:
-                #self.add_history_text("ABORT: %s" % (message))
                 self.gcode("(ABORT,**** ERROR : %s ****)" % (message))
 
     def _dialog_confirm(self, message):
@@ -493,8 +486,8 @@ class ProbeScreenBase(object):
         Display a dialog with a text entry.
         Returns the text, or None if canceled.
         """
-        ts_popup_tool_number  = 1
-        ts_popup_tool_diameter  = 15
+        ts_popup_tool_number  = self.halcomp["toolchange_number"]
+        ts_popup_tool_diameter  = self.halcomp["toolchange_diameter"]
 
         dialog = gtk.MessageDialog(self.window,
                               gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -517,17 +510,17 @@ class ProbeScreenBase(object):
         spin_button_ts_popup_tool_number.set_value(ts_popup_tool_number)
         dialog.vbox.pack_start(spin_button_ts_popup_tool_number, False, False, 0)
 
-        label = gtk.Label("Tool diameter round up :")
+        label = gtk.Label("Exact tool diameter :")
         dialog.vbox.pack_start(label, False, False, 0)
         spin_button_ts_popup_tool_diameter = gtk.SpinButton(
         gtk.Adjustment(
           value=ts_popup_tool_diameter,
-          lower=2,
-          upper=15,
-          step_incr=1,
+          lower=self.halcomp["ts_min_tool_dia"],
+          upper=self.halcomp["ts_max_tool_dia"],
+          step_incr=0.1,
           page_incr=1,
         ),
-        digits=0)
+        digits=5)
         spin_button_ts_popup_tool_diameter.set_numeric(True)
         spin_button_ts_popup_tool_diameter.set_value(ts_popup_tool_diameter)
         dialog.vbox.pack_start(spin_button_ts_popup_tool_diameter, False, False, 0)
@@ -555,9 +548,10 @@ class ProbeScreenBase(object):
         Display a dialog with a text entry.
         Returns the text, or None if canceled.
         """
-        ts_popup_tool_number  = 1
-        ts_popup_tool_diameter  = 15
+        ts_popup_tool_number  = int(math.ceil(self.halcomp["toolchange_number"]))  #rounf up tool diameter
+        ts_popup_tool_diameter  = self.halcomp["toolchange_diameter"]
         ts_popup_tool_is_spherical  = 0
+
 
         dialog = gtk.MessageDialog(self.window,
                               gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
@@ -580,13 +574,13 @@ class ProbeScreenBase(object):
         spin_button_ts_popup_tool_number.set_value(ts_popup_tool_number)
         dialog.vbox.pack_start(spin_button_ts_popup_tool_number, False, False, 0)
 
-        label = gtk.Label("ool diameter round up :")
+        label = gtk.Label("Tool diameter round up :")
         dialog.vbox.pack_start(label, False, False, 0)
         spin_button_ts_popup_tool_diameter = gtk.SpinButton(
         gtk.Adjustment(
           value=ts_popup_tool_diameter,
-          lower=2,
-          upper=15,
+          lower=self.halcomp["ts_min_tool_dia"],
+          upper=self.halcomp["ts_max_tool_dia"],
           step_incr=1,
           page_incr=1,
         ),
@@ -698,37 +692,15 @@ class ProbeScreenBase(object):
     #
     # --------------------------
     def move_probe_z_down(self):
-        #if self.halcomp["chk_use_touch_plate"]:
-        #    self.halcomp["z_clearence_auto"] = self.halcomp["psng_latch"] + self.halcomp["psng_tp_z_full_thickness"]
-        #else:
-        #    self.halcomp["z_clearence_auto"] = self.halcomp["psng_latch"] + self.halcomp["toolchange_diameter"]
-        # move Z - z_clearence_auto
         if self.ocode("o<psng_move_z_down> call") == -1:
             return -1
         return 0
-        #s = """G91
-        #G1 Z-%f
-        #G90""" % (self.halcomp["z_clearence_auto"])
-        #if self.gcode(s) == -1:
-        #    return -1
-        #return 0
 
 
     def move_probe_z_up(self):
-        #if self.halcomp["chk_use_touch_plate"]:
-        #    self.halcomp["z_clearence_auto"] = self.halcomp["psng_latch"] + self.halcomp["psng_tp_z_full_thickness"]
-        #else:
-        #    self.halcomp["z_clearence_auto"] = self.halcomp["psng_latch"] + self.halcomp["toolchange_diameter"]
-        # move Z + z_clearence_auto
         if self.ocode("o<psng_move_z_up> call") == -1:
             return -1
         return 0
-        #s = """G91
-        #G1 Z%f
-        #G90""" % (self.halcomp["z_clearence_auto"])
-        #if self.gcode(s) == -1:
-        #    return -1
-        #return 0
 
 
     def probed_position_with_offsets(self):
@@ -877,7 +849,7 @@ class ProbeScreenBase(object):
         else:
             # Set to Italics
             gtkspinbutton.modify_font(Pango.FontDescription("italic"))
-            
+
 
     def on_common_spbtn_value_changed(self, pin_name, gtkspinbutton, _type=float):
         # Drop the Italics
