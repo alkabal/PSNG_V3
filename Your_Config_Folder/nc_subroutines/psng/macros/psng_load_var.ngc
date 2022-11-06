@@ -98,7 +98,7 @@ o200 if [#<_psng_from_tool_measurement> EQ 0] ; is touch device related
 
    #<_psng_probe_max_x>               = #<_hal[probe.psng_probe_max_xy]>
    #<_psng_probe_max_y>               = #<_hal[probe.psng_probe_max_xy]>
-
+   
    ;#<_psng_z_clearence_auto>          = #<_hal[probe.z_clearence_auto]>
 
    o210 if [#<_psng_use_touch_plate> EQ 1]

@@ -29,7 +29,6 @@ M160    ;o<clear-axis-info> call
 
        ; move_tool_z_down
        G91
-       G1 Z-#<_psng_z_clearence_dw> F#<_psng_vel_for_search>
 
        o210 if [[#<_current_tool> EQ #<_psng_probe_number> or #<_psng_ts_tool_is_spherical> EQ 1] and [[0.5*#<_psng_tool_diam_from_tooltable>] + [0.5*#<_psng_ts_pad_thickness>]] LT #<_psng_ts_pad_from_body>]
             (DEBUG,USE DIAM for calc Z down pos due to round tool)
