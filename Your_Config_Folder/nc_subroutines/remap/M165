@@ -1,4 +1,0 @@
-#!/bin/bash
-# activate probe output to motion.probe-inpute : logic inverted
-halcmd sets touch-probe-on-off 1
-exit 0

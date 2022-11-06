@@ -1,6 +1,6 @@
 o<psng_probe_setter_height> sub
 
-  M160    ;o<clear-axis-info> call
+  M110    ;o<clear-axis-info> call
 
   (DEBUG,PROBE TOOL SETTER FOR HEIGHT NEED TO PROBE THE TABLE FIRSTLY)
 

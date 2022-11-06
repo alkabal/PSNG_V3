@@ -1,6 +1,6 @@
 o<psng_probe_block_height> sub
 
-  M160    ;o<clear-axis-info> call
+  M110    ;o<clear-axis-info> call
 
   ;G43          ; force tool offset for correct calc
   ;G10 L2 P0 Z0 ; reset G54 offset for correct pieces measurement and replace by new value

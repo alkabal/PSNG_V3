@@ -1,6 +1,6 @@
 o<psng_probe_tool_length> sub
 
-M160    ;o<clear-axis-info> call
+M110    ;o<clear-axis-info> call
 
   G49  ; cancel tool offset for Z probe related to tool_setter
 

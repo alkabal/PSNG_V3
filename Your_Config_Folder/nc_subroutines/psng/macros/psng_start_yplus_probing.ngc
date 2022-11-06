@@ -1,6 +1,6 @@
 o<psng_start_yplus_probing> sub
 
-  M160    ;o<clear-axis-info> call
+  M110    ;o<clear-axis-info> call
   o10 if [#<_hal[motion.probe-input]> EQ 1]
       (ABORT,!!! PROBE OR SETTER ALREADY TRIGGERED BEFORE PROBE Y+ !!!)
   o10 endif

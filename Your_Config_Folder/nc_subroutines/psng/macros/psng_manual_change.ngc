@@ -26,7 +26,7 @@ o10 endif
         M9                                                       ; Force to stop mist and flood
 
 o<psng_goto_changepos> call
-M160    ;o<clear-axis-info> call
+M110    ;o<clear-axis-info> call
 
 o100 if [#<_psng_ts_use_tool_measurement> EQ 0 OR #<_selected_tool> EQ 0]
   o110 if [#<_psng_toolchange_popup_style> EQ 0]
@@ -34,22 +34,22 @@ o100 if [#<_psng_ts_use_tool_measurement> EQ 0 OR #<_selected_tool> EQ 0]
             (MSG,PLEASE REMOVE TOOL)
             (MSG,NEED TO UNPAUSE OR ABORT)
             M0
-            M160    ;o<clear-axis-info> call
+            M110    ;o<clear-axis-info> call
        o111 elseif [#<_current_tool> EQ #<_selected_tool>]
             (MSG,PLEASE CHECK IF THE MOUNTED TOOL IS THE GOOD ONE)
             (MSG,NEED TO UNPAUSE OR ABORT)
             M0
-            M160    ;o<clear-axis-info> call
+            M110    ;o<clear-axis-info> call
        o111 elseif [#<_selected_tool> EQ #<_psng_probe_number>]
             (DEBUG,PLEASE MOUNT 3D PROBE #<_psng_probe_number>)
             (MSG,NEED TO UNPAUSE OR ABORT)
             M0
-            M160    ;o<clear-axis-info> call
+            M110    ;o<clear-axis-info> call
        o111 elseif [#<_selected_tool> GT 0]
             (DEBUG,PLEASE CHANGE TO TOOL #<_selected_tool>)
             (MSG,NEED TO UNPAUSE OR ABORT)
             M0
-            M160    ;o<clear-axis-info> call
+            M110    ;o<clear-axis-info> call
        o111 else
             (DEBUG,UNKNOW ERROR OCCURED FOR TOOLCHANGE WITHOUT AUTOLENGTH)
             o<backup_status_restore> call
@@ -59,7 +59,7 @@ o100 if [#<_psng_ts_use_tool_measurement> EQ 0 OR #<_selected_tool> EQ 0]
        (MSG,SAME TOOL AS ACTUAL ASKED AND VALIDATED AUTOMATICALLY)
        (MSG,NEED TO UNPAUSE OR ABORT)
        M0
-       M160    ;o<clear-axis-info> call
+       M110    ;o<clear-axis-info> call
   o110 endif
        M6         ; used here for make possible to cancel the toolchange here for M6T0 or M6TX without autolength : this line call the python code from PSNG
        G43
@@ -88,17 +88,17 @@ o100 else
              (MSG,SAME TOOL AS ACTUAL SO MEASUREMENT START AUTOMATICALLY)
              (MSG,NEED TO UNPAUSE OR ABORT)
              M0
-             M160    ;o<clear-axis-info> call
+             M110    ;o<clear-axis-info> call
         o141 elseif [#<_selected_tool> EQ #<_psng_probe_number>]
              (DEBUG,PLEASE MOUNT 3D PROBE #<_psng_probe_number>)
              (MSG,NEED TO UNPAUSE OR ABORT)
              M0
-             M160    ;o<clear-axis-info> call
+             M110    ;o<clear-axis-info> call
         o141 elseif [#<_current_tool> NE #<_selected_tool>]
              (DEBUG,PLEASE CHANGE TO TOOL #<_selected_tool>)
              (MSG,NEED TO UNPAUSE OR ABORT)
              M0
-             M160    ;o<clear-axis-info> call
+             M110    ;o<clear-axis-info> call
         o141 else
             (DEBUG,UNKNOW ERROR OCCURED FOR TOOLCHANGE WITH AUTOLENGTH)
             o<backup_status_restore> call
@@ -108,7 +108,7 @@ o100 else
           (MSG,SAME TOOL AS ACTUAL ASKED AND VALIDATED AUTOMATICALLY)
           (MSG,NEED TO UNPAUSE OR ABORT)
           M0                                                                 ; prevent starting move without any popup confirmation !!!!
-          M160    ;o<clear-axis-info> call
+          M110    ;o<clear-axis-info> call
      o140 endif
 o100 endif
 

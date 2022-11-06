@@ -1,0 +1,8 @@
+#!/bin/bash
+# file to clear axis info
+halcmd setp axisui.notifications-clear 0
+sleep .200
+halcmd setp axisui.notifications-clear 1
+sleep .200
+halcmd setp axisui.notifications-clear 0
+exit 0

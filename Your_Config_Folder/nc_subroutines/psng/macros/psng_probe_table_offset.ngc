@@ -1,6 +1,6 @@
 o<psng_probe_table_offset> sub
 
-  M160    ;o<clear-axis-info> call
+  M110    ;o<clear-axis-info> call
 
   o<psng_start_z_probing> call
   o500 call

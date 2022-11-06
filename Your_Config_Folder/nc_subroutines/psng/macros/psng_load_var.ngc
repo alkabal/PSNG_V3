@@ -1,6 +1,6 @@
 o<psng_load_var> sub
 
-M160    ;o<clear-axis-info> call
+M110    ;o<clear-axis-info> call
 
 G17        (force G17 plane for use with all probe and tool measurement mode)
 
@@ -167,12 +167,12 @@ o200 elseif [#<_psng_from_tool_measurement> EQ 1]         ; is tool setter relat
 
 
    o330 if [#<_psng_ts_z_all_offset_calc> GT #<_psng_z_joint_length_abs>]
-        M160
+        M110
         (DEBUG,!!! Z START POSITION DO NOT MATCH THE Z AXIS LENGTH #<_psng_z_joint_length_abs>)
         (DEBUG,!!! VS START FROM HOME #<_psng_ts_start_z_from_mcs> + TOOL_SETTER #<_psng_ts_height> + PROBE_MAX_Z #<_psng_probe_max_z> !!!)
         (DEBUG,!!! Z ALL OFFSET CALC RESULT = #<_psng_ts_z_all_offset_calc> !!!)
         M0
-        M160    ;o<clear-axis-info> call
+        M110    ;o<clear-axis-info> call
    o330 endif
 
    o340 if [#<_psng_ts_max_tool_lgt> LE 0]
@@ -197,7 +197,7 @@ o200 elseif [#<_psng_from_tool_measurement> EQ 1]         ; is tool setter relat
 
 o200 else
 
-   M160    ;o<clear-axis-info> call
+   M110    ;o<clear-axis-info> call
   (ABORT,!!! CALL ARGS WRONG FOR o<psng_load_var> #<_psng_from_tool_measurement> !!!)
 
 o200 endif

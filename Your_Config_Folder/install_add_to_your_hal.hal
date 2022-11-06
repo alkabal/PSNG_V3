@@ -18,14 +18,14 @@ addf debounce.0               servo-thread
 net touch-probe               <= [HMOT](CARD0).gpio.001.in_not                        # probe is NC with pullup from 5v wire
 net touch-probe               => and2.combined-probe.in0
 setp                             and2.combined-probe.in1 1                            # for correct status at startup
-net touch-probe-on-off        => and2.combined-probe.in1                              # M165 activate / M166 inhibit output from custom Mcode
+net touch-probe-on-off        => and2.combined-probe.in1                              # M160 activate / M161 inhibit output from custom Mcode
 net touch-probe-and2-psng     <= and2.combined-probe.out
 net touch-probe-and2-psng     => or2.combined-touch.in0
 
 net touch-setter              <= [HMOT](CARD0).gpio.002.in_not                        # setter is NC NPN 24v with pullup on the mesa card
 net touch-setter              => and2.combined-setter.in0
 setp                             and2.combined-setter.in1 1                           # for correct status at startup
-net touch-setter-on-off       => and2.combined-setter.in1                             # M167 activate / M168 inhibit output from custom Mcode
+net touch-setter-on-off       => and2.combined-setter.in1                             # M162 activate / M163 inhibit output from custom Mcode
 net touch-setter-and2-psng    <= and2.combined-setter.out
 net touch-setter-and2-psng    => or2.combined-touch.in1
 

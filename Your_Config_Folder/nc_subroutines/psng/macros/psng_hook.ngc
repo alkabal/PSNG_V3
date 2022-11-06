@@ -22,7 +22,7 @@ o<psng_hook> sub
 ; value "7".
 #<hooked_macro> = #1
 
-M160    ;o<clear-axis-info> call
+M110    ;o<clear-axis-info> call
 o10 if [#<hooked_macro> GT 7]
     (ABORT,HOOK UNRECOGNIZED : #<hooked_macro>)
 o10 endif

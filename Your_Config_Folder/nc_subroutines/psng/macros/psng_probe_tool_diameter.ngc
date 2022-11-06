@@ -1,6 +1,6 @@
 o<psng_probe_tool_diameter> sub
 
-M160    ;o<clear-axis-info> call
+M110    ;o<clear-axis-info> call
 
 
   o50 if [[#<_psng_ts_pad_is_hole> EQ 1 and #<_psng_tool_diam_from_tooltable> LT #<_psng_ts_pad_diameter>] or #<_psng_ts_pad_is_hole> EQ 0]

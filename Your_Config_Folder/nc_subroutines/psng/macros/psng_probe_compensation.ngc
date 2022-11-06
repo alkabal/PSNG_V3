@@ -48,7 +48,7 @@ o<psng_probe_compensation> sub
 
 (End configuration section)
 
-M160    ;o<clear-axis-info> call
+M110    ;o<clear-axis-info> call
 
 
   G90 G21 G17
@@ -89,13 +89,13 @@ M160    ;o<clear-axis-info> call
   o<reset_offset> call [1]            ; 1 = no pause to ask
 
   ; ask user if all is safe
-;  M160    ;o<clear-axis-info> call
+;  M110    ;o<clear-axis-info> call
 ;  (DEBUG,PROBE Z START FROM #<_psng_start_z_from_wcs> ABOVE THE TABLE HEIGHT)
 ;  (DEBUG,USING PROBE_MAX_Z + TABLE_OFFSET + BLOCK_OFFSET - LATCH )
 ;  (DEBUG,IS Z_EOFFSET_COMPENSATION START IS IN A SAFE XYZ POSITION ?)
 ;  (DEBUG,NEED TO UNPAUSE OR ABORT)
 ;  M0
-;  M160    ;o<clear-axis-info> call
+;  M110    ;o<clear-axis-info> call
 
   ; Z finder initialisation for find the good start Z heigth start from where we are
   o<psng_start_z_probing> call

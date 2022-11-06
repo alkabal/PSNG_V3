@@ -1,8 +1,4 @@
 #!/bin/bash
-# file to clear axis info
-halcmd setp axisui.notifications-clear 0
-sleep .200
-halcmd setp axisui.notifications-clear 1
-sleep .200
-halcmd setp axisui.notifications-clear 0
+# activate probe output to motion.probe-inpute : logic inverted
+halcmd sets touch-probe-on-off 1
 exit 0
