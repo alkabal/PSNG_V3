@@ -1,4 +1,5 @@
-# Probe Screen for LinuxCNC 2.8/   (2.9 do not work for now : TODO convert include for python3)
+# PSNG master is for LinuxCNC 2.9/2.10
+# PSNG 2.8 is for LinuxCNC 2.8
 
 ## Important things needed :
 
