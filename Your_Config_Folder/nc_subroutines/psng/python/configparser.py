@@ -19,11 +19,7 @@
 
 import os
 
-# GTK2
-from ConfigParser import RawConfigParser
-
-# test pour GTK3
-#from configparser import RawConfigParser
+from configparser import RawConfigParser
 
 
 class ProbeScreenConfigParser(RawConfigParser):

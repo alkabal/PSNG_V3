@@ -22,14 +22,10 @@ from .base import ProbeScreenBase
 import hal  # base hal class to react to hal signals
 import linuxcnc
 
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk
 
-# GTK2
-import gtk  # base for pygtk widgets and constants
-
-# test pour GTK3
-#import gi
-#gi.require_version("Gtk", "3.0")
-#from gi.repository import Gtk as gtk
 
 class ProbeScreenJog(ProbeScreenBase):
     # --------------------------
@@ -80,34 +76,38 @@ class ProbeScreenJog(ProbeScreenBase):
             # we shorten the incrementlist to 5 (first is default = 0)
             self.jog_increments = self.jog_increments[0:5]
 
+
         # The first radio button is created to get a radio button group
         # The group is called according the name off  the first button
         # We use the pressed signal, not the toggled, otherwise two signals will be emitted
         # One from the released button and one from the pressed button
         # we make a list of the buttons to later add the hardware pins to them
-        label = "Cont"
-        rbt0 = gtk.RadioButton(None, label)
-        rbt0.connect("pressed", self.on_increment_changed, 0)
+        rbt0 = Gtk.ToggleButton(label="Cont",)
+        rbt0.connect("toggled", self.on_increment_toggled, 0)
         self.steps.pack_start(rbt0, True, True, 0)
         rbt0.set_property("draw_indicator", False)
+        rbt0.set_property("width_request", 30)
         rbt0.show()
-        #rbt0.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00")) # GTK2
-        #rbt0.modify_bg(gtk::STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00")) # test pour GTK3
+        rbt0.modify_bg(Gtk.StateType.ACTIVE, Gdk.color_parse("#FFFF00")) # test pour GTK3
         rbt0.__name__ = "rbt0"
         self.incr_rbt_list.append(rbt0)
+
+
         # the rest of the buttons are now added to the group
         # self.no_increments is set while setting the hal pins with self._check_len_increments
         for item in range(1, len(self.jog_increments)):
             rbt = "rbt%d" % (item)
-            rbt = gtk.RadioButton(rbt0, self.jog_increments[item])
-            rbt.connect("pressed", self.on_increment_changed, self.jog_increments[item])
+            rbt = Gtk.ToggleButton(rbt0, label=self.jog_increments[item])
+            rbt.connect("toggled", self.on_increment_toggled, self.jog_increments[item])
             self.steps.pack_start(rbt, True, True, 0)
             rbt.set_property("draw_indicator", False)
+            rbt.set_property("width_request", 30)
             rbt.show()
-            #rbt.modify_bg(gtk.STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00")) # GTK2
-            #rbt.modify_bg(gtk::STATE_ACTIVE, gtk.gdk.color_parse("#FFFF00")) # test pour GTK3
+            rbt.modify_bg(Gtk.StateType.ACTIVE, Gdk.color_parse("#FFFF00")) # test pour GTK3
             rbt.__name__ = "rbt%d" % (item)
             self.incr_rbt_list.append(rbt)
+
+        # finally activate the button
         self.active_increment = "rbt0"
 
 
@@ -116,13 +116,13 @@ class ProbeScreenJog(ProbeScreenBase):
     # JOG BUTTONS
     #
     # --------------------------
-    def on_increment_changed(self, widget=None, data=None):
+    def on_increment_toggled(self, widget=None, data=None):
         if data == 0:
             self.distance = 0
         else:
             self.distance = self._parse_increment(data)
         self.halcomp["psng_jog_increment"] = self.distance
-        self.active_increment = widget.__name__
+        self.active_increment = widget.get_property("name")   #widget.__name__
 
     def _from_internal_linear_unit(self, v, unit=None):
         if unit is None:

@@ -119,7 +119,7 @@ class ProbeScreenRotation(ProbeScreenBase):
     #
     # --------------------------
     def on_spbtn_offs_angle_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("offs_angle", gtkspinbutton, data)
+        self.common_spbtn_key_press_event("offs_angle", gtkspinbutton, data)
         if self.halcomp["offs_angle_active"] == 0:
             if self.halcomp["offs_angle"] == 0 and self.spbtn_offs_angle.get_value() == 0:
                 self.hal_led_use_offs_angle.hal_pin.set(0)
@@ -134,7 +134,7 @@ class ProbeScreenRotation(ProbeScreenBase):
             self.hal_led_use_offs_angle.hal_pin.set(1)
 
     def on_spbtn_offs_angle_value_changed(self, gtkspinbutton):
-        self.on_common_spbtn_value_changed("offs_angle", gtkspinbutton)
+        self.common_spbtn_value_changed("offs_angle", gtkspinbutton)
         if self.halcomp["offs_angle_active"] == 0:
             if self.halcomp["offs_angle"] == 0 and self.spbtn_offs_angle.get_value() == 0:
                 self.hal_led_use_offs_angle.hal_pin.set(0)
@@ -181,7 +181,7 @@ class ProbeScreenRotation(ProbeScreenBase):
     # button pressed angle_xp
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_angle_xp_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -258,7 +258,7 @@ class ProbeScreenRotation(ProbeScreenBase):
     # button pressed angle_ym
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_angle_ym_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -335,7 +335,7 @@ class ProbeScreenRotation(ProbeScreenBase):
     # button pressed angle_yp
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_angle_yp_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -412,7 +412,7 @@ class ProbeScreenRotation(ProbeScreenBase):
     # button pressed angle_xm
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_angle_xm_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:

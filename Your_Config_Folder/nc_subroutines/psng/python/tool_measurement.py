@@ -320,7 +320,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             return
 
         # safety check
-        if self.halcomp["ts_popup_tool_number"] != self.halcomp["toolchange_number"]:
+        if self.halcomp["ts_popup_tool_number"] != hal.get_value("iocontrol.0.tool-number"): #self.halcomp["toolchange_number"]:
             self.warning_dialog("Tool number mismatch !", title=_("PSNG Manual Toolchange"))
             return
 
@@ -338,7 +338,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self.halcomp["ts_popup_tool_number"] = 0
         self.halcomp["ts_popup_tool_diameter"] = 0
 
-        self.add_history_text("Measured tool_length = %f" % (float(Popen("halcmd getp halui.tool.length_offset.z", shell=True, stdout=PIPE).stdout.read())))
+        self.add_history_text("Measured tool_length = %f" % hal.get_value("halui.tool.length_offset.z")) #(float(Popen("halcmd getp halui.tool.length_offset.z", shell=True, stdout=PIPE).stdout.read())))
         if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
@@ -389,7 +389,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             self.warning_dialog("Tool diameter is higher than pad TODO ADD A OFFSET FOR ALLOW TO MEASURE ON FLUTE !")
 
         # safety check
-        if self.halcomp["ts_popup_tool_number"] != self.halcomp["toolchange_number"]: #float(Popen('halcmd getp iocontrol.0.tool-number', shell=True, stdout=PIPE).stdout.read()):
+        if self.halcomp["ts_popup_tool_number"] != hal.get_value("iocontrol.0.tool-number"): #self.halcomp["toolchange_number"]:
             self.warning_dialog("Tool number mismatch !")
             return
 
@@ -408,8 +408,8 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
         self.halcomp["ts_popup_tool_diameter"] = 0
         self.halcomp["ts_popup_tool_is_spherical"] = 0
 
-        self.add_history_text("Measured tool_length = %f" % (float(Popen("halcmd getp halui.tool.length_offset.z", shell=True, stdout=PIPE).stdout.read())))
-        self.add_history_text("Measured tool_diameter = %f" % (self.halcomp["toolchange_diameter"]))
+        self.add_history_text("Measured tool_length = %f" % hal.get_value("halui.tool.length_offset.z")) #(float(Popen("halcmd getp halui.tool.length_offset.z", shell=True, stdout=PIPE).stdout.read())))
+        self.add_history_text("Measured tool_diameter = %f" % hal.get_value("halui.tool.diameter")) #self.halcomp["toolchange_diameter"](self.halcomp["toolchange_diameter"]))
         if self.ocode("o<backup_status_restore> call [321]") == -1:
             return
         self._work_in_progress = 0
@@ -435,14 +435,14 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
             toolfile = os.path.join(CONFIGPATH, tooltable)
             self.tooledit1.set_filename(toolfile)
 
-            #self.add_history_text("tool-number = %s" % (self.halcomp["toolchange_number"]))
+            #self.add_history_text("tool-number = %s" % (hal.get_value("iocontrol.0.tool-number")))
             #self.add_history_text("tool_prep_number = %s" % (self.halcomp["toolchange_prep_number"]))
 
             if self.halcomp["chk_use_popup_style_toolchange"]:
             	  # we will get an error because can't get any tooldescription, so we avoid that case
                 if self.halcomp["toolchange_prep_number"] == 0:
                     message   = _("Please remove the mounted tool and press OK when done or CLOSE popup for cancel")
-                elif self.halcomp["toolchange_prep_number"] == self.halcomp["toolchange_number"]:
+                elif self.halcomp["toolchange_prep_number"] == hal.get_value("iocontrol.0.tool-number"): #self.halcomp["toolchange_number"]:
                     message   = _("Please check if the mounted tool is the good one and press OK when done or CLOSE popup for cancel")
                 else:
                     tooldescr = self.tooledit1.get_toolinfo(self.halcomp["toolchange_prep_number"])[16]
@@ -459,7 +459,7 @@ class ProbeScreenToolMeasurement(ProbeScreenBase):
                 self.add_history_text("TOOL %s CHANGED CORRECTLY" % (self.halcomp["toolchange_prep_number"]))
                 self.halcomp["toolchange_changed"] = True
             else:
-                self.halcomp["toolchange_prep_number"] = self.halcomp["toolchange_number"]
+                self.halcomp["toolchange_prep_number"] = hal.get_value("iocontrol.0.tool-number") #self.halcomp["toolchange_number"]
                 self.halcomp["toolchange_change"] = False  # Is there any reason to do this to input pin ? i think yes for be sure to reset connected self.on_tool_change
                 self.halcomp["toolchange_changed"] = True
                 self.error_dialog("TOOLCHANGE ABORTED", title=_("PSNG Manual Toolchange"))

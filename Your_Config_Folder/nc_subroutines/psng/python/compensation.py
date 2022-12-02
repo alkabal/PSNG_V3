@@ -22,7 +22,7 @@ UPDATE_INTERVAL = 0.01 # this is how often the z external offset value is update
 import sys
 import os.path, time
 import numpy
-import hal, time
+import hal
 from scipy.interpolate import griddata
 from enum import Enum, unique
 

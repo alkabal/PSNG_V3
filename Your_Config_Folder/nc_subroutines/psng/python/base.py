@@ -27,18 +27,14 @@ from subprocess import PIPE, Popen
 import hal
 import linuxcnc
 
-# GTK2
-import gtk  # base for pygtk widgets and constants
-import pango as Pango
-
-
-# test pour GTK3
-#import gi
-#gi.require_version("Gtk", "3.0")
-#from gi.repository import Gtk as gtk, Pango
+import gi
+gi.require_version("Gtk", "3.0")
+from gi.repository import Gtk, Gdk, Pango
 
 from .configparser import ProbeScreenConfigParser
 from .util import restore_task_mode
+
+from gladevcp.combi_dro import Combi_DRO  # we will need it to make the DRO
 
 CONFIGPATH1 = os.environ["CONFIG_DIR"]
 
@@ -150,42 +146,49 @@ class ProbeScreenBase(object):
         return 0
 
     def error_poll(self):
-        abort_halui = Popen(
-            "halcmd getp halui.abort ", shell=True, stdout=PIPE
-        ).stdout.read()
-        stop_halui = Popen(
-            "halcmd getp halui.program.stop ", shell=True, stdout=PIPE
-        ).stdout.read()
+        stop_halui = hal.get_value("halui.abort")
+        abort_halui = hal.get_value("halui.program.stop")
+#        abort_halui = Popen(
+#            "halcmd getp halui.abort ", shell=True, stdout=PIPE
+#        ).stdout.read()
+#        stop_halui = Popen(
+#            "halcmd getp halui.program.stop ", shell=True, stdout=PIPE
+#        ).stdout.read()
 
         if "axis" in self.display:
             # AXIS polls for errors every 0.2 seconds, so we wait slightly longer to make sure it's happened.
-            time.sleep(0.25)
-            error_pin = Popen(
-                "halcmd getp axisui.error ", shell=True, stdout=PIPE
-            ).stdout.read()
-            abort_axisui = Popen(
-                "halcmd getp axisui.abort ", shell=True, stdout=PIPE
-            ).stdout.read()
+            time.sleep(0.35)
+            error_pin = hal.get_value("axisui.error")
+            abort_axisui = hal.get_value("axisui.abort")
+#            error_pin = Popen(
+#                "halcmd getp axisui.error ", shell=True, stdout=PIPE
+#            ).stdout.read()
+#            abort_axisui = Popen(
+#                "halcmd getp axisui.abort ", shell=True, stdout=PIPE
+#            ).stdout.read()
         elif "gmoccapy" in self.display:
             # gmoccapy polls for errors every 0.25 seconds, OR whatever value is in the [DISPLAY]CYCLE_TIME ini
             # setting, so we wait slightly longer to make sure it's happened.
             ms = int(self.inifile.find("DISPLAY", "CYCLE_TIME") or 250) + 50
             time.sleep(ms / 1000)
-            error_pin = Popen(
-                "halcmd getp gmoccapy.error ", shell=True, stdout=PIPE
-            ).stdout.read()
+            error_pin = hal.get_value("gmoccapy.error")
+#            error_pin = Popen(
+#                "halcmd getp gmoccapy.error ", shell=True, stdout=PIPE
+#            ).stdout.read()
 
             # Something need to be done for add to gmoccapy a hal pin gmoccapy.abort
         else:
             self.error_dialog("UNABLE TO POLL %s GUI FOR ERRORS") % (self.display)
             return -1
 
-        if "TRUE" in str(error_pin):
+#        if "TRUE" in str(error_pin):
+        if error_pin:
             self.add_history_text("ABORT: See notification popup")
             self.command.mode(linuxcnc.MODE_MANUAL)
             self.command.wait_complete()
             return -1
-        elif "TRUE" in str(abort_axisui) or "TRUE" in str(abort_halui) or "TRUE" in str(stop_halui):
+#        elif "TRUE" in str(abort_axisui) or "TRUE" in str(abort_halui) or "TRUE" in str(stop_halui):
+        elif abort_axisui or abort_halui or stop_halui:
             self.warning_dialog("OPERATION STOPPED BY USER")
             self.command.mode(linuxcnc.MODE_MANUAL)
             self.command.wait_complete()
@@ -302,30 +305,31 @@ class ProbeScreenBase(object):
         self.buffer.insert(i, "%s \n" % (text))
 
 
-    def _dialog(self, gtk_type, gtk_buttons, message, secondary=None, title=_("Probe Screen NG")):
-        """ displays a dialog """
-        dialog = gtk.MessageDialog(
-            self.window,
-            gtk.DIALOG_DESTROY_WITH_PARENT,
-            gtk_type,
-            gtk_buttons,
-            message,
-        )
-        # if there is a secondary message then the first message text is bold
-        if secondary:
-            dialog.format_secondary_text(secondary)
-        dialog.set_title(title)
-        dialog.set_keep_above(True)
-        dialog.show_all()
-        responce = dialog.run()
-        dialog.destroy()
-        return responce == gtk.RESPONSE_OK
-
-
     def warning_dialog(self, message, secondary=None, title=_("Warning PSNG")):
         """ displays a warning dialog """
-        if self.halcomp["chk_use_popup_style_psng"] or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
-            return self._dialog(gtk.MESSAGE_WARNING, gtk.BUTTONS_OK, message, secondary, title)
+        if self.halcomp["chk_use_popup_style_psng"] or hal.get_value("motion.motion-enabled") == 0:
+            dialog = Gtk.MessageDialog(
+                self.window,
+                Gtk.DialogFlags.MODAL,
+                Gtk.MessageType.WARNING,
+                Gtk.ButtonsType.OK,
+                message,
+            )
+            # if there is a secondary message then the first message text is bold
+            if secondary:
+                dialog.format_secondary_text(secondary)
+
+            dialog.set_title(title)
+            dialog.set_keep_above(True)
+            dialog.show_all()
+
+            response = dialog.run()
+            if response == Gtk.ButtonsType.OK:
+                dialog.destroy()
+                return response
+            else:
+                dialog.destroy()
+                return -1
         else:
             if secondary:
                 self.gcode("(DEBUG,**** WARN : %s ****)" % (message))
@@ -336,10 +340,30 @@ class ProbeScreenBase(object):
 
     def error_dialog(self, message, secondary=None, title=_("Error PSNG")):
         """ displays a error dialog + backup_restore and abort """
-        if self.halcomp["chk_use_popup_style_psng"] or Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
+        if self.halcomp["chk_use_popup_style_psng"] or hal.get_value("motion.motion-enabled") == 0:
             if self.ocode("o<backup_status_restore> call") == -1:
-                return self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
-            return self._dialog(gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message, secondary, title)
+                dialog = Gtk.MessageDialog(
+                    self.window,
+                    Gtk.DialogFlags.MODAL,
+                    Gtk.MessageType.ERROR,
+                    Gtk.ButtonsType.CLOSE,
+                    message,
+                )
+                # if there is a secondary message then the first message text is bold
+                if secondary:
+                    dialog.format_secondary_text(secondary)
+
+                dialog.set_title(title)
+                dialog.set_keep_above(True)
+                dialog.show_all()
+
+                response = dialog.run()
+                if response == Gtk.MessageType.CLOSE:
+                    dialog.destroy()
+                    return response
+                else:
+                    dialog.destroy()
+                    return -1
         else:
             if secondary:
                 self.gcode("(DEBUG,**** ERROR : %s ****)" % (message))
@@ -347,32 +371,35 @@ class ProbeScreenBase(object):
             else:
                 self.gcode("(ABORT,**** ERROR : %s ****)" % (message))
 
+
     def _dialog_confirm(self, message):
         """ displays a confirm dialog """
         if self.halcomp["chk_use_popup_style_psng"]:
-            dialog = gtk.MessageDialog(self.window,
-                                  gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                                  gtk.MESSAGE_QUESTION,
-                                  gtk.BUTTONS_OK_CANCEL,
-                                  )
+            dialog = Gtk.MessageDialog(
+                                  self.window,
+                                  Gtk.DialogFlags.MODAL,
+                                  Gtk.MessageType.QUESTION,
+                                  Gtk.ButtonsType.OK_CANCEL,
+                              )
 
-            label = gtk.Label(message)
+            label = Gtk.Label(message)
             dialog.vbox.pack_start(label, False, False, 0)
 
-            label = gtk.Label("are you sure ?")
+            label = Gtk.Label("are you sure ?")
             dialog.vbox.pack_start(label, False, False, 0)
 
             dialog.set_title(_("PSNG"))
             dialog.set_keep_above(True)
             dialog.show_all()
 
-            responce = dialog.run()
-            dialog.destroy()
-            #dialog.hide()
-            if responce == gtk.RESPONSE_OK:
-                return responce == gtk.RESPONSE_OK
+            response = dialog.run()
+            if response == Gtk.ResponseType.OK:
+                dialog.destroy()
+                return response
             else:
+                dialog.destroy()
                 return -1
+        # If not popup_style use pause
 
 
 
@@ -386,94 +413,94 @@ class ProbeScreenBase(object):
         xlength = 50
         ylength = 50
 
-        dialog = gtk.MessageDialog(self.window,
-                              gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                              gtk.MESSAGE_QUESTION,
-                              gtk.BUTTONS_OK_CANCEL,
+        dialog = Gtk.MessageDialog(
+                              self.window,
+                              Gtk.DialogFlags.MODAL,
+                              Gtk.MessageType.QUESTION,
+                              Gtk.ButtonsType.OK_CANCEL,
                               )
 
-        label = gtk.Label("FIRST YOU NEED TO MOVE MACHINE XY")
+        label = Gtk.Label("FIRST YOU NEED TO MOVE MACHINE XY")
         dialog.vbox.pack_start(label, False, False, 0)
 
-        label = gtk.Label("AT THE DESIRED START XY POSITION")
+        label = Gtk.Label("AT THE DESIRED START XY POSITION")
         dialog.vbox.pack_start(label, False, False, 0)
 
-        label = gtk.Label("Z START WHERE HE IS : MOVE IT NEAR")
+        label = Gtk.Label("Z START WHERE HE IS : MOVE IT NEAR")
         dialog.vbox.pack_start(label, False, False, 0)
 
-        label = gtk.Label("X count point number")
+        label = Gtk.Label("X count point number")
         dialog.vbox.pack_start(label, False, False, 5)
-        spin_button_xcount = gtk.SpinButton(
-        gtk.Adjustment(
+        adjustment = Gtk.Adjustment(
           value=xcount,
           lower=2,
           upper=999,
           step_incr=1,
           page_incr=2,
-        ),
-        digits=0)
+        )
+        spin_button_xcount = Gtk.SpinButton(digits=0)
         spin_button_xcount.set_numeric(True)
+        spin_button_xcount.set_adjustment(adjustment)
         spin_button_xcount.set_value(xcount)
         dialog.vbox.pack_start(spin_button_xcount, False, False, 0)
 
-        label = gtk.Label("Y count point number")
+        label = Gtk.Label("Y count point number")
         dialog.vbox.pack_start(label, False, False, 0)
-        spin_button_ycount = gtk.SpinButton(
-        gtk.Adjustment(
+        adjustment = Gtk.Adjustment(
           value=ycount,
           lower=2,
           upper=999,
           step_incr=1,
           page_incr=2,
-        ),
-        digits=0)
+        )
+        spin_button_ycount = Gtk.SpinButton(digits=0)
         spin_button_ycount.set_numeric(True)
+        spin_button_ycount.set_adjustment(adjustment)
         spin_button_ycount.set_value(ycount)
         dialog.vbox.pack_start(spin_button_ycount, False, False, 0)
 
-        label = gtk.Label("X length of the gridd")
+        label = Gtk.Label("X length of the gridd")
         dialog.vbox.pack_start(label, False, False, 0)
-        spin_button_xlength = gtk.SpinButton(
-        gtk.Adjustment(
+        adjustment = Gtk.Adjustment(
           value=xlength,
-          lower=50,
+          lower=2,
           upper=999,
           step_incr=1,
           page_incr=2,
-        ),
-        digits=0)
+        )
+        spin_button_xlength = Gtk.SpinButton(digits=0)
         spin_button_xlength.set_numeric(True)
-        spin_button_xlength.set_value(xcount)
+        spin_button_xlength.set_adjustment(adjustment)
+        spin_button_xlength.set_value(xlength)
         dialog.vbox.pack_start(spin_button_xlength, False, False, 0)
 
-        label = gtk.Label("Y length of the gridd")
+        label = Gtk.Label("Y length of the gridd")
         dialog.vbox.pack_start(label, False, False, 0)
-        spin_button_ylength = gtk.SpinButton(
-        gtk.Adjustment(
+        adjustment = Gtk.Adjustment(
           value=ylength,
-          lower=50,
+          lower=2,
           upper=999,
           step_incr=1,
           page_incr=2,
-        ),
-        digits=0)
+        )
+        spin_button_ylength = Gtk.SpinButton(digits=0)
         spin_button_ylength.set_numeric(True)
-        spin_button_ylength.set_value(ycount)
+        spin_button_ylength.set_adjustment(adjustment)
+        spin_button_ylength.set_value(ylength)
         dialog.vbox.pack_start(spin_button_ylength, False, False, 0)
 
         dialog.set_title(_("Z_EOFFSET_COMPENSATION"))
         dialog.set_keep_above(True)
         dialog.show_all()
 
-        responce = dialog.run()
+        response = dialog.run()
         dialog.destroy()
-        #dialog.hide()
-        if responce == gtk.RESPONSE_OK:
+        if response == Gtk.ResponseType.OK:
             self.halcomp["compensat_xcount"]  = spin_button_xcount.get_value()
             self.halcomp["compensat_ycount"]  = spin_button_ycount.get_value()
             self.halcomp["compensat_xlength"] = spin_button_xlength.get_value()
             self.halcomp["compensat_ylength"] = spin_button_ylength.get_value()
-            return responce == gtk.RESPONSE_OK
+            return response
         else:
             self.halcomp["compensat_xcount"]  = 0
             self.halcomp["compensat_ycount"]  = 0
@@ -481,47 +508,52 @@ class ProbeScreenBase(object):
             self.halcomp["compensat_ylength"] = 0
             return -1
 
+####################################################
+
     def _dialog_spbtn_ask_toolnumber(self):
         """
         Display a dialog with a text entry.
         Returns the text, or None if canceled.
         """
-        ts_popup_tool_number  = self.halcomp["toolchange_number"]
-        ts_popup_tool_diameter  = self.halcomp["toolchange_diameter"]
+        ts_popup_tool_number  = hal.get_value("iocontrol.0.tool-number") #self.halcomp["toolchange_number"]
+        ts_popup_tool_diameter  = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"]
 
-        dialog = gtk.MessageDialog(self.window,
-                              gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                              gtk.MESSAGE_QUESTION,
-                              gtk.BUTTONS_OK_CANCEL,
+        dialog = Gtk.MessageDialog(
+                              self.window,
+                              Gtk.DialogFlags.MODAL,
+                              Gtk.MessageType.QUESTION,
+                              Gtk.ButtonsType.OK_CANCEL,
                               )
 
-        label = gtk.Label("Tool number mounted to probe :")
-        dialog.vbox.pack_start(label, False, False, 5)
-        spin_button_ts_popup_tool_number = gtk.SpinButton(
-        gtk.Adjustment(
+        label = Gtk.Label("Tool number mounted to probe :")
+        dialog.vbox.pack_start(label, False, False, 0)
+
+        adjustment = Gtk.Adjustment(
           value=ts_popup_tool_number,
           lower=1,
           upper=999,
           step_incr=1,
           page_incr=2,
-        ),
-        digits=0)
+        )
+        spin_button_ts_popup_tool_number = Gtk.SpinButton(digits=0)
         spin_button_ts_popup_tool_number.set_numeric(True)
+        spin_button_ts_popup_tool_number.set_adjustment(adjustment)
         spin_button_ts_popup_tool_number.set_value(ts_popup_tool_number)
         dialog.vbox.pack_start(spin_button_ts_popup_tool_number, False, False, 0)
 
-        label = gtk.Label("Exact tool diameter :")
+        label = Gtk.Label("Exact tool diameter :")
         dialog.vbox.pack_start(label, False, False, 0)
-        spin_button_ts_popup_tool_diameter = gtk.SpinButton(
-        gtk.Adjustment(
+
+        adjustment = Gtk.Adjustment(
           value=ts_popup_tool_diameter,
           lower=self.halcomp["ts_min_tool_dia"],
           upper=self.halcomp["ts_max_tool_dia"],
           step_incr=0.1,
           page_incr=1,
-        ),
-        digits=5)
+        )
+        spin_button_ts_popup_tool_diameter = Gtk.SpinButton(digits=5)
         spin_button_ts_popup_tool_diameter.set_numeric(True)
+        spin_button_ts_popup_tool_diameter.set_adjustment(adjustment)
         spin_button_ts_popup_tool_diameter.set_value(ts_popup_tool_diameter)
         dialog.vbox.pack_start(spin_button_ts_popup_tool_diameter, False, False, 0)
 
@@ -529,98 +561,101 @@ class ProbeScreenBase(object):
         dialog.set_keep_above(True)
         dialog.show_all()
 
-        responce = dialog.run()
-        dialog.destroy()
-        #dialog.hide()
-        if responce == gtk.RESPONSE_OK:
+        response = dialog.run()
+        if response == Gtk.ResponseType.OK:
             self.halcomp["ts_popup_tool_number"] = spin_button_ts_popup_tool_number.get_value()
             self.halcomp["ts_popup_tool_diameter"] = spin_button_ts_popup_tool_diameter.get_value()
-            return responce == gtk.RESPONSE_OK
+            dialog.destroy()
+            return response
         else:
             self.halcomp["ts_popup_tool_number"]   = 0
             self.halcomp["ts_popup_tool_diameter"]   = 0
+            dialog.destroy()
             return -1
 
-
+##############################################
 
     def _dialog_spbtn_ask_toolnumber_diameter(self):
-        """
-        Display a dialog with a text entry.
-        Returns the text, or None if canceled.
-        """
-        ts_popup_tool_number  = int(math.ceil(self.halcomp["toolchange_number"]))  #rounf up tool diameter
-        ts_popup_tool_diameter  = self.halcomp["toolchange_diameter"]
-        ts_popup_tool_is_spherical  = 0
+            """
+            Display a dialog with a text entry.
+            Returns the text, or None if canceled.
+            """
+            ts_popup_tool_number  = int(math.ceil(hal.get_value("iocontrol.0.tool-number")))  #rounf up tool diameter
+            ts_popup_tool_diameter  = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"]
+            self.tool_is_spherical = 0
 
+            dialog = Gtk.MessageDialog(
+                                  self.window,
+                                  Gtk.DialogFlags.MODAL,
+                                  Gtk.MessageType.QUESTION,
+                                  Gtk.ButtonsType.OK_CANCEL,
+                                  )
 
-        dialog = gtk.MessageDialog(self.window,
-                              gtk.DIALOG_MODAL | gtk.DIALOG_DESTROY_WITH_PARENT,
-                              gtk.MESSAGE_QUESTION,
-                              gtk.BUTTONS_OK_CANCEL,
-                              )
+            label = Gtk.Label("Tool number mounted to probe :")
+            dialog.vbox.pack_start(label, False, False, 5)
 
-        label = gtk.Label("Tool number mounted to probe :")
-        dialog.vbox.pack_start(label, False, False, 5)
-        spin_button_ts_popup_tool_number = gtk.SpinButton(
-        gtk.Adjustment(
-          value=ts_popup_tool_number,
-          lower=1,
-          upper=999,
-          step_incr=1,
-          page_incr=2,
-        ),
-        digits=0)
-        spin_button_ts_popup_tool_number.set_numeric(True)
-        spin_button_ts_popup_tool_number.set_value(ts_popup_tool_number)
-        dialog.vbox.pack_start(spin_button_ts_popup_tool_number, False, False, 0)
+            adjustment = Gtk.Adjustment(
+              value=ts_popup_tool_number,
+              lower=1,
+              upper=999,
+              step_incr=1,
+              page_incr=2,
+            )
+            spin_button_ts_popup_tool_number = Gtk.SpinButton(digits=0)
+            spin_button_ts_popup_tool_number.set_numeric(True)
+            spin_button_ts_popup_tool_number.set_adjustment(adjustment)
+            spin_button_ts_popup_tool_number.set_value(ts_popup_tool_number)
+            dialog.vbox.pack_start(spin_button_ts_popup_tool_number, False, False, 0)
 
-        label = gtk.Label("Tool diameter round up :")
-        dialog.vbox.pack_start(label, False, False, 0)
-        spin_button_ts_popup_tool_diameter = gtk.SpinButton(
-        gtk.Adjustment(
-          value=ts_popup_tool_diameter,
-          lower=self.halcomp["ts_min_tool_dia"],
-          upper=self.halcomp["ts_max_tool_dia"],
-          step_incr=1,
-          page_incr=1,
-        ),
-        digits=0)
-        spin_button_ts_popup_tool_diameter.set_numeric(True)
-        spin_button_ts_popup_tool_diameter.set_value(ts_popup_tool_diameter)
-        dialog.vbox.pack_start(spin_button_ts_popup_tool_diameter, False, False, 0)
+            label = Gtk.Label("Tool diameter round up :")
+            dialog.vbox.pack_start(label, False, False, 0)
 
-        label = gtk.Label("set 1 if tool is spherical :")
-        dialog.vbox.pack_start(label, False, False, 0)
-        spin_button_ts_popup_tool_is_spherical = gtk.SpinButton(
-        gtk.Adjustment(
-          value=ts_popup_tool_is_spherical,
-          lower=0,
-          upper=1,
-          step_incr=1,
-          page_incr=1,
-        ),
-        digits=0)
-        spin_button_ts_popup_tool_is_spherical.set_numeric(True)
-        spin_button_ts_popup_tool_is_spherical.set_value(ts_popup_tool_is_spherical)
-        dialog.vbox.pack_start(spin_button_ts_popup_tool_is_spherical, False, False, 0)
+            adjustment = Gtk.Adjustment(
+              value=ts_popup_tool_diameter,
+              lower=self.halcomp["ts_min_tool_dia"],
+              upper=self.halcomp["ts_max_tool_dia"],
+              step_incr=1,
+              page_incr=1,
+            )
+            spin_button_ts_popup_tool_diameter = Gtk.SpinButton(digits=0)
+            spin_button_ts_popup_tool_diameter.set_numeric(True)
+            spin_button_ts_popup_tool_diameter.set_adjustment(adjustment)
+            spin_button_ts_popup_tool_diameter.set_value(ts_popup_tool_diameter)
+            dialog.vbox.pack_start(spin_button_ts_popup_tool_diameter, False, False, 0)
 
-        dialog.set_title(_("TOOL DIAMETER MEASUREMENT"))
-        dialog.set_keep_above(True)
-        dialog.show_all()
+            label = Gtk.Label("set ON for spherical tool :")
+            dialog.vbox.pack_start(label, False, False, 0)
 
-        responce = dialog.run()
-        dialog.destroy()
-        #dialog.hide()
-        if responce == gtk.RESPONSE_OK:
-            self.halcomp["ts_popup_tool_number"] = spin_button_ts_popup_tool_number.get_value()
-            self.halcomp["ts_popup_tool_diameter"] = spin_button_ts_popup_tool_diameter.get_value()
-            self.halcomp["ts_popup_tool_is_spherical"] = spin_button_ts_popup_tool_is_spherical.get_value()
-            return responce == gtk.RESPONSE_OK
-        else:
-            self.halcomp["ts_popup_tool_number"] = 0
-            self.halcomp["ts_popup_tool_diameter"] = 0
-            self.halcomp["ts_popup_tool_is_spherical"] = 0
-            return -1
+            switch_button_ts_popup_tool_is_spherical = Gtk.Switch()
+            switch_button_ts_popup_tool_is_spherical.connect("notify::active", self.on_switch_activated)
+            switch_button_ts_popup_tool_is_spherical.set_active(False)
+            dialog.vbox.pack_start(switch_button_ts_popup_tool_is_spherical, True, True, 0)
+
+            dialog.set_title(_("TOOL DIAMETER MEASUREMENT"))
+            dialog.set_keep_above(True)
+            dialog.show_all()
+
+            response = dialog.run()
+            if response == Gtk.ResponseType.OK:
+                self.halcomp["ts_popup_tool_number"] = spin_button_ts_popup_tool_number.get_value()
+                self.halcomp["ts_popup_tool_diameter"] = spin_button_ts_popup_tool_diameter.get_value()
+                self.halcomp["ts_popup_tool_is_spherical"] = self.tool_is_spherical
+                dialog.destroy()
+                return response
+            else:
+                self.halcomp["ts_popup_tool_number"] = 0
+                self.halcomp["ts_popup_tool_diameter"] = 0
+                self.halcomp["ts_popup_tool_is_spherical"] = 0
+                dialog.destroy()
+                return -1
+
+    def on_switch_activated(self, switch, gparam):
+            if switch.get_active():
+                state = "on"
+                self.tool_is_spherical = 1
+            else:
+                state = "off"
+                self.tool_is_spherical = 0
 
 
     # --------------------------
@@ -635,7 +670,8 @@ class ProbeScreenBase(object):
         @wraps(f)
         def wrapper(self, *args, **kwargs):
 
-            if Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
+#            if Popen('halcmd getp motion.motion-enabled',stdout=PIPE,shell=True).communicate()[0].strip() == 'FALSE':
+            if hal.get_value("motion.motion-enabled") == 0:
                 self.warning_dialog("Please turn machine on", "You can retry once done")
                 return -1
 
@@ -680,10 +716,10 @@ class ProbeScreenBase(object):
     #
     # --------------------------
     def _preload_var_hal_ts(self):
-    	  return
+        return
 
     def _preload_var_hal_probing(self):
-    	  return
+        return
 
 
     # --------------------------
@@ -833,8 +869,8 @@ class ProbeScreenBase(object):
     #  Generic UI Methods
     #
     # --------------------------
-    def on_common_spbtn_key_press_event(self, pin_name, gtkspinbutton, data=None):
-        keyname = gtk.gdk.keyval_name(data.keyval)
+    def common_spbtn_key_press_event(self, pin_name, gtkspinbutton, data=None):
+        keyname = Gdk.keyval_name(data.keyval)
         if keyname == "Return":
             # Drop the Italics
             gtkspinbutton.modify_font(Pango.FontDescription("normal"))
@@ -851,7 +887,7 @@ class ProbeScreenBase(object):
             gtkspinbutton.modify_font(Pango.FontDescription("italic"))
 
 
-    def on_common_spbtn_value_changed(self, pin_name, gtkspinbutton, _type=float):
+    def common_spbtn_value_changed(self, pin_name, gtkspinbutton, _type=float):
         # Drop the Italics
         gtkspinbutton.modify_font(Pango.FontDescription("normal"))
 
@@ -861,7 +897,7 @@ class ProbeScreenBase(object):
         ## Update the preferences
         #self.prefs.putpref(pin_name, gtkspinbutton.get_value(), _type)
 
-    def on_settings_spbtn_value_changed(self, pin_name, gtkspinbutton, _type=float):
+    def settings_spbtn_value_changed(self, pin_name, gtkspinbutton, _type=float):
         # Drop the Italics
         gtkspinbutton.modify_font(Pango.FontDescription("normal"))
 

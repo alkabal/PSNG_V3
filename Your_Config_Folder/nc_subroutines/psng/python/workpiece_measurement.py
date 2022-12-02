@@ -46,7 +46,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed X+
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_xp_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -97,7 +97,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed Y+
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_yp_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -148,7 +148,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed X-
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_xm_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -199,7 +199,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed Y-
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_ym_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -257,7 +257,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed X+Y+
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_xpyp_out_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -350,7 +350,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed X+Y-
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_xpym_out_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -443,7 +443,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed X-Y+
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_xmyp_out_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -536,7 +536,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed X-Y-
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_xmym_out_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -630,7 +630,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_xy_center_out_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -676,7 +676,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         ## move Z temporary away from probing position
         #if self.move_probe_z_up() == -1:
         #    return
-            
+
         # move Z to initial position
         s = "G90 G1 Z%f" % (initial_z_position)
         if self.gcode(s) == -1:
@@ -714,7 +714,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         ## move Z temporary away from probing position
         #if self.move_probe_z_up() == -1:
         #    return
-            
+
         # move Z to initial position
         s = "G90 G1 Z%f" % (initial_z_position)
         if self.gcode(s) == -1:
@@ -759,7 +759,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         ## move Z temporary away from probing position
         #if self.move_probe_z_up() == -1:
         #    return
-            
+
         # move Z to initial position
         s = "G90 G1 Z%f" % (initial_z_position)
         if self.gcode(s) == -1:
@@ -797,7 +797,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
         ## move Z temporary away from probing position
         #if self.move_probe_z_up() == -1:
         #    return
-            
+
         # move Z to initial position
         s = "G90 G1 Z%f" % (initial_z_position)
         if self.gcode(s) == -1:
@@ -850,7 +850,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_xpyp_in_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -923,7 +923,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_xpym_in_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -997,7 +997,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_xmyp_in_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -1071,7 +1071,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_xmym_in_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -1135,7 +1135,7 @@ class ProbeScreenWorkpieceMeasurement(ProbeScreenBase):
     # Button pressed Hole Xin- Xin+ Yin- Yin+
     @ProbeScreenBase.ensure_errors_dismissed
     def on_btn_xy_hole_in_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:

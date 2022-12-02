@@ -111,12 +111,12 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.prefs.putpref("chk_use_z_eoffset_compensation", 1, bool)
             self.halcomp["compensat_z_offs_out_of_area"] = self.spbtn_compensat_z_offs_out_of_area.get_value()
             self.prefs.putpref("compensat_z_offs_out_of_area", self.halcomp["compensat_z_offs_out_of_area"], float)
-            self.add_history_text("Z_eoffset_compensation z-grid-max   = %.4f" % (float(Popen('halcmd getp probe.compensation.z-grid-max', shell=True, stdout=PIPE).stdout.read())))
-            self.add_history_text("Z_eoffset_compensation z-grid-min   = %.4f" % (float(Popen('halcmd getp probe.compensation.z-grid-min', shell=True, stdout=PIPE).stdout.read())))
-            self.add_history_text("Z_eoffset_compensation y-grid-end   = %.4f" % (float(Popen('halcmd getp probe.compensation.y-grid-end', shell=True, stdout=PIPE).stdout.read())))
-            self.add_history_text("Z_eoffset_compensation y-grid-start = %.4f" % (float(Popen('halcmd getp probe.compensation.y-grid-start', shell=True, stdout=PIPE).stdout.read())))
-            self.add_history_text("Z_eoffset_compensation x-grid-end   = %.4f" % (float(Popen('halcmd getp probe.compensation.x-grid-end', shell=True, stdout=PIPE).stdout.read())))
-            self.add_history_text("Z_eoffset_compensation x-grid-start = %.4f" % (float(Popen('halcmd getp probe.compensation.x-grid-start', shell=True, stdout=PIPE).stdout.read())))
+            self.add_history_text("Z_eoffset_compensation z-grid-max   = %.4f" % hal.get_value("probe.compensation.z-grid-max"))   #(float(Popen('halcmd getp probe.compensation.z-grid-max', shell=True, stdout=PIPE).stdout.read())))
+            self.add_history_text("Z_eoffset_compensation z-grid-min   = %.4f" % hal.get_value("probe.compensation.z-grid-min"))   #(float(Popen('halcmd getp probe.compensation.z-grid-min', shell=True, stdout=PIPE).stdout.read())))
+            self.add_history_text("Z_eoffset_compensation y-grid-end   = %.4f" % hal.get_value("probe.compensation.y-grid-end"))   #(float(Popen('halcmd getp probe.compensation.y-grid-end', shell=True, stdout=PIPE).stdout.read())))
+            self.add_history_text("Z_eoffset_compensation y-grid-start = %.4f" % hal.get_value("probe.compensation.y-grid-start")) #(float(Popen('halcmd getp probe.compensation.y-grid-start', shell=True, stdout=PIPE).stdout.read())))
+            self.add_history_text("Z_eoffset_compensation x-grid-end   = %.4f" % hal.get_value("probe.compensation.x-grid-end"))   #(float(Popen('halcmd getp probe.compensation.x-grid-end', shell=True, stdout=PIPE).stdout.read())))
+            self.add_history_text("Z_eoffset_compensation x-grid-start = %.4f" % hal.get_value("probe.compensation.x-grid-start")) #(float(Popen('halcmd getp probe.compensation.x-grid-start', shell=True, stdout=PIPE).stdout.read())))
         elif gtkcheckbutton.get_active() and self.halcomp["compensat_map_loaded"] == 0:
             self.spbtn_compensat_z_offs_out_of_area.set_sensitive(True)
             self.halcomp["chk_use_z_eoffset_compensation"] = 0
@@ -141,16 +141,16 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     # --------------------------
 
     def on_spbtn_compensat_z_offs_out_of_area_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("compensat_z_offs_out_of_area", gtkspinbutton, data)
+        self.common_spbtn_key_press_event("compensat_z_offs_out_of_area", gtkspinbutton, data)
 
     def on_spbtn_compensat_z_offs_out_of_area_value_changed(self, gtkspinbutton):
-        self.on_common_spbtn_value_changed("compensat_z_offs_out_of_area", gtkspinbutton)
+        self.common_spbtn_value_changed("compensat_z_offs_out_of_area", gtkspinbutton)
         self.halcomp["compensat_z_offs_out_of_area"] = gtkspinbutton.get_value()
         self.prefs.putpref("compensat_z_offs_out_of_area", self.halcomp["compensat_z_offs_out_of_area"], float)
 
 
     def on_spbtn_probe_block_height_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("offs_block_height", gtkspinbutton, data)
+        self.common_spbtn_key_press_event("offs_block_height", gtkspinbutton, data)
         if self.halcomp["offs_block_height_active"] == 0:
             if self.halcomp["offs_block_height"] == 0 and self.spbtn_probe_block_height.get_value() == 0:
                 self.hal_led_use_block_height.hal_pin.set(0)
@@ -165,7 +165,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.hal_led_use_block_height.hal_pin.set(1)
 
     def on_spbtn_probe_block_height_value_changed(self, gtkspinbutton):
-        self.on_common_spbtn_value_changed("offs_block_height", gtkspinbutton)
+        self.common_spbtn_value_changed("offs_block_height", gtkspinbutton)
         if self.halcomp["offs_block_height_active"] == 0:
             if self.halcomp["offs_block_height"] == 0 and self.spbtn_probe_block_height.get_value() == 0:
                 self.hal_led_use_block_height.hal_pin.set(0)
@@ -180,7 +180,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.hal_led_use_block_height.hal_pin.set(1)
 
     def on_spbtn_probe_table_offset_key_press_event(self, gtkspinbutton, data=None):
-        self.on_common_spbtn_key_press_event("offs_table_offset", gtkspinbutton, data)
+        self.common_spbtn_key_press_event("offs_table_offset", gtkspinbutton, data)
         if self.halcomp["offs_table_offset_active"] == 0:
             if self.halcomp["offs_table_offset"] == 0 and self.spbtn_probe_table_offset.get_value() == 0:
                 self.hal_led_use_table_offset.hal_pin.set(0)
@@ -195,7 +195,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
             self.hal_led_use_table_offset.hal_pin.set(1)
 
     def on_spbtn_probe_table_offset_value_changed(self, gtkspinbutton):
-        self.on_common_spbtn_value_changed("offs_table_offset", gtkspinbutton)
+        self.common_spbtn_value_changed("offs_table_offset", gtkspinbutton)
         if self.halcomp["offs_table_offset_active"] == 0:
             if self.halcomp["offs_table_offset"] == 0 and self.spbtn_probe_table_offset.get_value() == 0:
                 self.hal_led_use_table_offset.hal_pin.set(0)
@@ -217,7 +217,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     # --------------------------
 
     # Button pressed compensation probe to table for measuring it and use for calculate tool setter height and can set G10_L20 P0 Z0 if you tick auto zero
-    @ProbeScreenBase.ensure_errors_dismissed    
+    @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_probe_z_eoffset_compensation_released(self, gtkbutton):
 
@@ -409,7 +409,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_lx_out_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -455,7 +455,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         ## move Z temporary away from probing position
         #if self.move_probe_z_up() == -1:
         #    return
-            
+
         # move Z to initial position
         s = "G90 G1 Z%f" % (initial_z_position)
         if self.gcode(s) == -1:
@@ -493,7 +493,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         ## move Z temporary away from probing position
         #if self.move_probe_z_up() == -1:
         #    return
-            
+
         # move Z to initial position
         s = "G90 G1 Z%f" % (initial_z_position)
         if self.gcode(s) == -1:
@@ -526,7 +526,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_ly_out_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -572,7 +572,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         ## move Z temporary away from probing position
         #if self.move_probe_z_up() == -1:
         #    return
-            
+
         # move Z to initial position
         s = "G90 G1 Z%f" % (initial_z_position)
         if self.gcode(s) == -1:
@@ -610,7 +610,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
         ## move Z temporary away from probing position
         #if self.move_probe_z_up() == -1:
         #    return
-            
+
         # move Z to initial position
         s = "G90 G1 Z%f" % (initial_z_position)
         if self.gcode(s) == -1:
@@ -643,7 +643,7 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_lx_in_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
@@ -704,12 +704,12 @@ class ProbeScreenLengthMeasurement(ProbeScreenBase):
     @ProbeScreenBase.ensure_errors_dismissed
     @ProbeScreenBase.ensure_is_not_touchplate
     def on_btn_ly_in_released(self, gtkbutton):
-        tooldiameter = self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
+        tooldiameter = hal.get_value("halui.tool.diameter") #self.halcomp["toolchange_diameter"] #float(Popen("halcmd getp halui.tool.diameter", shell=True, stdout=PIPE).stdout.read())
         if self.ocode("o<backup_status_saving> call") == -1:
             return
-        if self.ocode("o<psng_hook> call [7]") == -1:
-            return
         if self.ocode("o<psng_load_var> call [0] [0]") == -1:
+            return
+        if self.ocode("o<psng_hook> call [7]") == -1:
             return
 
         # ask confirm from popup
