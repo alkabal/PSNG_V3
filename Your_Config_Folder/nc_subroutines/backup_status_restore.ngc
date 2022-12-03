@@ -4,12 +4,12 @@
 o<backup_status_restore> sub
 
     ; FULL STARTUP LIST FROM CONFIG
-    ;G7 G18 G40 G49 G54 G64 P0.005 G80 G90 G90.1 G92.1 G95 G97 G99 M5 M9 M53 M165 M166 ; lathe
-    ;   G17 G40 G49 G54 G64 P0.005 G80 G90 G90.1 G92.1 G94 G97 G99 M5 M9 M53 M165 M166 ; mill
+    ;G7 G18 G40 G49 G54 G64 P0.005 G80 G90 G90.1 G92.1 G95 G97 G99 M5 M9 M53 M160 M161 ; lathe
+    ;   G17 G40 G49 G54 G64 P0.005 G80 G90 G90.1 G92.1 G94 G97 G99 M5 M9 M53 M160 M161 ; mill
 
 ; if call restore is done without error from PSNG or other we call reset axis notif
 o1 if [#1 EQ 321]
-   M160    ;o<clear-axis-info> call
+   M110    ;o<clear-axis-info> call
 o1 endif
 
 o2 if [EXISTS [#<_backup_metric>]]
@@ -22,7 +22,7 @@ o2 if [EXISTS [#<_backup_metric>]]
    M5
    M9
    ;for a complete restore according to what is configured in my ini
-   G64 P0.001 (Path Blending)
+   G64 P0.005 (Path Blending)
    G80 (cancel canned cycle)
    M48 (set feed and speed overrides)
    M53 (feed Stop Control)
@@ -183,14 +183,14 @@ o2 if [EXISTS [#<_backup_metric>]]
    o80 endif
 
 
-         M165  (activate probe output to motion.probe-inpute : logic inverted)
-         M167  (activate setter output to motion.probe-inpute : logic inverted)
+         M160  (activate probe output to motion.probe-inpute : logic inverted)
+         M162  (activate setter output to motion.probe-inpute : logic inverted)
          M176  (RESTORE THE MACHINE Z LIMIT MIN for allow to probe the table correctly)
 
    ; do not restore that if args is 321 from restore after subroutine without error
    o180 if [#<_restore_from_tool_sensor> EQ 1]
    ;o180 if [#<_X> GT #<_hal[ini.x.max_limit]> or #<_X> LT #<_hal[ini.x.min_limit]> or #<_Y> GT #<_hal[ini.y.max_limit]> or #<_Y> LT #<_hal[ini.y.min_limit]>]
-        M170 P#<_ini[JOINT_0]MAX_LIMIT>   ; allow to extend the Z axis length before goto tool sensor
+        M170 P#<_ini[JOINT_0]MAX_LIMIT>   ; allow to extend the X axis length before goto tool sensor
         M171 P#<_ini[JOINT_1]MAX_LIMIT>   ; allow to extend the Y axis length before goto tool sensor
         #<_restore_from_tool_sensor> = 0
        (DEBUG,Y IS EXTENDED FOR ALLOW TO GO BACK FROM TOOLSENSOR)
@@ -199,8 +199,10 @@ o2 if [EXISTS [#<_backup_metric>]]
 
       ; reflechir a l'ajout de restore z-eoffset compensation to off
    o180 else
-        M170 P[#<_ini[JOINT_0]MAX_LIMIT> - #<_ini[TOOL_SETTER]TS_POS_X>] ; allow to restore the Y axis length after goto tool_sensor
-        M171 P[#<_ini[JOINT_1]MAX_LIMIT> - #<_ini[TOOL_SETTER]TS_POS_Y>] ; allow to restore the Y axis length after goto tool_sensor
+        ;M170 P[#<_ini[JOINT_0]MAX_LIMIT> - #<_ini[TOOL_SETTER]TS_POS_X>] ; allow to restore the X axis length after goto tool_sensor
+        ;M171 P[#<_ini[JOINT_1]MAX_LIMIT> - #<_ini[TOOL_SETTER]TS_POS_Y>] ; allow to restore the Y axis length after goto tool_sensor
+        M170 P#<_ini[AXIS_X]MAX_LIMIT> ; allow to restore the X axis length after goto tool_sensor
+        M171 P#<_ini[AXIS_Y]MAX_LIMIT> ; allow to restore the Y axis length after goto tool_sensor
 
    o180 endif
 
@@ -228,7 +230,7 @@ o2 else
 
    G40 (cutter compensation off)
    G54 (origin offsets are set to the default)
-   G64 P0.001 (Path Blending)
+   G64 P0.005 (Path Blending)
    G80 (cancel canned cycle)
    G90 (absolute)
    G90.1 (Arc Distance mode)
@@ -243,11 +245,11 @@ o2 else
    ; do not restore that if args is 123 from startup call
    o1200 if [#1 NE 123]
          (DEBUG,RESTORE MODAL STATUS USING FIXED STARTUP VALUE)
-         M165  (activate probe output to motion.probe-inpute : logic inverted)
-         M167  (activate setter output to motion.probe-inpute : logic inverted)
+         M160  (activate probe output to motion.probe-inpute : logic inverted)
+         M162  (activate setter output to motion.probe-inpute : logic inverted)
          M176  (RESTORE THE MACHINE Z LIMIT MIN for allow to probe the table correctly)
 
-         M170 P#<_ini[JOINT_0]MAX_LIMIT>   ; allow to extend the Z axis length before goto tool sensor
+         M170 P#<_ini[JOINT_0]MAX_LIMIT>   ; allow to extend the X axis length before goto tool sensor
          M171 P#<_ini[JOINT_1]MAX_LIMIT>   ; allow to extend the Y axis length before goto tool sensor
 
        ; reflechir a l'ajout de restore z-eoffset compensation to off

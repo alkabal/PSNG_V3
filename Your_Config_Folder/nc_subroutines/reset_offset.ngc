@@ -1,0 +1,54 @@
+o<reset_offset> sub
+
+#<no_pause_to_ask> = #1
+
+M110    ;o<clear-axis-info> call
+(DEBUG,Resetting all offset)
+o10 if [#<no_pause_to_ask> EQ 0]
+    (DEBUG,UNPAUSE IF OK OR ABORT)
+    M0
+    M110    ;o<clear-axis-info> call
+o10 endif
+
+  ;M170 P[#<_ini[JOINT_0]MAX_LIMIT> - #<_ini[TOOL_SETTER]TS_POS_X>] ; allow to restore the X axis length after goto tool_sensor
+  ;M171 P[#<_ini[JOINT_1]MAX_LIMIT> - #<_ini[TOOL_SETTER]TS_POS_Y>] ; allow to restore the Y axis length after goto tool_sensor
+  M170 P#<_ini[AXIS_X]MAX_LIMIT> ; allow to restore the X axis length after goto tool_sensor
+  M171 P#<_ini[AXIS_Y]MAX_LIMIT> ; allow to restore the Y axis length after goto tool_sensor
+
+G10L2P0R0          ; reset rotation offset
+
+G92.1              ; reset G92 offset
+G43                ; force to reload tool offset
+
+
+o100 if [#<_hal[ini.x.max_velocity]> GT 0]
+     G10L2P0X0
+o100 endif
+o101 if [#<_hal[ini.y.max_velocity]> GT 0]
+     G10L2P0Y0
+o101 endif
+o102 if [#<_hal[ini.z.max_velocity]> GT 0]
+     G10L2P0Z0
+o102 endif
+o103 if [#<_hal[ini.a.max_velocity]> GT 0]
+     G10L2P0A0
+o103 endif
+o104 if [#<_hal[ini.b.max_velocity]> GT 0]
+     G10L2P0B0
+o104 endif
+o105 if [#<_hal[ini.c.max_velocity]> GT 0]
+     G10L2P0C0
+o105 endif
+o106 if [#<_hal[ini.u.max_velocity]> GT 0]
+     G10L2P0U0
+o106 endif
+o107 if [#<_hal[ini.v.max_velocity]> GT 0]
+     G10L2P0V0
+o107 endif
+o108 if [#<_hal[ini.w.max_velocity]> GT 0]
+     G10L2P0W0
+o108 endif
+
+
+o<reset_offset> endsub
+M2
