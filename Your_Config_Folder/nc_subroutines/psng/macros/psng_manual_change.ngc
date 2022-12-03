@@ -23,7 +23,7 @@ o10 endif
     o40 if [#<_psng_toolchange_with_spindle_on> EQ 0]      ; used for surpass ini setting in case of wrong setting if you use manual
         M5
     o40 endif
-        M9                                                       ; Force to stop mist and flood
+        M9                                                 ; Force to stop mist and flood
 
 o<psng_goto_changepos> call
 M110    ;o<clear-axis-info> call

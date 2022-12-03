@@ -1,6 +1,6 @@
 component dynamicZ "This component is designed to adjuste Z length according to tool length from table (using tool with negative offset from table 0)";
 
-//sudo halcompile --install /home/pi/configs/my_Lathe_and_Mill/dynamicZ.comp
+//sudo halcompile --install /home/linuxcnc/linuxcnc/configs/my_Lathe_and_Mill/dynamicZ.comp
 
 pin in   s32 tool_number                     "connect to iocontrol.0.tool-number";
 pin in   float tool_length                   "connect to motion.tooloffset.z";
@@ -11,7 +11,7 @@ pin out  bit   is_inhibited                  "This pin goes high when we have se
 pin in   float axis_z_min;
 pin in   float axis_z_max;
 pin out  float axis_z_min_as_toollength;
-pin in   float axis_z_table_clearence = 0.05 "default 0.05 from table if not configured";
+pin in   float axis_z_table_clearence = 0.1 "default 0.1 from table if not configured";
 pin in   bit   probe_in_progress             "Allow to extend the Z axis for probing table or bed compensation correctly";
 pin in   float axis_z_table_override = 2     "default 2mm for probe under the table if not configured";
 
