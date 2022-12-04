@@ -26,6 +26,8 @@
 
 -TODO : prevent multiple click on the gui when something is already started self.work_in_progress do not work for now (something like that is done for compensation)
 
+-TODO : correctiong the bug for font changing in base.py
+
 
 ## Exemple positioning your tool setter in a Y protected area
 
