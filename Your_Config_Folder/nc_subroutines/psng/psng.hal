@@ -26,9 +26,6 @@ net Z-eoffset-y-pos-cmd 	       <= axis.y.pos-cmd			                       => pr
 net Z-eoffset-z-pos-cmd 	       <= axis.z.pos-cmd		                         => probe.compensation.z-pos-cmd-in
 
 net Z-eoffset-value	             <= axis.z.eoffset                             => probe.compensation.eoffset-value-in
-#net Z-eoffset-0.homed  	       <= joint.0.homed                              => probe.compensation.joint-0-is-homed   # TODO change with new sig motion.is-all-homed
-#net Z-eoffset-1.homed 	         <= joint.1.homed                              => probe.compensation.joint-1-is-homed
-#net Z-eoffset-2.homed 	         <= joint.2.homed                              => probe.compensation.joint-2-is-homed
 net machine-is-homed                                                           => probe.compensation.motion-is-all-homed
 net Z-eoffset-enable-in          <= probe.chk_use_z_eoffset_compensation       => probe.compensation.enable-in
 net Z-eoffset-z-offs-out-of-area <= probe.compensat_z_offs_out_of_area         => probe.compensation.z-offs-out-of-area-in
@@ -43,9 +40,4 @@ net Z-eoffset-map-loaded         <= probe.compensation.map-loaded	             =
 #net Z-eoffset-enable                                                           => probe.compensat_active
 #net Z-eoffset-out-limit          <= probe.compensation.z-eoffset-out-of-limit  => probe.z-eoffset-out-of-limit
 
-
-
 #******************************************
-
-
-

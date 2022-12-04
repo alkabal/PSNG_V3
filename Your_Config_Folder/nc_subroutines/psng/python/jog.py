@@ -26,6 +26,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 
+from gladevcp.gladebuilder import GladeBuilder
+from gladevcp.combi_dro import Combi_DRO  # we will need it to make the DRO
 
 class ProbeScreenJog(ProbeScreenBase):
     # --------------------------
@@ -46,6 +48,7 @@ class ProbeScreenJog(ProbeScreenBase):
 
         # After getting value we need to init some of them
         self._init_jog_increments_data()
+        self._make_DRO()
 
 
     # --------------------------
@@ -109,6 +112,92 @@ class ProbeScreenJog(ProbeScreenBase):
 
         # finally activate the button
         self.active_increment = "rbt0"
+
+
+# Thanks a lot to Cmorley for pointing to this code, and thanks for gmoccapy code !
+    def _make_DRO(self):
+
+        from gmoccapy import widgets       # a class to handle the widgets
+        from gmoccapy import getiniinfo    # this handles the INI File reading so checking is done in that module
+
+        # we build one DRO for each axis
+        self.dro_size = 30           # The size of the DRO, user may want them bigger on bigger screen
+
+        self.widgets = widgets.Widgets(self.builder)
+
+        # the colors of the DRO
+        self.abs_color = self.prefs.getpref("abs_color", "#0000FF", str)         # blue
+        self.rel_color = self.prefs.getpref("rel_color", "#000000", str)         # black
+        self.dtg_color = self.prefs.getpref("dtg_color", "#FFFF00", str)         # yellow
+        self.homed_color = self.prefs.getpref("homed_color", "#00FF00", str)     # green
+        self.unhomed_color = self.prefs.getpref("unhomed_color", "#FF0000", str) # red
+
+        self.get_ini_info = getiniinfo.GetIniInfo()
+        self.axis_list = self.get_ini_info.get_axis_list()
+
+        self.joint_axis_dic, self.double_axis_letter = self.get_ini_info.get_joint_axis_relation()
+        self.dro_dic = {}
+        for pos, axis in enumerate(self.axis_list):
+            joint = self._get_joint_from_joint_axis_dic(axis)
+            dro = Combi_DRO()
+            dro.set_joint_no(joint)
+            dro.set_axis(axis)
+            dro.change_axisletter(axis.upper())
+            dro.show()
+            dro.set_property("name", "Combi_DRO_{0}".format(pos))
+            dro.set_property("abs_color", self._get_RGBA_color(self.abs_color))
+            dro.set_property("rel_color", self._get_RGBA_color(self.rel_color))
+            dro.set_property("dtg_color", self._get_RGBA_color(self.dtg_color))
+            dro.set_property("homed_color", self._get_RGBA_color(self.homed_color))
+            dro.set_property("unhomed_color", self._get_RGBA_color(self.unhomed_color))
+            dro.set_property("actual", self.get_ini_info.get_position_feedback_actual())
+            dro.set_property("font_size", self.dro_size)
+            dro.connect("clicked", self._on_DRO_clicked)
+            self.dro_dic[dro.get_property("name")] = dro
+
+        # TODO if we more than 4 axis, we only want to display the XYZ
+        self._place_in_table(len(self.dro_dic),1, self.dro_size)
+
+
+    def _get_RGBA_color(self, color_str):
+        color = Gdk.RGBA()
+        color.parse(color_str)
+        return Gdk.RGBA(color.red, color.green, color.blue, color.alpha)
+
+
+    def _get_joint_from_joint_axis_dic(self, value):
+        # if the selected axis is a double axis we will get the joint from the master axis, which should end with 0
+        if value in self.double_axis_letter:
+            value = value + "0"
+        return list(self.joint_axis_dic.keys())[list(self.joint_axis_dic.values()).index(value)]
+
+
+    def _on_DRO_clicked(self, widget, joint, order):
+        for dro in self.dro_dic:
+            self.dro_dic[dro].set_order(order)
+        return
+
+
+    def _place_in_table(self, rows, cols, dro_size):
+        print("**** PSNG_V3 INFO Place in table ****")
+        print(len(self.dro_dic))
+
+        self.widgets.tbl_DRO.resize(rows, cols)
+        col = 0
+        row = 0
+
+        dro_order = sorted(self.dro_dic.keys())
+        for dro, dro_name in enumerate(dro_order):
+            self.widgets.tbl_DRO.attach(self.dro_dic[dro_name], col, col+1, row, row + 1, ypadding = 0)
+            if cols > 1:
+                # calculate if we have to place in the first or the second column
+                if (dro % 2 == 1):
+                    col = 0
+                    row +=1
+                else:
+                    col += 1
+            else:
+                row += 1
 
 
     # --------------------------

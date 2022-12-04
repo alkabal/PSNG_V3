@@ -1,5 +1,5 @@
 #!/bin/bash
-# REPLACE THE MACHINE Z LIMIT MIN for allow to probe the table correctly
+# REPLACE THE MACHINE Z LIMIT MIN for allow to probe the table correctly using M175
 
 halcmd setp dynamicZ.probe-in-progress 1
 exit 0

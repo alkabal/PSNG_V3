@@ -1,5 +1,5 @@
 #!/bin/bash
-# file to clear axis error
+# file to clear axis error using M112
 halcmd setp axisui.notifications-clear-error 0
 sleep .200
 halcmd setp axisui.notifications-clear-error 1

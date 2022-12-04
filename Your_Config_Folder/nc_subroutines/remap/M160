@@ -1,4 +1,4 @@
 #!/bin/bash
-# activate probe output to motion.probe-inpute : logic inverted
+# activate probe output to motion.probe-inpute (logic inverted) using M160
 halcmd sets touch-probe-on-off 1
 exit 0

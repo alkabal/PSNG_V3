@@ -1,5 +1,5 @@
 #!/bin/bash
-# RESTORE THE MACHINE Z LIMIT MIN for allow to probe the table correctly
+# RESTORE THE MACHINE Z LIMIT MIN for allow to protect the table correctly using M176
 
 halcmd setp dynamicZ.probe-in-progress 0
 exit 0

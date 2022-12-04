@@ -2,8 +2,6 @@ o<psng_goto_toolsensor> sub
 
 M110    ;o<clear-axis-info> call
 
-;M170 P#<_hal[ini.0.max_limit]>   ; allow to extend the X axis length before goto tool sensor
-;M171 P#<_hal[ini.1.max_limit]>   ; allow to extend the Y axis length before goto tool sensor
 M170 P#<_ini[JOINT_0]MAX_LIMIT>   ; allow to extend the X axis length before goto tool sensor
 M171 P#<_ini[JOINT_1]MAX_LIMIT>   ; allow to extend the Y axis length before goto tool sensor
 #<_restore_from_tool_sensor> = 1

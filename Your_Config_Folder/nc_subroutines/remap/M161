@@ -1,4 +1,4 @@
 #!/bin/bash
-# 3D-PROBE inhibition
+# 3D-PROBE inhibition using M161
 halcmd sets touch-probe-on-off 0
 exit 0

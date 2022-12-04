@@ -1,5 +1,5 @@
 #!/bin/bash
-# file to clear axis info
+# file to clear axis info using M110
 halcmd setp axisui.notifications-clear 0
 sleep .200
 halcmd setp axisui.notifications-clear 1

@@ -8,17 +8,17 @@ pin in   bit   inhibit                       "for stop the Z length modification
 pin out  bit   is_changed                    "This pin goes high when we have set the new axis length succefully";
 pin out  bit   is_override                   "This pin goes high when we have set the table override";
 pin out  bit   is_inhibited                  "This pin goes high when we have set inhibit to 1";
-pin in   float axis_z_min;
 pin in   float axis_z_max;
+pin in   float axis_z_min;
 pin out  float axis_z_min_as_toollength;
 pin in   float axis_z_table_clearence = 0.1 "default 0.1 from table if not configured";
 pin in   bit   probe_in_progress             "Allow to extend the Z axis for probing table or bed compensation correctly";
 pin in   float axis_z_table_override = 2     "default 2mm for probe under the table if not configured";
 
-pin in   bit   eoffsets_active;
-pin in   float eoffsets_scale;
-pin in   s32   eoffsets_counts;
-pin out  float axis_z_max_as_eoffset;
+//pin in   bit   eoffsets_active;
+//pin in   float eoffsets_scale;
+//pin in   s32   eoffsets_counts;
+//pin out  float axis_z_max_as_eoffset;
 
 
 
@@ -59,8 +59,8 @@ FUNCTION(_) {
 
 
 
-
-//    // remove 0.05 from tool length for protecting the table from colision.
+//    //  (attempt for doing dynamic Z max using compensation)
+//    // remove 0.1 from tool length for protecting the table from colision.
 //    if (!probe_in_progress){
 //        if (tool_number == 0 || tool_length == 0 || tool_length > 0 || inhibit){
 //            axis_z_min_as_toollength = axis_z_min;

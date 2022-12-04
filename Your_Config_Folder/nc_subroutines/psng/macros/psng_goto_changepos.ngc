@@ -22,8 +22,6 @@ o30 endif
 
   M5 M9 ; stop spindle, mist+flood off
 
-  ;M170 P[#<_hal[ini.0.max_limit]> - #<_psng_ts_pos_x>] ; allow to restore the X axis length after goto tool_sensor
-  ;M171 P[#<_hal[ini.1.max_limit]> - #<_psng_ts_pos_y>] ; allow to restore the Y axis length after goto tool_sensor
   M170 P#<_ini[AXIS_X]MAX_LIMIT> ; allow to restore the X axis length after goto tool_sensor
   M171 P#<_ini[AXIS_Y]MAX_LIMIT> ; allow to restore the Y axis length after goto tool_sensor
 
