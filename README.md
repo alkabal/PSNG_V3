@@ -90,8 +90,6 @@ This repo was originally a fork of <https://github.com/verser-git/probe_screen_v
 
 1. See "psng/install_add_to_your_hal.hal"
 
-```
-
 2. See "psng/install_add_to_your.ini"
 
 3. The following folders from the archive are placed in configuration folder:
