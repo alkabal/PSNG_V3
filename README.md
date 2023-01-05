@@ -26,13 +26,15 @@
 
 -TODO : prevent multiple click on the gui when something is already started self.work_in_progress do not work for now (something like that is done for compensation)
 
+-TODO : correctiong the bug for font changing in base.py
+
 
 ## Exemple positioning your tool setter in a Y protected area
 
 [AXIS_Y]
-- -13 for HOME_OFFSET distance from limit switch after homing
+- -43 for HOME_OFFSET distance from limit switch after homing
 - 1 mm for limit switch clearence
-- 12 mm for protected area tool_setter
+- 42 mm for protected area tool_setter
 - USING A TOOL_SENSOR OUTSIDE OF MACHINE AXIS AREA NEED TO EXTEND THE LIMIT AT M6
 - user defeined Mcode M170/M171 REPLACE THE MACHINE Y LIMIT MAX  USING JOINT 1 VALUE
 
@@ -48,20 +50,20 @@ AXIS = Y
 
 MIN_LIMIT = -332.11
 
-MAX_LIMIT = 12.11
+MAX_LIMIT = 42.11
 
 HOME = 0
 
-HOME_OFFSET = 13
+HOME_OFFSET = 43
 
 
 
 [TOOL_SETTER]
 - Absolute XYZ G53 machine coordinates for start auto tool measurement
 
-TS_POS_X = 0
+TS_POS_X = 20
 
-TS_POS_Y = 12
+TS_POS_Y = 22
 
 
 
@@ -86,26 +88,13 @@ This repo was originally a fork of <https://github.com/verser-git/probe_screen_v
 
 ## Install
 
-1. See "psng/install_add_to_your.hal"# 
-    You need to add this in your .hal files :
+1. See "psng/install_add_to_your_hal.hal"
 
-```sh
-#******************************************
-# MANUAL TOOLCHANGE with remap m6 probe using stdglue as standalone
-#******************************************
-net manual-tool-change-loop    iocontrol.0.tool-change      => iocontrol.0.tool-changed
-net manual-tool-prep-loop      iocontrol.0.tool-prepare     => iocontrol.0.tool-prepared
-net manual-tool-number         iocontrol.0.tool-number
-net manual-tool-diameter                                    <= halui.tool.diameter
-#******************************************
-```
-
-2. See "psng/install_add_to_your.ini" Add to your .ini settings, substitute your own constants.
+2. See "psng/install_add_to_your.ini"
 
 3. The following folders from the archive are placed in configuration folder:
 
    ```sh
-   /python
    /nc_subroutines
    /nc_subroutines/psng
    /nc_subroutines/remap
