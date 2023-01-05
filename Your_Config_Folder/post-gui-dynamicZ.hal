@@ -12,7 +12,7 @@ setp   dynamicZ.axis-z-table-clearence [TOUCH_DEVICE]TABLE_CLEARENCE
 setp   dynamicZ.axis-z-table-override  [TOUCH_DEVICE]TABLE_OVERRIDE
 
 # connect tool offset to component
-net manual-tool-number            dynamicZ.tool-number #   <=   iocontrol.0.tool-number
+net manual-tool-number            dynamicZ.tool-number    <=   iocontrol.0.tool-number
 net dynamicZ-tool-length          dynamicZ.tool-length    <=   motion.tooloffset.z
 
 # axis Z min change length according to tool length (this one need to be linked in post gui file)
